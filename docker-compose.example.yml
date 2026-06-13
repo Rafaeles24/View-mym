@@ -1,7 +1,7 @@
 services:
 
   db:
-    image: mariadb:10.11
+    image: mysql:8.0
     container_name: flyer_mym_db
     restart: always
 
