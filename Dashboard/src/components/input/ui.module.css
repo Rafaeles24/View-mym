@@ -1,0 +1,17 @@
+.input {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input label {
+    font-size: smaller;
+}
+
+.inputElement {
+    padding: 10px 15px;
+    border-radius: 10px;
+    background: none;
+    color: white;
+    border: 1px solid white;
+}

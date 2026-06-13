@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id Int @id @default(autoincrement())
+  nombre String
+  username String @unique
+  password String
+
+  createdAt DateTime @default(now())
+}
+
+model Campaign {
+  id Int @id @default(autoincrement())
+  nombre String
+  hex String? 
+  logo_url String?
+
+  storage_key String @unique
+
+  asset_id Int
+  assets Asset @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  
+  sedes CampaignSede[]
+  asignaciones AsignacionMedia[]
+  supervisores Supervisor[]
+}
+
+model Sede {
+  id Int @id @default(autoincrement())
+  nombre String
+  
+  campaigns CampaignSede[]
+  captions SedeCaption[]
+  supervisores Supervisor[]
+}
+
+model Media {
+  id Int @id @default(autoincrement())
+  nombre String
+  url String
+  
+  mimeType String?
+  durationMs Int? @default(10000)
+  createdAt DateTime @default(now())
+
+  asignaciones AsignacionMedia[]
+}
+
+model Asset {
+  id Int @id @default(autoincrement())
+  flag_pe String
+  flag_es String
+
+  campaigns Campaign[]
+}
+
+model Caption {
+  id Int @id @default(autoincrement())
+  title String
+  text String @db.LongText
+  hex String?
+
+  createdAt DateTime @default(now())
+
+  sedes SedeCaption[]
+
+  @@index([createdAt])
+}
+
+model Supervisor {
+  id Int @id @default(autoincrement())
+  campaign_id Int
+  sede_id Int
+  nombre String
+
+  campaign Campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  sede Sede @relation(fields: [sede_id], references: [id], onDelete: Cascade)
+
+  asesores Asesor[]
+
+  activo Boolean @default(true)
+
+  @@index([campaign_id, sede_id])
+  @@index([sede_id])
+}
+
+model Asesor {
+  id Int @id @default(autoincrement())
+  dni String? 
+  supervisor_id Int?
+  usuario_ocm String @unique
+  tipo String // OJT o ALTA
+  uci Boolean @default(false)
+  nombre String
+  hex String?
+  nro_ventas_total Int @default(0)
+  nro_ventas_semanal Int @default(0)
+
+  fecha_inicio DateTime?
+  fecha_fin DateTime?
+
+  asistencia String @default("SIN CONFIRMAR")
+
+  activo Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  supervisor Supervisor? @relation(fields: [supervisor_id], references: [id], onDelete: SetNull)
+
+  @@index([supervisor_id])
+}
+
+//INTERSECCIONES
+
+model CampaignSede {
+  campaign_id Int
+  sede_id Int
+
+  campaign Campaign @relation(fields: [campaign_id], references: [id])
+  sede Sede @relation(fields: [sede_id], references: [id])
+  
+
+  @@id([campaign_id, sede_id])
+  @@index([campaign_id])
+  @@index([sede_id])
+}
+
+model AsignacionMedia {
+  campaign_id Int
+  media_id Int
+
+  started_at DateTime?
+  ended_at DateTime?
+  prioridad Int @default(0)
+
+  campaign Campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
+
+  @@id([campaign_id, media_id])
+
+  @@index([campaign_id])
+  @@index([started_at, ended_at])
+  @@index([campaign_id, prioridad])
+}
+
+model SedeCaption {
+  sede_id Int
+  caption_id Int
+
+  started_at DateTime?
+  ended_at DateTime?
+
+  sede Sede @relation(fields: [sede_id], references: [id], onDelete: Cascade)
+  caption Caption @relation(fields: [caption_id], references: [id], onDelete: Cascade)
+
+  @@id([sede_id, caption_id])
+
+  @@index([sede_id])
+  @@index([started_at, ended_at])
+}

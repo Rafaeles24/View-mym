@@ -1,0 +1,17 @@
+.usuarioBadge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.usuarioName {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.usuarioLabel p {
+    font-size: 12px;
+    font-weight: 500;
+}

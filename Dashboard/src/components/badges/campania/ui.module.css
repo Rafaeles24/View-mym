@@ -1,0 +1,17 @@
+.badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+.badge img {
+    height: 15px;
+    width: auto;
+}
+
+.badge span {
+    font-size: smaller;
+}

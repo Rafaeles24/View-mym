@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <body>
+    <pre id="log">Flyer MyM</pre>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+      const log = document.getElementById("log");
+      const socket = io("http://localhost:3000");
+
+      socket.on("connect", () => {
+        log.textContent += "\nConectado al servidor: " + socket.id;
+      });
+
+      socket.on("disconnect", () => {
+        log.textContent += "\nDesconectado del servidor: ";
+      })
+
+      socket.on("campaign:changed", (evt) => {
+        log.textContent += "\n\ncampaign:changed:\n" + JSON.stringify(evt, null, 2);
+      });
+    </script>
+  </body>
+</html>

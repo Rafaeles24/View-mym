@@ -1,0 +1,259 @@
+.player {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: black;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.idle {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.7;
+}
+
+.layer.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.layer.hidden {
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.stage {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: black;
+}
+
+.layer {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 500ms ease-in-out;
+    will-change: opacity;
+}
+
+.media {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    inset: 0;
+
+}
+
+/* 🔥 overlay de vacío */
+.empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.overlayContent {
+    width: 95%;
+    margin: 0 auto 20px auto;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-campaign) 40%, transparent),
+            color-mix(in srgb, var(--color-slider) 15%, transparent)
+        ),
+
+        linear-gradient(
+            to top,
+            rgba(0,0,0,0.95),
+            rgba(0,0,0,0.95)
+        ) padding-box,
+
+        url("../../assets/fondo.jpg") center/cover no-repeat padding-box,
+
+        linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.7)) padding-box;
+
+    position: relative;
+    overflow: hidden;
+}
+
+.overlayContent img {
+    height: 45px;
+}
+
+.slider {
+    flex: 1;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    min-width: 0;
+}
+
+.title {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.titleSede {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), white;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 5px 15px;
+    color: white;
+    border: 1px solid white;
+    font-weight: bolder;
+    border-radius: 15px;
+    font-size: x-large;
+    font-family: "Roboto Extra Bold";
+
+    animation: badgeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.titleContentAnimated {
+    padding: 5px 15px;
+    font-weight: bolder;
+    border-radius: 15px;
+    font-size: x-large;
+    font-family: "Roboto Extra Bold";
+
+    animation: badgeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.asesorNuevo {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+@keyframes badgeIn {
+    0% {
+        transform: translateY(100%);
+    }
+    60% {
+        transform: translateY(-10%);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.sliderBody {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+
+    font-weight: bold;
+    font-size: xx-large;
+
+    position: relative;
+}
+
+.marqueeWrapper {
+    position: relative;
+    overflow: hidden;
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.marqueeWrapper::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.marqueeEnter {
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    animation: verticalIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.marqueeMove {
+    display: flex;
+    animation: marquee linear infinite;
+    will-change: transform;
+    font-family: "MTT Milano UltraBold";
+}
+
+.asesor {
+    flex: 1;
+}
+
+.asistencia {
+    display: flex;
+    align-items: center;
+    padding: 5px 15px;
+    font-weight: bolder;
+    border-radius: 15px;
+    font-size: x-large;
+    font-family: "Roboto Extra Bold";
+
+    animation: badgeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.marqueeMove span {
+    padding-right: 80px;
+}
+
+
+@keyframes verticalIn {
+    0% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    60% {
+        transform: translateY(-10%);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}

@@ -1,0 +1,52 @@
+.select {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  overflow: visible;
+}
+
+.select p {
+  font-size: small;
+}
+
+.input {
+  padding: 10px 15px;
+  border-radius: 10px;
+  background: #1a1a1a;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid white;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  width: 100%;
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 99999;
+  border: 1px solid #2a2a2a;
+}
+
+.dropItems {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dropItems:hover {
+  background: #222;
+}
+
+.active {
+  background: #2c2c2c;
+}

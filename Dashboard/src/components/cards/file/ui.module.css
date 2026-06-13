@@ -1,0 +1,39 @@
+.uploadItem {
+    width: 100%;
+    max-width: 100%;
+    border: 10px;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: black;
+}
+
+.uploadItem img,
+.uploadItem video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: black;
+}
+
+.uploadItem video {
+  pointer-events: none;
+}
+
+.uploadItem:hover video {
+  pointer-events: auto;
+}
+
+.uploadItem {
+  position: relative;
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.selected {
+  outline: 3px solid #08338f;
+}

@@ -1,0 +1,87 @@
+services:
+
+  db:
+    image: mariadb:10.11
+    container_name: flyer_mym_db
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: 240901
+      MYSQL_DATABASE: flyermym
+      MYSQL_USER: dieguitoYlasBasecitas
+      MYSQL_PASSWORD: AaS9LDtGr30y73fIFXAs
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - db_data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p240901"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  
+  backend:
+    build:
+      context: ./Backend
+
+    container_name: flyer_mym_backend
+    restart: always
+
+    ports:
+      - "6005:3001"
+
+    environment:
+      DATABASE_URL: mysql://dieguitoYlasBasecitas:AaS9LDtGr30y73fIFXAs@db:3306/flyermym
+      BASE_URL: http://192.168.10.191:6005
+      PORT: 3001
+      JWT_SECRET: CQzcP8cZlcYulBMEJAUkh8My680YWocj6glt6fuLQSJ
+
+    volumes:
+      - ./Backend/uploads:/app/uploads
+
+    depends_on:
+      - db
+      
+  dashboard:
+    build:
+      context: ./Dashboard
+
+    container_name: mym_dashboard
+    restart: always
+
+    ports:
+      - "6002:3000"
+
+    environment:
+      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.191:6005
+      NEXT_PUBLIC_STATIC_URL: http://192.168.10.191:6005
+      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.191:6005
+      BACKEND_INTERNAL_URL: http://backend:3001
+
+    depends_on:
+      - backend
+
+  visor:
+    build:
+      context: ./Visor
+
+    container_name: mym_visor
+    restart: always
+
+    ports:
+      - "6003:3000"
+
+    environment:
+      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.191:6005
+      NEXT_PUBLIC_STATIC_URL: http://192.168.10.191:6005
+      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.191:6005
+      BACKEND_INTERNAL_URL: http://backend:3001
+
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
