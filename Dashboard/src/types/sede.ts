@@ -8,5 +8,5 @@ type campaignSede = {
     id: number;
     nombre: string;
     hex: string;
-    logo_url: string;
+    url: string;
 }   
