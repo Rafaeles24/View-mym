@@ -65,6 +65,36 @@ CREATE TABLE `Caption` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Colaborador` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nombre` VARCHAR(191) NOT NULL,
+    `supervisor` BOOLEAN NOT NULL DEFAULT false,
+    `variante` VARCHAR(191) NULL,
+    `tramitadas` INTEGER NOT NULL DEFAULT 0,
+    `sede_id` INTEGER NOT NULL,
+    `campaign_id` INTEGER NOT NULL,
+    `activo` BOOLEAN NOT NULL DEFAULT true,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Colaborador_sede_id_campaign_id_nombre_key`(`sede_id`, `campaign_id`, `nombre`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `RankingDia` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `colaborador_id` INTEGER NOT NULL,
+    `puesto` INTEGER NOT NULL,
+    `tramitadas` INTEGER NOT NULL DEFAULT 0,
+    `fecha` DATETIME(3) NOT NULL,
+
+    INDEX `RankingDia_fecha_idx`(`fecha`),
+    UNIQUE INDEX `RankingDia_colaborador_id_fecha_key`(`colaborador_id`, `fecha`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Supervisor` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `campaign_id` INTEGER NOT NULL,
@@ -89,6 +119,8 @@ CREATE TABLE `Asesor` (
     `hex` VARCHAR(191) NULL,
     `nro_ventas_total` INTEGER NOT NULL DEFAULT 0,
     `nro_ventas_semanal` INTEGER NOT NULL DEFAULT 0,
+    `fecha_inicio` DATETIME(3) NULL,
+    `fecha_fin` DATETIME(3) NULL,
     `asistencia` VARCHAR(191) NOT NULL DEFAULT 'SIN CONFIRMAR',
     `activo` BOOLEAN NOT NULL DEFAULT true,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -136,6 +168,15 @@ CREATE TABLE `SedeCaption` (
 
 -- AddForeignKey
 ALTER TABLE `Campaign` ADD CONSTRAINT `Campaign_asset_id_fkey` FOREIGN KEY (`asset_id`) REFERENCES `Asset`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Colaborador` ADD CONSTRAINT `Colaborador_sede_id_fkey` FOREIGN KEY (`sede_id`) REFERENCES `Sede`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Colaborador` ADD CONSTRAINT `Colaborador_campaign_id_fkey` FOREIGN KEY (`campaign_id`) REFERENCES `Campaign`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `RankingDia` ADD CONSTRAINT `RankingDia_colaborador_id_fkey` FOREIGN KEY (`colaborador_id`) REFERENCES `Colaborador`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Supervisor` ADD CONSTRAINT `Supervisor_campaign_id_fkey` FOREIGN KEY (`campaign_id`) REFERENCES `Campaign`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

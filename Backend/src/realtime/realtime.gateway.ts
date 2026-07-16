@@ -153,6 +153,28 @@ export class RealtimeGateway {
       .to(`room:sede-${sedeId}`)
       .emit(`sede:caption-${event}`, payload);
   }
+  //---------------------------
+
+  //EVENTO DE RANKING
+  @SubscribeMessage('join-ranking')
+  handleJoinRanking(
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.join('room:ranking')
+  }
+
+  @SubscribeMessage('leave-ranking')
+  handleLeaveRanking(
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.leave('room:ranking')
+  }
+
+  emitRankingEvent(
+    event: 'refresh'
+  ) {
+    this.server.emit(`ranking:${event}`);
+  }
   
   //La hora en tiempo real
   emitCurrentTime() {

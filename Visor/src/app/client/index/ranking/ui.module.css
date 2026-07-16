@@ -1,0 +1,390 @@
+.ranking {
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+
+  min-height: 0;
+
+  padding: 80px 0 24px 0;
+  box-sizing: border-box;
+}
+
+.emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.supervisoresSection {
+  display: flex;
+  flex: 1 1 auto;
+
+  width: 100%;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+.totalSupervisors {
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.65);
+
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.barRanking {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  gap: 22px;
+
+  width: 100%;
+  min-height: 0;
+
+  padding: 12px 20px 24px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  box-sizing: border-box;
+  scrollbar-width: none;
+  scroll-behavior: auto;
+}
+
+.barRanking::-webkit-scrollbar {
+  display: none;
+}
+
+.rankingBarColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 320px;
+  padding: 30px 20px;
+  border-radius: 20px;
+}
+
+.chartContent {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+
+  width: 100%;
+  height: 25%;
+}
+
+.salesValue {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+
+  min-width: 72px;
+}
+
+.salesValue strong {
+  color: #ffffff;
+
+  font-size: clamp(50px, 3.2vw, 64px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.salesValue span {
+  color: rgba(255, 255, 255, 0.5);
+
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.barFill {
+  width: 60px;
+  min-height: 0;
+
+  border-radius: 16px 16px 6px 6px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f87171 0%,
+      #dc2626 45%,
+      #991b1b 100%
+    );
+
+  box-shadow: 0 0 24px rgba(220, 38, 38, 0.22);
+
+  transition:
+    height 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.supervisorInformation {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  font-size: x-large;
+
+  gap: 10px;
+
+  width: 100%;
+
+  text-align: center;
+}
+
+
+.campaignLogo {
+  display: flex;
+  justify-content: center;
+  width: auto;
+  height: 40px;
+}
+
+.campaignLogo img {
+  width: 60px;
+  height: auto;
+}
+
+.supervisorMetadata span {
+  display: block;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.52);
+
+  font-size: 20px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.positionContainer {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+}
+
+.positionNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 20px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+
+  font-size: 60px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.positionNumber::before {
+  content: "#";
+
+  margin-right: 3px;
+
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 30px;
+}
+
+.tieBadge {
+  padding: 4px 9px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.65);
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Primer puesto y sus posibles empates */
+
+.rankingBarColumn[data-position="1"] {
+  border-color: rgba(251, 191, 36, 0.24);
+
+  background:
+    linear-gradient(
+      360deg,
+      rgba(251, 191, 36, 0.1),
+      rgba(0, 0, 0, 0)
+    );
+}
+
+.rankingBarColumn[data-position="1"] .positionNumber {
+  border-color: rgba(251, 191, 36, 0.32);
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+
+.rankingBarColumn[data-position="1"] .barFill {
+  background:
+    linear-gradient(
+      180deg,
+      #fde68a,
+      #fbbf24,
+      #a16207
+    );
+
+  box-shadow:
+    0 0 24px rgba(251, 191, 36, 0.24);
+}
+
+/* Segundo puesto */
+
+.rankingBarColumn[data-position="2"] .positionNumber {
+  border-color: rgba(203, 213, 225, 0.25);
+  background: rgba(203, 213, 225, 0.1);
+  color: #cbd5e1;
+}
+
+.rankingBarColumn[data-position="2"] .barFill {
+  background:
+    linear-gradient(
+      180deg,
+      #f1f5f9,
+      #cbd5e1,
+      #64748b
+    );
+}
+
+/* Tercer puesto */
+
+.rankingBarColumn[data-position="3"] .positionNumber {
+  border-color: rgba(205, 127, 50, 0.3);
+  background: rgba(205, 127, 50, 0.11);
+  color: #d99552;
+}
+
+.rankingBarColumn[data-position="3"] .barFill {
+  background:
+    linear-gradient(
+      180deg,
+      #f0b474,
+      #cd7f32,
+      #854d0e
+    );
+}
+
+@media (max-width: 900px) {
+  .content {
+    padding: 16px;
+  }
+
+  .barRanking {
+    gap: 12px;
+    padding-inline: 12px;
+  }
+
+  .rankingBarColumn {
+    flex-basis: 155px;
+    width: 155px;
+    padding-inline: 10px;
+  }
+
+  .barTrack {
+    width: 50px;
+  }
+
+}
+
+.footer {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  min-height: 70px;
+
+  margin-top: auto;
+  padding: 16px 20px 0;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-sizing: border-box;
+}
+
+.footer h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(24px, 2.3vw, 30px);
+  font-weight: 900;
+}
+
+.date {
+  flex-shrink: 0;
+
+  font-size: xx-large;
+  text-transform: uppercase;
+}
+
+.firstPosition {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  gap: 22;
+  height: 100%;
+}
+
+.scrollingContent {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.scrollingItem {
+  display: flex;
+  align-items: stretch;
+  gap: 22px;
+  width: max-content;
+  height: 100%;
+  padding-right: 20px;
+}
+
+.clock {
+  position: fixed;
+  right: 0;
+  left: 0;
+  top: 60px;
+  margin: 0 30px;
+}

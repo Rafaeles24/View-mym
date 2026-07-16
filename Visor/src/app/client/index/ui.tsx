@@ -6,45 +6,22 @@ import { Campaign, FullCampaign, Sede } from "@/types/Campaign";
 import { useEffect, useRef, useState } from "react";
 import styles from "./ui.module.css";
 import { socket } from "@/libs/socket";
+import { Ranking } from "@/types/ranking";
+import RankingClient from "./ranking/ui";
+import SelectCampaign from "./selectCampaigns/ui";
+import mymcorp from "@/img/mymcorp.png";
+import RankingIcon from "@/icons/ranking";
+import PlayIcon from "@/icons/play";
 
-export default function IndexClient({data}: {data: Campaign[]}) {
-    const [ campaigns, setCampaigns ] = useState<Campaign[]>(data);
-    const [ campaign, setCampaign ] = useState<FullCampaign | null>(null);
-    const [ selected, setSelected ] = useState<{ campaignId: number; } | null>(null);
+export default function IndexClient({data, ranking}: {data: Campaign[], ranking: Ranking}) {
     const [ connected, setConnected ] = useState(false);
-    
-    const cache = useRef<Map<string, FullCampaign>>(new Map());
-
-    const handleSelect = async (campaignId: number) => {
-
-        setSelected({campaignId});
-
-        const key = `${campaignId}`;
-
-        if (cache.current.has(key)) {
-            setCampaign(cache.current.get(key) ?? null);
-            return;
-        }
-
-        try {
-            
-            const res = await fetch(`/api/visor/campaign/${campaignId}`);
-            const data = await res.json() as FullCampaign;
-
-            cache.current.set(key, data);
-            /* console.log(data); */
-            setCampaign(data);
-
-        } catch (error) {
-            console.error(`Error al cargar una campana: ${error}`)
-        }
-    }
+    const [ vistaSeleccionada, setVistaSeleccionada ] = useState<"ranking" | "flyers">("ranking");
 
     useEffect(() => {
         if (!socket.connected) {
             socket.connect();
         }
-
+        
         socket.on("connect", () => {
             setConnected(true);
         });
@@ -62,26 +39,45 @@ export default function IndexClient({data}: {data: Campaign[]}) {
 
     return (
         <div className={styles.index}>
-            <div className={styles.estadoServidor}>
-                Estado del servidor: {" "}
-                <strong style={{ color: connected ? "green" : "red" }}>
-                    {connected ? "Conectado" : "Desconectado"}
-                </strong>
-            </div>
-            <div className={styles.campaignSelects}>
-                { campaigns.length === 0 ? <div>NO hay registros</div> : (
-                    campaigns.map(campaign => 
-                        <CampaignSelect 
-                            key={campaign.id}
-                            data={campaign}
-                            selectedCampaignId={selected?.campaignId ?? null}
-                            onSelectCampaignId={handleSelect}
-                        />
-                    )
-                )}
+          <nav className={styles.selector}>
+            <div className={styles.logoContainer}>
+              <img src={mymcorp.src} alt="MyMcorp" className={styles.logo} />
+              <h1>Visor</h1>
             </div>
 
-            <Player campaign={campaign}/>
+            <div className={styles.buttons}>
+              <button
+                type="button"
+                className={`${styles.button} ${vistaSeleccionada === "ranking" ? styles.active : ""}`}
+                onClick={() => setVistaSeleccionada("ranking")}
+                aria-pressed={vistaSeleccionada === "ranking"}
+              >
+                <RankingIcon />
+                <span className={styles.label}>Ranking</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.button} ${vistaSeleccionada === "flyers" ? styles.active : ""}`}
+                onClick={() => setVistaSeleccionada("flyers")}
+                aria-pressed={vistaSeleccionada === "flyers"}
+              >
+                <PlayIcon />
+                <span className={styles.label}>Flyers</span>
+              </button>
+            </div>
+          </nav>
+
+          <div className={styles.content}>
+            { vistaSeleccionada === "ranking" && <RankingClient data={ranking} /> }
+            { vistaSeleccionada === "flyers" && <SelectCampaign data={data} /> }
+          </div>
+
+          <div className={styles.estadoServidor}>
+              Estado del servidor: {" "}
+              <strong style={{ color: connected ? "green" : "red" }}>
+                  {connected ? "Conectado" : "Desconectado"}
+              </strong>
+          </div>
         </div>
     );
 }

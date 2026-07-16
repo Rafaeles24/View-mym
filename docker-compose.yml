@@ -34,8 +34,8 @@ services:
       - "6005:3001"
 
     environment:
-      DATABASE_URL: mysql://dieguitoYlasBasecitas:AaS9LDtGr30y73fIFXAs@db:3306/flyermym
-      BASE_URL: http://192.168.10.191:6005
+      DATABASE_URL: mysql://root:240901@db:3306/flyermym
+      BASE_URL: http://192.168.10.16:6005
       PORT: 3001
       JWT_SECRET: CQzcP8cZlcYulBMEJAUkh8My680YWocj6glt6fuLQSJ
 
@@ -56,9 +56,9 @@ services:
       - "6002:3000"
 
     environment:
-      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.191:6005
-      NEXT_PUBLIC_STATIC_URL: http://192.168.10.191:6005
-      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.191:6005
+      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.16:6005
+      NEXT_PUBLIC_STATIC_URL: http://192.168.10.16:6005
+      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.16:6005
       BACKEND_INTERNAL_URL: http://backend:3001
 
     depends_on:
@@ -75,9 +75,9 @@ services:
       - "6003:3000"
 
     environment:
-      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.191:6005
-      NEXT_PUBLIC_STATIC_URL: http://192.168.10.191:6005
-      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.191:6005
+      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.16:6005
+      NEXT_PUBLIC_STATIC_URL: http://192.168.10.16:6005
+      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.16:6005
       BACKEND_INTERNAL_URL: http://backend:3001
 
     depends_on:
