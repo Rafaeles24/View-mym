@@ -30,7 +30,8 @@ export default function SelectCampaign({data}: {data: Campaign[]}) {
   }
 
   return (
-    <>
+    <div className={styles.flyerContent}>
+      <Player campaign={campaign}/>
       <div className={styles.campaignSelects}>
         { campaigns.length === 0 ? <div>NO hay registros</div> : (
             campaigns.map(campaign => 
@@ -43,8 +44,6 @@ export default function SelectCampaign({data}: {data: Campaign[]}) {
             )
         )}
       </div>
-
-      <Player campaign={campaign}/>
-    </>
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 export type Ranking = {
     fecha: string;
+    hora: string;
     supervisores: SupervisorRanking[];
     agentes: AgenteRanking[];
 }
@@ -14,7 +15,7 @@ type SupervisorRanking = {
     sede: SedeRanking;
 }
 
-type AgenteRanking = {
+export type AgenteRanking = {
     colaborador_id: number;
     nombre: string;
     puesto: number;
@@ -34,4 +35,5 @@ type CampaniaRanking = {
     id: number;
     nombre: string;
     logoUrl: string;
+    hex: string;
 }

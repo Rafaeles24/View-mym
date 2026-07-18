@@ -685,7 +685,9 @@ export class RankingService {
   // FECHA ACTUAL DE LIMA
   // ===================================================
 
-  private getCurrentLimaDate(): Date {
+  private getCurrentLimaDate(
+    date: Date = new Date(),
+  ): Date {
     const parts =
       new Intl.DateTimeFormat(
         'en-US',
@@ -698,7 +700,7 @@ export class RankingService {
           day: '2-digit',
         },
       ).formatToParts(
-        new Date(),
+        date,
       );
 
     const year = Number(
@@ -1034,9 +1036,29 @@ export class RankingService {
       .trim();
   }
 
+  private formatLimaTime(
+    date: Date = new Date(),
+  ): string {
+    return new Intl.DateTimeFormat(
+      'en-US',
+      {
+        timeZone: 'America/Lima',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      },
+    ).format(date);
+  }
+
   async getRankingActual() {
+    const ahora = new Date();
+
     const fecha =
-      this.getCurrentLimaDate();
+      this.getCurrentLimaDate(ahora);
+
+    const hora =
+      this.formatLimaTime(ahora);
 
     /*
      * La base de datos solo devuelve el snapshot
@@ -1072,7 +1094,8 @@ export class RankingService {
                 select: {
                   id: true,
                   nombre: true,
-                  logo_url: true
+                  logo_url: true,
+                  hex: true,
                 },
               },
             },
@@ -1112,7 +1135,12 @@ export class RankingService {
           nombre:
             item.colaborador.campaign
               .nombre,
-          logoUrl: this.normalizeUrl(`${process.env.BASE_URL}/${item.colaborador.campaign.logo_url}`)
+          logoUrl:
+            this.buildCampaignLogoUrl(
+              item.colaborador.campaign
+                .logo_url,
+            ),
+          hex: item.colaborador.campaign.hex
         },
       }));
 
@@ -1147,6 +1175,12 @@ export class RankingService {
           nombre:
             item.colaborador.campaign
               .nombre,
+          logoUrl:
+            this.buildCampaignLogoUrl(
+              item.colaborador.campaign
+                .logo_url,
+            ),
+          hex: item.colaborador.campaign.hex,
         },
       }));
 
@@ -1169,6 +1203,8 @@ export class RankingService {
         .toISOString()
         .slice(0, 10),
 
+      hora,
+
       supervisores,
       agentes,
 
@@ -1185,14 +1221,53 @@ export class RankingService {
     };
   }
 
-  private normalizeUrl(
-    url: string | null,
+  private buildCampaignLogoUrl(
+    logoUrl: string | null,
   ): string | null {
-    if (!url) {
+    if (!logoUrl) {
       return null;
     }
 
-    return url.replace(/\\/g, '/');
+    const normalizedLogoUrl =
+      this.normalizeUrl(logoUrl);
+
+    /*
+     * Si Prisma ya devuelve una URL absoluta,
+     * no se antepone BASE_URL.
+     */
+    if (
+      /^https?:\/\//i.test(
+        normalizedLogoUrl,
+      )
+    ) {
+      return normalizedLogoUrl;
+    }
+
+    const baseUrl =
+      this.normalizeUrl(
+        process.env.BASE_URL ?? '',
+      ).replace(/\/+$/, '');
+
+    const relativeLogoUrl =
+      normalizedLogoUrl.replace(
+        /^\/+/, 
+        '',
+      );
+
+    /*
+     * Si BASE_URL no está configurada,
+     * devuelve una ruta pública relativa.
+     */
+    if (!baseUrl) {
+      return `/${relativeLogoUrl}`;
+    }
+
+    return `${baseUrl}/${relativeLogoUrl}`;
   }
 
+  private normalizeUrl(
+    url: string,
+  ): string {
+    return url.replace(/\\/g, '/');
+  }
 }

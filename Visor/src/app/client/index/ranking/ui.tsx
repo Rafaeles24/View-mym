@@ -7,6 +7,8 @@ import { socket } from "@/libs/socket";
 import { formatDate } from "@/helpers/formatDate";
 import AvatarIcon from "@/icons/avatar";
 import Time from "@/components/time/ui";
+import RankingIcon from "@/icons/ranking";
+import InfoBar from "@/components/infoBar/ui";
 
 export default function RankingClient({ data }: { data: Ranking }) {
   const [ranking, setRanking] = useState<Ranking>(data);
@@ -294,8 +296,8 @@ export default function RankingClient({ data }: { data: Ranking }) {
 
               <span>
                 {supervisor.tramitadas === 1
-                  ? "TRAMITADA"
-                  : "TRAMITADAS"}
+                  ? "VENTA"
+                  : "VENTAS"}
               </span>
 
               <div className={styles.avatar}>
@@ -332,15 +334,26 @@ export default function RankingClient({ data }: { data: Ranking }) {
 
   return (
     <main className={styles.ranking}>
-      <div className={styles.clock}>
-        <Time/>
-        <Time timeZone="Europe/Madrid" />
+      <div className={styles.header}>
+        <div className={styles.headerTitle}>
+          <RankingIcon/>
+          <div>
+            <h1>RANKING DIARIO DE SUPERVISORES</h1>
+            <p>Actualizado el {formatDate(ranking.fecha)} a las <strong>{ranking.hora}</strong></p>
+          </div>
+        </div>
+
+        <div className={styles.clock}>
+          <Time/>
+          <Time timeZone="Europe/Madrid" />
+        </div>
       </div>
+
       <section className={styles.content}>
         <div className={styles.supervisoresSection}>
           {sortedSupervisors.length === 0 ? (
             <div className={styles.emptyState}>
-              Esperando información de Sicacenter
+              El ranking aparecerá y se actualizará conforme avance el día :D
             </div>
           ) : (
             <div
@@ -373,17 +386,11 @@ export default function RankingClient({ data }: { data: Ranking }) {
             </div>
           )}
         </div>
-
-        <div className={styles.footer}>
-          <h2>RANKING DIARIO DE SUPERVISORES</h2>
-
-          <div className={styles.date}>
-            <strong>
-              {formatDate(ranking.fecha)}
-            </strong>
-          </div>
-        </div>
       </section>
+
+      <div className={styles.footer}>
+        <InfoBar agentes={ranking.agentes} intervalo={10_000}/>
+      </div>
     </main>
   );
 }

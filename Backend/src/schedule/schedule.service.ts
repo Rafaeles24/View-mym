@@ -12,4 +12,10 @@ export class ScheduleService {
     emitCurrentTime() {
         this.rt.emitCurrentTime();
     }
+
+    @Cron(CronExpression.EVERY_12_HOURS)
+    emitSyncRanking() {
+        this.rt.emitRankingEvent("refresh");
+    }
+
 }

@@ -4,6 +4,9 @@
 
     display: flex;
     flex-direction: column;
+
+    background: #121212 ;
+    color: white;
 }
 
 .selector {
@@ -44,6 +47,8 @@
     align-items: center;
     gap: 5px;
     background: none;
+
+    color: white;
 }
 
 .button:hover {

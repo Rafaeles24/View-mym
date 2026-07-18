@@ -1,0 +1,10 @@
+.flyerContent {
+    display: flex;
+    gap: 10px;
+}
+
+.campaignSelects {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
