@@ -95,7 +95,7 @@ model Colaborador {
   campaign Campaign     @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
   rankings RankingDia[]
 
-  @@unique([sede_id, campaign_id, nombre], name: "nombre_sede_campaign")
+  @@unique([sede_id, campaign_id, nombre], map: "Colaborador_sede_id_campaign_id_nombre_key")
 }
 
 model RankingDia {

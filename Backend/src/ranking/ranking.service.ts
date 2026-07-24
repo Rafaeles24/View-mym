@@ -1,4 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import * as XLSX from 'xlsx';
@@ -20,86 +27,119 @@ export class RankingService {
   async transformExcelToJson(
     file: Express.Multer.File,
   ) {
-    const workbook = this.loadWorkbook(file);
+    try {
+      const workbook = this.loadWorkbook(file);
 
-    const dataRows = this.readSheet(
-      workbook,
-      SHEETS.data,
-    );
-
-    const supervisorRows = this.readSheet(
-      workbook,
-      SHEETS.rankingSupervisor,
-    );
-
-    const agenteRows = this.readSheet(
-      workbook,
-      SHEETS.rankingAgente,
-    );
-
-    const data = dataRows.map((row, index) =>
-      this.mapDataRow(
-        row,
+      const dataRows = this.readSheet(
+        workbook,
         SHEETS.data,
-        index + 2,
-      ),
-    );
+      );
 
-    const rankingSupervisor =
-      supervisorRows.map((row, index) =>
-        this.mapRankingSupervisorRow(
+      const supervisorRows = this.readSheet(
+        workbook,
+        SHEETS.rankingSupervisor,
+      );
+
+      const agenteRows = this.readSheet(
+        workbook,
+        SHEETS.rankingAgente,
+      );
+
+      const data = dataRows.map((row, index) =>
+        this.mapDataRow(
           row,
-          SHEETS.rankingSupervisor,
+          SHEETS.data,
           index + 2,
         ),
       );
 
-    const rankingAgente =
-      agenteRows.map((row, index) =>
-        this.mapRankingAgenteRow(
-          row,
-          SHEETS.rankingAgente,
-          index + 2,
-        ),
+      const rankingSupervisor =
+        supervisorRows.map((row, index) =>
+          this.mapRankingSupervisorRow(
+            row,
+            SHEETS.rankingSupervisor,
+            index + 2,
+          ),
+        );
+
+      const rankingAgente =
+        agenteRows.map((row, index) =>
+          this.mapRankingAgenteRow(
+            row,
+            SHEETS.rankingAgente,
+            index + 2,
+          ),
+        );
+
+      /*
+       * Sincroniza colaboradores y reemplaza
+       * completamente el ranking del día.
+       */
+      const resultado =
+        await this.syncDatabase(data);
+
+      this.rt.emitRankingEvent('refresh');  
+
+      return {
+        data,
+        ranking_supervisor:
+          rankingSupervisor,
+        ranking_agente:
+          rankingAgente,
+
+        ranking_guardado: {
+          fecha: resultado.fecha
+            .toISOString()
+            .slice(0, 10),
+
+          registros:
+            resultado.ranking.length,
+
+          supervisores:
+            resultado.ranking.filter(
+              (item) =>
+                item.supervisor === true,
+            ).length,
+
+          agentes:
+            resultado.ranking.filter(
+              (item) =>
+                item.supervisor === false,
+            ).length,
+        },
+      };
+    } catch (error) {
+      /*
+       * Conserva las excepciones HTTP que ya tienen
+       * un código y un mensaje controlado.
+       */
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      /*
+       * P2002 representa una colisión contra una
+       * restricción única de Prisma.
+       */
+      if (
+        error instanceof
+          Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'Ya existe un colaborador con el mismo nombre, sede y campaña.',
+        );
+      }
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : String(error);
+
+      throw new InternalServerErrorException(
+        `Ocurrió un error inesperado al subir información del ranking: ${message}`,
       );
-
-    /*
-     * Sincroniza colaboradores y reemplaza
-     * completamente el ranking del día.
-     */
-    const resultado =
-      await this.syncDatabase(data);
-
-    this.rt.emitRankingEvent('refresh');  
-
-    return {
-      data,
-      ranking_supervisor:
-        rankingSupervisor,
-      ranking_agente:
-        rankingAgente,
-
-      ranking_guardado: {
-        fecha: resultado.fecha
-          .toISOString()
-          .slice(0, 10),
-
-        registros:
-          resultado.ranking.length,
-
-        supervisores:
-          resultado.ranking.filter(
-            (item) =>
-              item.supervisor === true,
-          ).length,
-
-        agentes:
-          resultado.ranking.filter(
-            (item) =>
-              item.supervisor === false,
-          ).length,
-      },
-    };
+    }
   }
 
   // ===================================================
@@ -165,9 +205,15 @@ export class RankingService {
        * nombre + sede + campaña
        */
       const key = [
-        nombreNormalizado,
-        sedeNormalizada,
-        campaniaNormalizada,
+        this.normalizeUniqueKey(
+          nombreNormalizado,
+        ),
+        this.normalizeUniqueKey(
+          sedeNormalizada,
+        ),
+        this.normalizeUniqueKey(
+          campaniaNormalizada,
+        ),
       ].join('|');
 
       const existente =
@@ -421,51 +467,18 @@ export class RankingService {
         }
 
         // =============================================
-        // BUSCAR COLABORADORES EXISTENTES
+        // CREAR O ACTUALIZAR COLABORADORES
         // =============================================
 
-        const existentes =
-          await tx.colaborador.findMany({
-            where: {
-              OR: scopes.map(
-                (scope) => ({
-                  sede_id:
-                    scope.sede_id,
-
-                  campaign_id:
-                    scope.campaign_id,
-                }),
-              ),
-            },
-
-            select: {
-              id: true,
-              nombre: true,
-              supervisor: true,
-              variante: true,
-              tramitadas: true,
-              sede_id: true,
-              campaign_id: true,
-            },
-          });
-
-        const existentesMap =
-          new Map(
-            existentes.map(
-              (colaborador) => [
-                [
-                  this.normalizeText(
-                    colaborador.nombre,
-                  ),
-                  colaborador.sede_id,
-                  colaborador.campaign_id,
-                ].join('|'),
-
-                colaborador,
-              ],
-            ),
-          );
-
+        /*
+         * Se utiliza upsert sobre la restricción única:
+         *
+         * sede_id + campaign_id + nombre
+         *
+         * Esto evita el patrón findMany + create, que podía
+         * intentar crear un registro que MySQL ya consideraba
+         * existente por su collation.
+         */
         const guardados: Array<{
           id: number;
           nombre: string;
@@ -476,10 +489,6 @@ export class RankingService {
           campaign_id: number;
         }> = [];
 
-        // =============================================
-        // CREAR O ACTUALIZAR COLABORADORES
-        // =============================================
-
         for (const item of items) {
           const sedeId =
             sedeMap.get(item.sede)!;
@@ -489,88 +498,70 @@ export class RankingService {
               item.campania,
             )!;
 
-          const key = [
-            item.nombre,
-            sedeId,
-            campaignId,
-          ].join('|');
-
-          const existente =
-            existentesMap.get(key);
-
-          let colaborador;
-
-          if (existente) {
-            colaborador =
-              await tx.colaborador.update({
-                where: {
-                  id: existente.id,
-                },
-
-                data: {
-                  supervisor:
-                    item.supervisor,
-
-                  variante:
-                    item.variante,
-
-                  /*
-                   * REEMPLAZA el valor anterior.
-                   *
-                   * No utiliza increment.
-                   */
-                  tramitadas:
-                    item.tramitadas,
-
-                  activo: true,
-                },
-
-                select: {
-                  id: true,
-                  nombre: true,
-                  supervisor: true,
-                  variante: true,
-                  tramitadas: true,
-                  sede_id: true,
-                  campaign_id: true,
-                },
-              });
-          } else {
-            colaborador =
-              await tx.colaborador.create({
-                data: {
-                  nombre:
-                    item.nombre,
-
-                  supervisor:
-                    item.supervisor,
-
-                  variante:
-                    item.variante,
-
-                  tramitadas:
-                    item.tramitadas,
-
+          const colaborador =
+            await tx.colaborador.upsert({
+              where: {
+                sede_id_campaign_id_nombre: {
                   sede_id:
                     sedeId,
 
                   campaign_id:
                     campaignId,
 
-                  activo: true,
+                  nombre:
+                    item.nombre,
                 },
+              },
 
-                select: {
-                  id: true,
-                  nombre: true,
-                  supervisor: true,
-                  variante: true,
-                  tramitadas: true,
-                  sede_id: true,
-                  campaign_id: true,
-                },
-              });
-          }
+              update: {
+                supervisor:
+                  item.supervisor,
+
+                variante:
+                  item.variante,
+
+                /*
+                 * REEMPLAZA el valor anterior.
+                 * No utiliza increment.
+                 */
+                tramitadas:
+                  item.tramitadas,
+
+                activo: true,
+              },
+
+              create: {
+                nombre:
+                  item.nombre,
+
+                supervisor:
+                  item.supervisor,
+
+                variante:
+                  item.variante,
+
+                tramitadas:
+                  item.tramitadas,
+
+                sede_id:
+                  sedeId,
+
+                campaign_id:
+                  campaignId,
+
+                activo: true,
+              },
+
+              select: {
+                id: true,
+                nombre: true,
+                supervisor: true,
+                variante: true,
+                tramitadas: true,
+                sede_id: true,
+                campaign_id: true,
+              },
+            });
 
           guardados.push(
             colaborador,
@@ -1023,6 +1014,14 @@ export class RankingService {
     value: unknown,
   ): string {
     return this.text(value);
+  }
+
+  private normalizeUniqueKey(
+    value: unknown,
+  ): string {
+    return this.normalizeText(value)
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '');
   }
 
   private removeExcelExtension(
