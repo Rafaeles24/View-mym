@@ -81,6 +81,7 @@ model Colaborador {
   nombre     String
   supervisor Boolean @default(false)
   variante   String?
+  avatar_url String?
   tramitadas Int     @default(0)
 
   sede_id     Int

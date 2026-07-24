@@ -6,14 +6,29 @@
   flex-direction: column;
 
   overflow: hidden;
+
+  box-sizing: border-box;
+}
+
+.ranking:fullscreen {
+  width: 100vw;
+  height: 100vh;
+
+  padding: 40px 32px;
+
+  background: #131313;
+
+  box-sizing: border-box;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   padding: 0 20px;
 }
+
 .headerTitle {
   display: flex;
   gap: 10px;
@@ -33,37 +48,489 @@
 .content {
   flex: 1;
   display: flex;
-  flex-direction: column;
 
   width: 100%;
   height: auto;
-
   min-height: 0;
+
+  padding: 20px 24px;
 
   box-sizing: border-box;
 }
 
-.emptyState {
+.contentCont {
+  flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 30px;
-  width: 100%;
-}
-
-.supervisoresSection {
-  display: flex;
-  flex: 1 1 auto;
+  flex-direction: column;
 
   width: 100%;
+  height: auto;
   min-height: 0;
 
   overflow: hidden;
+
+  box-sizing: border-box;
+
+  border: 3px solid #3b3b3b;
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.015),
+      rgba(255, 255, 255, 0)
+    );
+}
+
+/*
+ * Resumen superior:
+ * ventas totales + ranking de sedes.
+ */
+.overviewSection {
+  display: flex;
+  gap: 18px;
+
+  flex: 0 0 auto;
+
+  width: 100%;
+
+  padding: 0 24px;
+
+  padding-top: 20px;
+
+  box-sizing: border-box;
+}
+
+.totalSalesCard {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  min-width: 0;
+  min-height: 100px;
+
+  width: 300px;
+
+  padding: 10px 20px;
+
+  overflow: hidden;
+
+  border: 1px solid
+    rgba(248, 113, 113, 0.32);
+  border-radius: 18px;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(239, 68, 68, 0.32),
+      transparent 50%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(127, 29, 29, 0.45),
+      rgba(24, 24, 27, 0.92)
+    );
+
+  box-sizing: border-box;
+}
+
+.totalSalesCard::after {
+  content: "";
+
+  position: absolute;
+  right: -45px;
+  bottom: -70px;
+
+  width: 170px;
+  height: 170px;
+
+  border: 28px solid
+    rgba(255, 255, 255, 0.025);
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+.totalSalesHeader > span {
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.liveIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 5px 8px;
+
+  border: 1px solid
+    rgba(248, 113, 113, 0.25);
+  border-radius: 999px;
+
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.liveIndicator > span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #ef4444;
+
+  box-shadow:
+    0 0 0 4px
+      rgba(239, 68, 68, 0.12),
+    0 0 12px
+      rgba(239, 68, 68, 0.9);
+}
+
+.totalSalesContent {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+
+
+  justify-content: center;
+  align-items: center;
+}
+
+.totalSalesLabel {
+  margin-bottom: 3px;
+
+  color: rgba(255, 255, 255, 0.68);
+
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.totalSalesContent strong {
+  color: #ffffff;
+
+  font-size: clamp(48px, 4vw, 72px);
+  font-weight: 950;
+  line-height: 0.95;
+
+  text-shadow:
+    0 0 30px
+      rgba(239, 68, 68, 0.18);
+}
+
+.totalSalesContent small {
+  margin-top: 7px;
+
+  color: rgba(255, 255, 255, 0.42);
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+/*
+ * Ranking de sedes.
+ */
+.sitesRankingCard {
+  display: flex;
+  gap: 15px;
+
+  width: 100%;
+  min-width: 0;
+
+  padding: 15px 24px;
+
+  border: 3px solid
+    rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.015)
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.04);
+
+  box-sizing: border-box;
+}
+
+.sitesRankingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 150px;
+}
+
+.sitesRankingHeader > div {
+  min-width: 0;
+}
+
+.sitesRankingHeader span {
+  display: block;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.sitesRankingHeader h2 {
+  margin: 2px 0 0;
+
+  color: #ffffff;
+
+  font-size: clamp(17px, 1.4vw, 22px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sitesRankingHeader .sitesCount {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.6);
+
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.sitesRankingList {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  gap: 10px;
+
+  width: 100%;
+  min-width: 0;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.sitesRankingList::-webkit-scrollbar {
+  display: none;
+}
+
+.siteRankingItem {
+  --site-position-color: #ef4444;
+
+  position: relative;
+
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(90px, 1fr)
+    auto;
+  align-items: center;
+  gap: 12px;
+
+  flex: 1 0 190px;
+
+  min-width: 100px;
+
+  padding: 13px 15px;
+
+  overflow: hidden;
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--site-position-color) 35%,
+      transparent
+    );
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(
+        in srgb,
+        var(--site-position-color) 10%,
+        transparent
+      ),
+      rgba(255, 255, 255, 0.025)
+    );
+
+  box-sizing: border-box;
+}
+
+.siteRankingItem::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 4px;
+  height: 100%;
+
+  background:
+    var(--site-position-color);
+
+  box-shadow:
+    0 0 18px
+      var(--site-position-color);
+}
+
+.sitePosition {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+
+  min-width: 44px;
+
+  color: var(--site-position-color);
+}
+
+.sitePosition span {
+  color: rgba(255, 255, 255, 0.35);
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.sitePosition strong {
+  font-size: 40px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.siteInfo {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+}
+
+.siteInfo strong {
+  width: 100%;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: clamp(20px, 1.2vw, 22px);
+  font-weight: 900;
+
+  text-overflow: ellipsis;
+}
+
+.siteInfo span {
+  margin-top: 3px;
+
+  color: rgba(255, 255, 255, 0.38);
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.siteSales {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  min-width: 50px;
+}
+
+.siteSales strong {
+  color: #ffffff;
+
+  font-size: clamp(35px, 3.2vw, 45px);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.siteSales span {
+  margin-top: 4px;
+
+  color: rgba(255, 255, 255, 0.42);
+
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.siteRankingItem[data-position="1"] {
+  box-shadow:
+    inset 0 0 30px
+      rgba(251, 191, 36, 0.05),
+    0 0 20px
+      rgba(251, 191, 36, 0.05);
+}
+
+.emptySites {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/*
+ * Título de ranking de supervisores.
+ */
+.supTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  flex: 0 0 auto;
+
+  padding: 10px 30px;
+
+  border-bottom: 1px solid
+    rgba(255, 255, 255, 0.08);
+
+  background-color:
+    rgba(255, 255, 255, 0.08);
+
+  font-size: 20px;
+}
+
+.supTitle h3 {
+  margin: 0;
 }
 
 .totalSupervisors {
   padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.1);
   border-radius: 999px;
 
   background: rgba(255, 255, 255, 0.04);
@@ -74,23 +541,55 @@
   white-space: nowrap;
 }
 
-.barRanking {
+.emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+
+  font-size: 30px;
+  text-align: center;
+}
+
+.supervisoresSection {
   display: flex;
   flex: 1 1 auto;
-  align-items: stretch;
-  gap: 22px;
 
   width: 100%;
   min-height: 0;
 
-  padding: 20px 24px;
+  padding: 20px;
 
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
 
   box-sizing: border-box;
-  scrollbar-width: none;
-  scroll-behavior: auto;
+}
+
+.barRanking {
+  /*
+   * Esta variable solo se usa para calcular el ancho
+   * de dos tarjetas. No modifica el ancho real.
+   */
+  --ranking-card-width: 350px;
+  --ranking-gap: 22px;
+
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  gap: var(--ranking-gap);
+
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  /*
+   * El padre no debe desplazarse.
+   * Cada grupo controla su propio scroll.
+   */
+  overflow: hidden;
+
+  box-sizing: border-box;
 }
 
 .barRanking::-webkit-scrollbar {
@@ -98,12 +597,45 @@
 }
 
 .rankingBarColumn {
+  --campaign-color: #6b7280;
+  --position-color: #ef4444;
+
+  position: relative;
+
   display: flex;
+  flex: 0 0 320px;
   flex-direction: column;
   gap: 20px;
-  width: 320px;
-  padding: 30px 10px;
+
+  padding: 30px 20px;
+
+  /*
+   * El borde queda transparente para que se vea
+   * el segundo fondo degradado.
+   */
+  border: 2px solid transparent;
   border-radius: 20px;
+
+  /*
+   * Primer fondo: interior oscuro.
+   * Segundo fondo: borde puesto → campaña.
+   */
+  background:
+    linear-gradient(
+        #131313,
+        #111111
+      )
+      padding-box,
+    linear-gradient(
+        315deg,
+        var(--position-color) 0%,
+        var(--position-color) 20%,
+        var(--campaign-color) 80%,
+        var(--campaign-color) 100%
+      )
+      border-box;
+
+  box-sizing: border-box;
 }
 
 .chartContent {
@@ -121,7 +653,7 @@
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: flex-end;
 
   min-width: 72px;
@@ -130,7 +662,7 @@
 .salesValue strong {
   color: #ffffff;
 
-  font-size: clamp(50px, 3.2vw, 64px);
+  font-size: clamp(60px, 4.2vw, 74px);
   font-weight: 900;
   line-height: 1;
 }
@@ -158,10 +690,13 @@
       #991b1b 100%
     );
 
-  box-shadow: 0 0 24px rgba(220, 38, 38, 0.22);
+  box-shadow:
+    0 0 24px
+      rgba(220, 38, 38, 0.22);
 
   transition:
-    height 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    height 700ms
+      cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .supervisorInformation {
@@ -169,19 +704,23 @@
   flex: 1;
   flex-direction: column;
   align-items: center;
-  font-size: 30px;
 
   gap: 10px;
 
   width: 100%;
 
+  font-size: 27px;
   text-align: center;
 }
 
+.supervisorInformation h3 {
+  margin: 0;
+}
 
 .campaignLogo {
   display: flex;
   justify-content: center;
+
   width: auto;
   height: 40px;
 }
@@ -189,6 +728,11 @@
 .campaignLogo img {
   width: 60px;
   height: auto;
+}
+
+.supervisorMetadata {
+  width: 100%;
+  min-width: 0;
 }
 
 .supervisorMetadata span {
@@ -213,7 +757,6 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-
 }
 
 .positionNumber {
@@ -223,10 +766,12 @@
 
   padding: 10px 20px;
 
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid
+    rgba(255, 255, 255, 0.12);
   border-radius: 13px;
 
-  background: rgba(255, 255, 255, 0.06);
+  background:
+    rgba(255, 255, 255, 0.06);
   color: #ffffff;
 
   font-size: 60px;
@@ -240,17 +785,21 @@
   margin-right: 3px;
 
   color: rgba(255, 255, 255, 0.4);
+
   font-size: 30px;
 }
 
 .tieBadge {
   padding: 4px 9px;
 
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid
+    rgba(255, 255, 255, 0.1);
   border-radius: 999px;
 
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.65);
+  background:
+    rgba(255, 255, 255, 0.06);
+  color:
+    rgba(255, 255, 255, 0.65);
 
   font-size: 9px;
   font-weight: 800;
@@ -258,26 +807,33 @@
   text-transform: uppercase;
 }
 
-/* Primer puesto y sus posibles empates */
+/* Primer puesto y posibles empates */
 
 .rankingBarColumn[data-position="1"] {
-  border-color: rgba(251, 191, 36, 0.24);
+  border-color:
+    rgba(251, 191, 36, 0.24);
 
   background:
     linear-gradient(
-      360deg,
+      180deg,
       rgba(251, 191, 36, 0.1),
       rgba(0, 0, 0, 0)
     );
 }
 
-.rankingBarColumn[data-position="1"] .positionNumber {
-  border-color: rgba(251, 191, 36, 0.32);
-  background: rgba(251, 191, 36, 0.12);
+.rankingBarColumn[data-position="1"]
+  .positionNumber {
+  border-color:
+    rgba(251, 191, 36, 0.32);
+
+  background:
+    rgba(251, 191, 36, 0.12);
+
   color: #fbbf24;
 }
 
-.rankingBarColumn[data-position="1"] .barFill {
+.rankingBarColumn[data-position="1"]
+  .barFill {
   background:
     linear-gradient(
       180deg,
@@ -287,18 +843,25 @@
     );
 
   box-shadow:
-    0 0 24px rgba(251, 191, 36, 0.24);
+    0 0 24px
+      rgba(251, 191, 36, 0.24);
 }
 
 /* Segundo puesto */
 
-.rankingBarColumn[data-position="2"] .positionNumber {
-  border-color: rgba(203, 213, 225, 0.25);
-  background: rgba(203, 213, 225, 0.1);
+.rankingBarColumn[data-position="2"]
+  .positionNumber {
+  border-color:
+    rgba(203, 213, 225, 0.25);
+
+  background:
+    rgba(203, 213, 225, 0.1);
+
   color: #cbd5e1;
 }
 
-.rankingBarColumn[data-position="2"] .barFill {
+.rankingBarColumn[data-position="2"]
+  .barFill {
   background:
     linear-gradient(
       180deg,
@@ -310,13 +873,19 @@
 
 /* Tercer puesto */
 
-.rankingBarColumn[data-position="3"] .positionNumber {
-  border-color: rgba(205, 127, 50, 0.3);
-  background: rgba(205, 127, 50, 0.11);
+.rankingBarColumn[data-position="3"]
+  .positionNumber {
+  border-color:
+    rgba(205, 127, 50, 0.3);
+
+  background:
+    rgba(205, 127, 50, 0.11);
+
   color: #d99552;
 }
 
-.rankingBarColumn[data-position="3"] .barFill {
+.rankingBarColumn[data-position="3"]
+  .barFill {
   background:
     linear-gradient(
       180deg,
@@ -324,28 +893,6 @@
       #cd7f32,
       #854d0e
     );
-}
-
-@media (max-width: 900px) {
-  .content {
-    padding: 16px;
-  }
-
-  .barRanking {
-    gap: 12px;
-    padding-inline: 12px;
-  }
-
-  .rankingBarColumn {
-    flex-basis: 155px;
-    width: 155px;
-    padding-inline: 10px;
-  }
-
-  .barTrack {
-    width: 50px;
-  }
-
 }
 
 .footer {
@@ -358,7 +905,7 @@
   min-height: 70px;
 
   margin-top: auto;
-  padding: 16px 20px 40px 16px;
+  padding: 0 24px;
 
   box-sizing: border-box;
 }
@@ -368,7 +915,11 @@
 
   color: #ffffff;
 
-  font-size: clamp(24px, 2.3vw, 30px);
+  font-size: clamp(
+    24px,
+    2.3vw,
+    30px
+  );
   font-weight: 900;
 }
 
@@ -379,28 +930,174 @@
   text-transform: uppercase;
 }
 
-.firstPosition {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: stretch;
-  gap: 22;
-  height: 100%;
-}
-
+.firstPosition,
 .scrollingContent {
-  flex: 1 1 0;
-  min-width: 0;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
+
   overflow-x: auto;
   overflow-y: hidden;
+
   scrollbar-width: none;
+  scroll-behavior: auto;
+  overscroll-behavior-x: contain;
+}
+
+.firstPosition::-webkit-scrollbar,
+.scrollingContent::-webkit-scrollbar {
+  display: none;
 }
 
 .scrollingItem {
   display: flex;
   align-items: stretch;
-  gap: 22px;
+  gap: var(--ranking-gap);
+
   width: max-content;
+  min-width: max-content;
   height: 100%;
-  padding-right: 20px;
+
+  padding-right: 0;
+}
+
+.firstPositionNatural {
+  flex: 0 1 auto;
+
+  width: fit-content;
+  max-width: 100%;
+}
+
+.firstPositionLimited {
+  flex: 0 0
+    calc(
+      (var(--ranking-card-width) * 2) +
+        var(--ranking-gap)
+    );
+
+  width:
+    calc(
+      (var(--ranking-card-width) * 2) +
+        var(--ranking-gap)
+    );
+
+  max-width:
+    calc(
+      (var(--ranking-card-width) * 2) +
+        var(--ranking-gap)
+    );
+}
+
+.firstPositionFlexible {
+  flex: 1 1 0;
+
+  width: 0;
+  min-width: 0;
+}
+
+.firstPositionFull {
+  flex: 1 1 100%;
+
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.scrollingContentFlexible {
+  flex: 1 1 0;
+
+  width: 0;
+  min-width: 0;
+}
+
+.scrollingContentCompact {
+  flex: 0 1 auto;
+
+  width: fit-content;
+  max-width: 100%;
+}
+
+.firstPosition .rankingBarColumn,
+.scrollingContent .rankingBarColumn {
+  flex: 0 0
+    var(--ranking-card-width);
+}
+
+/*
+ * Reduce el bloque superior en pantallas
+ * con poca altura.
+ */
+@media (max-height: 800px) {
+  .overviewSection {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .totalSalesCard,
+  .sitesRankingCard {
+    min-height: 130px;
+  }
+
+  .totalSalesContent strong {
+    font-size: 46px;
+  }
+
+  .supervisoresSection {
+    padding-top: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .content {
+    padding: 16px;
+  }
+
+  .overviewSection {
+    grid-template-columns: 1fr;
+
+    padding: 14px;
+  }
+
+  .totalSalesCard {
+    min-height: 130px;
+  }
+
+  .sitesRankingCard {
+    min-height: 140px;
+  }
+
+  .supTitle {
+    padding-inline: 16px;
+
+    font-size: 15px;
+  }
+
+  .totalSupervisors {
+    font-size: 10px;
+  }
+
+  .barRanking {
+    --ranking-card-width: 155px;
+    --ranking-gap: 12px;
+
+    gap: 12px;
+
+    padding-inline: 12px;
+  }
+
+  .rankingBarColumn {
+    flex-basis: 155px;
+
+    width: 155px;
+
+    padding-inline: 10px;
+  }
+
+  .firstPosition
+    .rankingBarColumn,
+  .scrollingContent
+    .rankingBarColumn {
+    flex-basis:
+      var(--ranking-card-width);
+  }
 }

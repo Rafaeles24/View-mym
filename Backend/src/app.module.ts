@@ -19,9 +19,10 @@ import { CaptionModule } from './caption/caption.module';
 import { ExcelModule } from './excel/excel.module';
 import { OptimizeService } from './optimize/optimize.service';
 import { RankingModule } from './ranking/ranking.module';
+import { ColaboradorModule } from './colaborador/colaborador.module';
 
 @Module({
-  imports: [PrismaModule, CampaignModule, FilesModule, ScheduleModule.forRoot(), ScheduleModule1, TimeModule, AuthModule, UsuarioModule, SedeModule, VisorModule, MediaModule, CaptionModule, ExcelModule, RankingModule],
+  imports: [PrismaModule, CampaignModule, FilesModule, ScheduleModule.forRoot(), ScheduleModule1, TimeModule, AuthModule, UsuarioModule, SedeModule, VisorModule, MediaModule, CaptionModule, ExcelModule, RankingModule, ColaboradorModule],
   controllers: [AppController],
   providers: [AppService, RealtimeGateway, FilesService, ScheduleService, OptimizeService],
 })

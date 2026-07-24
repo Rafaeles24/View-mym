@@ -341,9 +341,10 @@ export default function Player({campaign} : { campaign: FullCampaign | null }) {
 
   return (
     <div  ref={playerRef} className={styles.player} onDoubleClick={toggleFullscreen}>
-
+      <div className={styles.clock}>
         <Time timeZone="America/Lima"/>
         <Time timeZone="Europe/Madrid"/>
+      </div>
       <div className={styles.stage}>
         {!medias.length ? (
           <div className={styles.idle}>Sin contenido</div>

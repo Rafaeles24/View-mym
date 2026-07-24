@@ -1,49 +1,109 @@
+"use client";
+
 import CampaignSelect from "@/components/campaignSelect/ui";
 import Player from "@/components/player/ui";
 import { Campaign, FullCampaign } from "@/types/Campaign";
 import styles from "./ui.module.css";
 import { useRef, useState } from "react";
 
-export default function SelectCampaign({data}: {data: Campaign[]}) {
-  const [ campaigns, setCampaigns ] = useState<Campaign[]>(data);
-  const [ selected, setSelected ] = useState<{ campaignId: number; } | null>(null);
-  const [ campaign, setCampaign ] = useState<FullCampaign | null>(null);
-  const cache = useRef<Map<string, FullCampaign>>(new Map());
+interface SelectCampaignProps {
+  data: Campaign[];
+}
 
-  const handleSelect = async (campaignId: number) => {
-    setSelected({campaignId});
-    const key = `${campaignId}`;
-    if (cache.current.has(key)) {
-      setCampaign(cache.current.get(key) ?? null);
+export default function SelectCampaign({
+  data,
+}: SelectCampaignProps) {
+  const [selectedCampaignId, setSelectedCampaignId] =
+    useState<number | null>(null);
+
+  const [campaign, setCampaign] =
+    useState<FullCampaign | null>(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const cache = useRef<Map<number, FullCampaign>>(
+    new Map(),
+  );
+
+  const handleSelect = async (
+    campaignId: number,
+  ) => {
+    setSelectedCampaignId(campaignId);
+
+    const cachedCampaign =
+      cache.current.get(campaignId);
+
+    if (cachedCampaign) {
+      setCampaign(cachedCampaign);
       return;
     }
+
     try {
-        
-      const res = await fetch(`/api/visor/campaign/${campaignId}`);
-      const data = await res.json() as FullCampaign;
-      cache.current.set(key, data);
-      /* console.log(data); */
-      setCampaign(data);
+      setLoading(true);
+
+      const response = await fetch(
+        `/api/visor/campaign/${campaignId}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error HTTP ${response.status}`,
+        );
+      }
+
+      const campaignData =
+        (await response.json()) as FullCampaign;
+
+      cache.current.set(
+        campaignId,
+        campaignData,
+      );
+
+      setCampaign(campaignData);
     } catch (error) {
-      console.error(`Error al cargar una campana: ${error}`)
+      console.error(
+        "Error al cargar la campaña:",
+        error,
+      );
+
+      setCampaign(null);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className={styles.flyerContent}>
-      <Player campaign={campaign}/>
-      <div className={styles.campaignSelects}>
-        { campaigns.length === 0 ? <div>NO hay registros</div> : (
-            campaigns.map(campaign => 
-              <CampaignSelect 
-                key={campaign.id}
-                data={campaign}
-                selectedCampaignId={selected?.campaignId ?? null}
-                onSelectCampaignId={handleSelect}
-              />
-            )
+    <main className={styles.flyerContent}>
+      <section className={styles.player}>
+        {loading ? (
+          <div className={styles.message}>
+            Cargando campaña...
+          </div>
+        ) : (
+          <Player campaign={campaign} />
         )}
-      </div>
-    </div>
+      </section>
+
+      <section className={styles.campaignSelects}>
+        {data.length === 0 ? (
+          <div className={styles.message}>
+            No hay campañas registradas
+          </div>
+        ) : (
+          data.map((item) => (
+            <CampaignSelect
+              key={item.id}
+              data={item}
+              selectedCampaignId={
+                selectedCampaignId
+              }
+              onSelectCampaignId={
+                handleSelect
+              }
+            />
+          ))
+        )}
+      </section>
+    </main>
   );
 }

@@ -1,10 +1,63 @@
 .flyerContent {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 85vh;
+  min-height: 0;
+
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.player {
+  position: relative;
+
+  flex: 1 1 auto;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/*
+ * Obliga al componente Player a ocupar
+ * todo el espacio disponible.
+ */
+.player > * {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
 .campaignSelects {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  flex: 0 0 100px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-width: 0;
+  height: 100px;
+
+  padding: 10px 16px;
+  gap: 10px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  box-sizing: border-box;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
 }

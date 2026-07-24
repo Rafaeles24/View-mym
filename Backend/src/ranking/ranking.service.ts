@@ -1061,11 +1061,10 @@ export class RankingService {
       this.formatLimaTime(ahora);
 
     /*
-     * La base de datos solo devuelve el snapshot
-     * del día: colaborador + tramitadas.
+     * Obtiene el snapshot del día.
      *
-     * El puesto se calcula después y nunca se
-     * lee desde rankingDia.
+     * El puesto no se almacena en rankingDia.
+     * Se calcula dinámicamente en este servicio.
      */
     const ranking =
       await this.prisma.rankingDia.findMany({
@@ -1103,10 +1102,10 @@ export class RankingService {
         },
       });
 
-    /*
-     * Supervisores y agentes se clasifican
-     * de manera independiente.
-     */
+    // ===================================================
+    // RANKING DE SUPERVISORES
+    // ===================================================
+
     const supervisoresBase = ranking
       .filter(
         (item) =>
@@ -1125,6 +1124,7 @@ export class RankingService {
         sede: {
           id:
             item.colaborador.sede.id,
+
           nombre:
             item.colaborador.sede.nombre,
         },
@@ -1132,17 +1132,23 @@ export class RankingService {
         campania: {
           id:
             item.colaborador.campaign.id,
+
           nombre:
-            item.colaborador.campaign
-              .nombre,
+            item.colaborador.campaign.nombre,
+
           logoUrl:
             this.buildCampaignLogoUrl(
-              item.colaborador.campaign
-                .logo_url,
+              item.colaborador.campaign.logo_url,
             ),
-          hex: item.colaborador.campaign.hex
+
+          hex:
+            item.colaborador.campaign.hex,
         },
       }));
+
+    // ===================================================
+    // RANKING DE AGENTES
+    // ===================================================
 
     const agentesBase = ranking
       .filter(
@@ -1165,6 +1171,7 @@ export class RankingService {
         sede: {
           id:
             item.colaborador.sede.id,
+
           nombre:
             item.colaborador.sede.nombre,
         },
@@ -1172,21 +1179,23 @@ export class RankingService {
         campania: {
           id:
             item.colaborador.campaign.id,
+
           nombre:
-            item.colaborador.campaign
-              .nombre,
+            item.colaborador.campaign.nombre,
+
           logoUrl:
             this.buildCampaignLogoUrl(
-              item.colaborador.campaign
-                .logo_url,
+              item.colaborador.campaign.logo_url,
             ),
-          hex: item.colaborador.campaign.hex,
+
+          hex:
+            item.colaborador.campaign.hex,
         },
       }));
 
     /*
-     * El método devuelve los elementos ordenados
-     * y agrega el puesto calculado.
+     * Supervisores y agentes conservan rankings
+     * independientes.
      */
     const supervisores =
       this.asignarPuestos(
@@ -1198,6 +1207,146 @@ export class RankingService {
         agentesBase,
       );
 
+    // ===================================================
+    // CALCULAR VENTAS POR SEDE
+    // ===================================================
+
+    /*
+     * IMPORTANTE:
+     *
+     * Cada venta aparece contabilizada tanto para
+     * un supervisor como para un agente.
+     *
+     * Por ese motivo, para calcular el total real
+     * por sede se usan únicamente los supervisores.
+     * Si se sumaran ambos grupos, las ventas se
+     * duplicarían.
+     */
+    const ventasPorSedeMap = new Map<
+      number,
+      {
+        sede: {
+          id: number;
+          nombre: string;
+        };
+        totalVentas: number;
+      }
+    >();
+
+    for (const supervisor of supervisoresBase) {
+      const sedeId =
+        supervisor.sede.id;
+
+      const sedeExistente =
+        ventasPorSedeMap.get(sedeId);
+
+      if (sedeExistente) {
+        sedeExistente.totalVentas +=
+          supervisor.tramitadas;
+
+        continue;
+      }
+
+      ventasPorSedeMap.set(
+        sedeId,
+        {
+          sede: {
+            id:
+              supervisor.sede.id,
+
+            nombre:
+              supervisor.sede.nombre,
+          },
+
+          totalVentas:
+            supervisor.tramitadas,
+        },
+      );
+    }
+
+    // ===================================================
+    // ORDENAR SEDES
+    // ===================================================
+
+    const sedesOrdenadas = Array.from(
+      ventasPorSedeMap.values(),
+    ).sort((a, b) => {
+      if (
+        b.totalVentas !==
+        a.totalVentas
+      ) {
+        return (
+          b.totalVentas -
+          a.totalVentas
+        );
+      }
+
+      return a.sede.nombre.localeCompare(
+        b.sede.nombre,
+        'es',
+        {
+          sensitivity: 'base',
+        },
+      );
+    });
+
+    // ===================================================
+    // ASIGNAR PUESTOS A LAS SEDES
+    // ===================================================
+
+    /*
+     * Ranking denso:
+     *
+     * 20 ventas = puesto 1
+     * 20 ventas = puesto 1
+     * 15 ventas = puesto 2
+     * 10 ventas = puesto 3
+     */
+    let puestoSedeActual = 0;
+
+    let ventasSedeAnteriores:
+      | number
+      | null = null;
+
+    const rankingSedes =
+      sedesOrdenadas.map(
+        (item) => {
+          if (
+            ventasSedeAnteriores === null ||
+            item.totalVentas !==
+              ventasSedeAnteriores
+          ) {
+            puestoSedeActual += 1;
+
+            ventasSedeAnteriores =
+              item.totalVentas;
+          }
+
+          return {
+            puesto:
+              puestoSedeActual,
+
+            sede:
+              item.sede,
+
+            totalVentas:
+              item.totalVentas,
+          };
+        },
+      );
+
+    // ===================================================
+    // TOTAL GENERAL DE VENTAS
+    // ===================================================
+
+    const totalVentas =
+      rankingSedes.reduce(
+        (total, item) =>
+          total +
+          item.totalVentas,
+        0,
+      );
+
     return {
       fecha: fecha
         .toISOString()
@@ -1205,17 +1354,30 @@ export class RankingService {
 
       hora,
 
+      rankingSedes:
+        rankingSedes,
+
+      totalVentas:
+        totalVentas,
+
       supervisores,
+
       agentes,
 
       resumen: {
-        total_supervisores:
+        totalSedes:
+          rankingSedes.length,
+
+        totalVentas:
+          totalVentas,
+
+        totalSupervisores:
           supervisores.length,
 
-        total_agentes:
+        totalAgentes:
           agentes.length,
 
-        total_registros:
+        totalRegistros:
           ranking.length,
       },
     };

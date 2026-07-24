@@ -53,7 +53,7 @@ export default function InfoBar({
   if (!currentAgent) {
     return (
       <div className={styles.emptyState}>
-        Sistema en fase de beta o prueba, realizado por el equipo de TI de Monacorp
+        Sistema en fase de beta o prueba, realizado por el equipo TI de MYM Contac Center.
       </div>
     );
   }
@@ -91,72 +91,74 @@ export default function InfoBar({
         `,
       }}
     >
-      <AnimatedField
-        animationKey={`campaign-${currentAgent.campania.id}`}
-        className={styles.logoField}
-      >
-        <CampaignLogo
-          campaign={currentAgent.campania}
-        />
-      </AnimatedField>
+      <div className={styles.agentCardTitle}>
+        <h3>RANKING DE ASESORES</h3>
+      </div>
 
-      <AnimatedField
-        animationKey={`site-${currentAgent.sede.id}`}
-        className={styles.badgeField}
-      >
-        <span className={styles.dataBadge}>
-          {currentAgent.sede.nombre}
-        </span>
-      </AnimatedField>
-
-      <AnimatedField
-        animationKey={`variant-${variante}`}
-        className={styles.badgeField}
-      >
-        <span
-          className={styles.variantBadge}
-          data-variant={variante}
+      <div className={styles.agentCardContent}>
+        <AnimatedField
+          animationKey={`campaign-${currentAgent.campania.id}`}
+          className={styles.logoField}
         >
-          {variante}
-        </span>
-      </AnimatedField>
-
-      <AnimatedField
-        animationKey={`sales-${currentAgent.tramitadas}-${currentAgent.puesto}`}
-        className={styles.badgeField}
-      >
-        <span
-          className={styles.salesBadge}
-          data-position={currentAgent.puesto}
+          <CampaignLogo
+            campaign={currentAgent.campania}
+          />
+        </AnimatedField>
+      
+        <AnimatedField
+          animationKey={`site-${currentAgent.sede.id}`}
+          className={styles.badgeField}
         >
-          {salesText}
-        </span>
-      </AnimatedField>
-
-      <AnimatedField
-        animationKey={`agent-${currentAgent.colaborador_id}`}
-        className={styles.nameField}
-      >
-        <h1 className={styles.agentName}>
-          {currentAgent.nombre}
-        </h1>
-      </AnimatedField>
-
-      <h2 className={styles.agentLabel}>
-        ASESOR
-      </h2>
-
-      <AnimatedField
-        animationKey={`position-${currentAgent.puesto}`}
-        className={styles.badgeField}
-      >
-        <span
-          className={styles.positionBadge}
-          data-position={currentAgent.puesto}
+          <span className={styles.dataBadge}>
+            {currentAgent.sede.nombre}
+          </span>
+        </AnimatedField>
+      
+        <AnimatedField
+          animationKey={`variant-${variante}`}
+          className={styles.badgeField}
         >
-          #{currentAgent.puesto}
-        </span>
-      </AnimatedField>
+          <span
+            className={styles.variantBadge}
+            data-variant={variante}
+          >
+            {variante}
+          </span>
+        </AnimatedField>
+      
+        <AnimatedField
+          animationKey={`sales-${currentAgent.tramitadas}-${currentAgent.puesto}`}
+          className={styles.badgeField}
+        >
+          <span
+            className={styles.salesBadge}
+            data-position={currentAgent.puesto}
+          >
+            {salesText}
+          </span>
+        </AnimatedField>
+      
+        <AnimatedField
+          animationKey={`agent-${currentAgent.colaborador_id}`}
+          className={styles.nameField}
+        >
+          <h1 className={styles.agentName}>
+            {currentAgent.nombre}
+          </h1>
+        </AnimatedField>
+      
+        <AnimatedField
+          animationKey={`position-${currentAgent.puesto}`}
+          className={styles.badgeField}
+        >
+          <span
+            className={styles.positionBadge}
+            data-position={currentAgent.puesto}
+          >
+            #{currentAgent.puesto}
+          </span>
+        </AnimatedField>
+      </div>
     </article>
   );
 }
