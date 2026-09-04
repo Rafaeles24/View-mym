@@ -4,7 +4,6 @@ import { Campaign } from "@/types/Campaign";
 import styles from "./ui.module.css";
 import { useEffect, useState } from "react";
 import { socket } from "@/libs/socket";
-import StarsCss from "../starsCss/ui";
 
 export default function CampaignSelect({ 
     data, 
@@ -46,17 +45,17 @@ export default function CampaignSelect({
     
     return (
         <article className={styles.campaignSelect} onClick={() => onSelectCampaignId(campaign.id)}>
-            <StarsCss />
             <img src={campaign.logoUrl} alt={campaign.nombre} className={styles.logo} />
             <div className={styles.sedeInfo}>
-                { !campaign.sedes || campaign.sedes.length === 0 ?
+                <p className={styles.campaignName}>{campaign.nombre}</p>
+                {/* { !campaign.sedes || campaign.sedes.length === 0 ?
                     <p className={styles.sedeName}>Sin sedes</p> : 
                     campaign.sedes.map(sede => (
                         <div key={sede.id} className={styles.sedeItem}>
                             <p>{sede.nombre}</p>
                         </div>
                     ))    
-                }
+                } */}
             </div>
         </article>
     );
