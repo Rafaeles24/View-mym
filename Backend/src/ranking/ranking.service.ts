@@ -959,13 +959,21 @@ export class RankingService {
     sheet: string,
     excelRow: number,
   ): string {
-    const value =
+    let value =
       this.text(row[field]);
+    
+    if (field === 'SEDE' && !value) {
+      throw new BadRequestException(`El campo "SEDE" es obligatorio en la hoja "${sheet}", fila ${excelRow}.`);
+    }
 
-    if (!value) {
-      throw new BadRequestException(
-        `El campo "${field}" está vacío en la hoja "${sheet}", fila ${excelRow}.`,
-      );
+    if (field === 'SUPERVISOR' && !value) {
+      console.log(`Fila ${excelRow} de la hoja "${sheet}" tiene el campo "${field}" vacío.`);
+      value = "DESCONOCIDO";
+    }
+
+    if (field === 'AGENTE' && !value) {
+      console.log(`Fila ${excelRow} de la hoja "${sheet}" tiene el campo "${field}" vacío.`);
+      value = "DESCONOCIDO";
     }
 
     return value;
