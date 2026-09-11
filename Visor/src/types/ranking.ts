@@ -1,47 +1,34 @@
-export type Ranking = {
-  fecha: string;
-  hora: string;
-  rankingSedes: RankingSede[];
-  totalVentas: number;
-  supervisores: SupervisorRanking[];
-  agentes: AgenteRanking[];
-};
-
-export type RankingSede = {
+export type RankingList = {
   puesto: number;
-  sede: SedeRanking;
-  totalVentas: number;
-};
-
-type SupervisorRanking = {
-  colaborador_id: number;
   nombre: string;
-  puesto: number;
-  supervisor: string;
-  tramitadas: number;
-  campania: CampaniaRanking;
-  sede: SedeRanking;
-};
-
-export type AgenteRanking = {
-  colaborador_id: number;
-  nombre: string;
-  puesto: number;
-  agente: string;
   variante: string;
-  campania: CampaniaRanking;
-  sede: SedeRanking;
-  tramitadas: number;
-};
+  cantidad: number;
+  sede: Sede;
+  campaign: campaign;
+}
 
-type SedeRanking = {
+type Sede = {
   id: number;
   nombre: string;
-};
+}
 
-type CampaniaRanking = {
+type campaign = {
   id: number;
+  hex: string | null;
   nombre: string;
-  logoUrl: string;
-  hex: string;
-};
+  logo_url: string | null;
+}
+
+export type RankingRangoFecha = {
+  id: number;
+  periodo: string;
+  hora_inicio: number;
+  minuto_inicio: number;
+  dia_semana: number;
+  dia_mes: number;
+  mes_inicio: number;
+  fecha_fin: string;
+  fecha_ancla: string;
+  zona_horaria: string;
+  intervalo_dias: number;
+}

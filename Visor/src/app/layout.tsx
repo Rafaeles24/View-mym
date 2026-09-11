@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// @ts-ignore: side-effect import for global CSS
 import "./globals.css";
+import SocketConnection from "@/components/socket/ui";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,17 +15,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Visor M&M",
-  description: "App de Flyers para Mymcorp",
+  description: "Visor de flyers y ranking de la empresa M&M contact center",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body>
+        <SocketConnection/>
         {children}
       </body>
     </html>

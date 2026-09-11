@@ -1,0 +1,236 @@
+.leaderboardContent {
+  --ancho-puesto: clamp(34px, 2.9vw, 112px);
+  --ancho-ventas: clamp(52px, 4.4vw, 170px);
+  --relleno-fila: clamp(8px, 0.85vw, 33px);
+  --espacio-fila: clamp(6px, 0.5vw, 20px);
+  --altura-maxima: 800px;
+  --separacion: 1px;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 0;
+  max-height: var(--altura-maxima);
+  box-sizing: border-box;
+  overflow: hidden;
+
+  border: 1px solid rgb(217 217 217 / 30%);
+  border-radius: clamp(8px, 0.6vw, 24px);
+  background: linear-gradient(
+    180deg,
+    #090a0c 0%,
+    #08090b 30%,
+    #090a0c 70%
+  );
+}
+
+.sedes {
+  background: linear-gradient(
+    180deg,
+    #180204 0%,
+    #4b0509 30%,
+    #180204 70%
+  );
+}
+
+.cabeceraRanking {
+  flex-shrink: 0;
+  padding: clamp(12px, 1.0vw, 52px) 10px;
+  border-bottom: clamp(3px, 0.2vw, 8px) solid var(--rojo);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.tituloRanking {
+  margin: 0;
+  font-size: clamp(26px, 2.3vw, 75px);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  margin: 0;
+  line-height: 1;
+  color: #d40b1b;
+}
+
+.subtituloRanking {
+  color: var(--gris);
+  font-size: clamp(12px, 0.9vw, 35px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Contiene los puestos fijos y el área desplazable. */
+.contenidoRanking {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--separacion);
+
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Estilo compartido por ambas listas. */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--separacion);
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista > li {
+  flex-shrink: 0;
+}
+
+/* Los tres primeros conservan su altura. */
+.listaFija {
+  flex: 0 0 auto;
+}
+
+/* Desde el cuarto puesto: el JS controla el desplazamiento. */
+.scrollRanking {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+  scroll-behavior: auto;
+}
+
+.lugar {
+  display: grid;
+  grid-template-columns:
+    var(--ancho-puesto)
+    minmax(0, 1fr)
+    var(--ancho-ventas);
+
+  align-items: center;
+  column-gap: var(--espacio-fila);
+  padding-inline: var(--relleno-fila);
+  font-weight: 700;
+}
+
+.vacio {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--gris);
+  text-align: center;
+}
+
+.vacio p {
+  margin: 0;
+}
+
+.diario {
+  background: #181818;
+}
+
+.resumenSedes {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 16px;
+  padding: 16px;
+}
+
+.listaSedes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.filaSede {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 14px;
+  border: 1px solid #0e1215;
+  border-radius: 14px;
+}
+
+
+.puestoSede {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: #fff;
+  background: #171717;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.nombreSede {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(16px, 1.2vw, 25px);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ventasSede {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ventasSede strong {
+  font-size: clamp(26px, 2vw, 40px);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ventasSede span {
+  color: #666;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.totalSedes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
+  margin-top: auto;
+  padding: 20px 16px;
+  color: #fff;
+  background: linear-gradient(
+    90deg,
+    #0a0000 0%,
+    #240203 100%
+  );
+  border-radius: 14px;
+  border: 1px solid #370508;
+}
+
+.totalSedes > span {
+  font-size: clamp(13px, 1vw, 19px);
+  font-weight: 800;
+}
+
+.totalSedes > strong {
+  font-size: clamp(30px, 2.5vw, 48px);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,125 @@
+.puesto {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 20px 10px;
+  margin: 2px 0;
+  list-style: none;
+  border: 1px solid #12120f;
+  border-radius: 10px;
+  background-color: #07080a;
+}
+
+.posicion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 25px;
+  font-weight: 800;
+
+}
+
+.posicion svg {
+  display: block;
+  width: 40px;
+  height: 40px;
+}
+
+.participante {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nombre {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  padding-right: 20px;
+
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.detalle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.detalle img {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.detalleTexto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 5px;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sedeNombre {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: 700;
+
+  background: #363636;
+  color: #fff5f5;
+}
+
+.puesto > strong {
+  justify-self: end;
+  text-align: right;
+  white-space: nowrap;
+
+  font-size: 35px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+
+}
+
+.primero {
+  background: linear-gradient(
+    90deg,
+    #07080a 70%,
+    #2e0405 100%
+  );
+  color: white;
+}
+
+.segundo, .tercero {
+  background: linear-gradient(
+    90deg,
+    #07080a 70%,
+    #2e0405 100%
+  );
+  color: white;
+}
+
+.sup {
+  background: #dc2626;
+  color: #fff5f5;
+}
+
+.alta {
+  background: #149225;
+  color: #fff5f5;
+}
+
+.ojt {
+  background: #969901;
+  color: #fff5f5;
+}

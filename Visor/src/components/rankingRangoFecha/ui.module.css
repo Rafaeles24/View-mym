@@ -1,0 +1,51 @@
+.rango {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  border: 1px solid rgb(217 217 217 / 30%);
+  padding: 10px 30px;
+  border-radius: 10px;
+}
+
+.rangoContent {
+  display: flex;
+  justify-content: start;
+  gap: 5px;
+  flex-direction: column;
+}
+
+.fechas {
+  display: flex;
+  gap: 20px;
+}
+
+.fechaRango {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.intervalo {
+  display: flex;
+  align-items: center;
+}
+
+.duracion, .diaDeInicio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.duracion .p1 {
+  font-size: 40px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+}
+
+.diaDeInicio .p1 {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+}
