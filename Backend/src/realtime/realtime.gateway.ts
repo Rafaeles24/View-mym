@@ -170,10 +170,16 @@ export class RealtimeGateway {
     socket.leave('room:ranking')
   }
 
-  emitRankingEvent(
+  emitSyncRankingEvent(
     event: 'refresh'
   ) {
     this.server.emit(`ranking:${event}`);
+  }
+
+  emitSyncConfigRankingEvent(
+    event: 'sync'
+  ) {
+    this.server.emit(`ranking-config:${event}`);
   }
   
   //La hora en tiempo real
