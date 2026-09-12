@@ -54,8 +54,8 @@ export class VisorController {
 
   @Get('ranking/rango') 
   getRankingRango() {
-    return this.visorService.obtenerRangoRanking();
-  }
+    return this.visorService.getRangoFechas();
+  } 
 
   @Get('media/:sedeId')
   getMediaPorSede(

@@ -59,27 +59,27 @@ export class CampaignService {
 
       const pathFile = await this.fileService.createFiles(filePayload);
 
-      const campaign = await this.prisma.$transaction( async (tx) => {
-        const created = await tx.campaign.create({
-          data: {
-            nombre: dto.nombre,
-            hex: dto.hex ?? "#000",
-            storage_key: campaignKey,
-            logo_url: pathFile[0].path,
-            asset_id: 1, //ASSET POR DEFECTO
-            ...(dto.sedes && dto.sedes.length > 0 && {
-              sedes: {
-                create: dto.sedes.map(sede => ({
-                  sede: {
-                    connect: { id: sede.id }
-                  }
-                }))
+      const campaign = await this.prisma.campaign.create({
+        data: {
+          nombre: dto.nombre,
+          hex: dto.hex ?? '#000',
+          storage_key: campaignKey,
+          logo_url: pathFile[0].path,
+        
+          ...(dto.sedes && dto.sedes.length > 0
+            ? {
+                sedes: {
+                  create: dto.sedes.map((sede) => ({
+                    sede: {
+                      connect: {
+                        id: sede.id,
+                      },
+                    },
+                  })),
+                },
               }
-            })
-          }
-        });
-
-        return created;
+            : {}),
+        },
       });
 
       const payload = {

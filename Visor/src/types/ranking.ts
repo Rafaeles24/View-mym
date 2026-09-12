@@ -21,14 +21,10 @@ type campaign = {
 
 export type RankingRangoFecha = {
   id: number;
-  periodo: string;
-  hora_inicio: number;
-  minuto_inicio: number;
-  dia_semana: number;
-  dia_mes: number;
-  mes_inicio: number;
+  modo: string;
+  fecha_inicio: string;
   fecha_fin: string;
-  fecha_ancla: string;
+  fecha_corte: string;
   zona_horaria: string;
-  intervalo_dias: number;
-}
+  updateAt: string;
+};

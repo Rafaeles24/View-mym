@@ -1,17 +1,9 @@
 import { ConfigRanking } from "@prisma/client";
 
-export type ActualizarConfigRankingInput = Partial<
-  Pick<
-    ConfigRanking,
-    | 'periodo'
-    | 'hora_inicio'
-    | 'minuto_inicio'
-    | 'dia_semana'
-    | 'dia_mes'
-    | 'mes_inicio'
-    | 'intervalo_dias'
-    | 'zona_horaria'
-  >  
-> & {
-  fecha_ancla?: string | null;
+export type ActualizarConfigRankingInput = {
+  // EJEM: "2026-09-01T00:00"
+  fecha_inicio: string;
+
+  // EJEM: "2026-09-11T23:59"
+  fecha_fin: string;
 }

@@ -24,9 +24,6 @@ model Campaign {
 
   storage_key String @unique
 
-  asset_id Int
-
-  asset        Asset             @relation(fields: [asset_id], references: [id])
   sedes        CampaignSede[]
   asignaciones AsignacionMedia[]
 
@@ -52,14 +49,6 @@ model Media {
   createdAt  DateTime @default(now())
 
   asignaciones AsignacionMedia[]
-}
-
-model Asset {
-  id      Int    @id @default(autoincrement())
-  flag_pe String
-  flag_es String
-
-  campaigns Campaign[]
 }
 
 model Caption {
@@ -157,29 +146,16 @@ model SedeCaption {
 
 model ConfigRanking {
   id            Int          @id @default(1)
-  periodo       Periodo      @default(SEMANAL)
+  modo          ModoRanking @default(DEFAULT)
 
-  hora_inicio   Int @default(0)
-  minuto_inicio Int @default(0)
+  fecha_inicio  DateTime
+  fecha_fin     DateTime
 
-  dia_semana    Int @default(1)
-
-  dia_mes       Int @default(0)
-
-  mes_inicio    Int @default(1)
-
-  fecha_ancla   DateTime? @db.Date
-  intervalo_dias Int?
-
-  zona_horaria  String @default("America/Lima")
-
-  updateAt      DateTime @updatedAt
+  zona_horaria String @default("America/Lima")
+  updateAt  DateTime @updatedAt
 }
 
-enum Periodo {
-  DIARIO
-  SEMANAL
+enum ModoRanking {
+  DEFAULT
   PERSONALIZADO
-  MENSUAL
-  ANUAL
 }

@@ -1,87 +1,101 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import type { RankingRangoFecha } from "@/types/ranking";
 import styles from "./ui.module.css";
-import Image from "next/image";
-import CalendarioSvg from "@/icons/calendario.svg";
-
-const PERIODOS: Record<string, string> = {
-  DIARIO: "Diario",
-  SEMANAL: "Semanal",
-  MENSUAL: "Mensual",
-  ANUAL: "Anual",
-  PERSONALIZADO: "Personalizado",
-};
 
 export default function RankingRango({
   schedule,
 }: {
   schedule: RankingRangoFecha;
 }) {
-  const esPersonalizado = schedule.periodo === "PERSONALIZADO";
-  const zonaHoraria = schedule.zona_horaria ?? "America/Lima";
+  const [ahora, setAhora] = useState<number | null>(null);
 
-  const horaInicio = `${String(schedule.hora_inicio).padStart(2, "0")}:${String(
-    schedule.minuto_inicio,
-  ).padStart(2, "0")}`;
+  useEffect(() => {
+    const actualizar = () => setAhora(Date.now());
 
-  function formatearFecha(valor?: string, soloFecha = false) {
-    if (!valor) return "Sin definir";
+    actualizar();
 
-    const fecha = new Date(
-      soloFecha ? `${valor.slice(0, 10)}T00:00:00Z` : valor,
+    const timer = window.setInterval(actualizar, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const inicio = Date.parse(schedule.fecha_inicio);
+  const fin = Date.parse(schedule.fecha_fin) - 1;
+
+  if (
+    !Number.isFinite(inicio) ||
+    !Number.isFinite(fin) ||
+    fin <= inicio
+  ) {
+    return (
+      <section className={styles.rango}>
+        <p className={styles.error}>El rango de fechas no es válido.</p>
+      </section>
     );
-
-    if (Number.isNaN(fecha.getTime())) return "Fecha inválida";
-
-    return new Intl.DateTimeFormat("es-PE", {
-      timeZone: soloFecha ? "UTC" : zonaHoraria,
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(fecha);
   }
 
-  const DIAS_SEMANA = [
-    "Domingo",
-    "Lunes",
-    "Martes",
-    "Miércoles",
-    "Jueves",
-    "Viernes",
-    "Sábado",
-  ];
+  const progreso =
+    ahora === null
+      ? 0
+      : Math.min(
+          100,
+          Math.max(0, ((ahora - inicio) / (fin - inicio)) * 100),
+        );
+
+  const estado =
+    ahora === null
+      ? "Cargando..."
+      : ahora < inicio
+        ? "Por comenzar"
+        : ahora >= fin
+          ? "Finalizado"
+          : "En curso";
+
+  const formateador = new Intl.DateTimeFormat("es-PE", {
+    timeZone: schedule.zona_horaria,
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
 
   return (
-    <section aria-label="Configuración del período del ranking" className={styles.rango}>
-      <Image
-        src={CalendarioSvg}
-        width={60}
-        height={60}
-        alt=""
-        aria-hidden="true"
-      />
-      
-      <div className={styles.fechas}>
-        <div className={styles.rangoContent}>
-          <h3>{PERIODOS[schedule.periodo] ?? schedule.periodo}</h3>
-          <div className={styles.fechaRango}>
-            <p>Inicio: <strong>{formatearFecha(schedule.fecha_ancla, true)}</strong></p>
-            <p>Fin: <strong>{formatearFecha(schedule.fecha_fin)}</strong></p>
-          </div>
-        </div>
+    <section
+      className={styles.rango}
+      aria-label="Progreso del período del ranking"
+    >
+      <div className={styles.fecha}>
+        <time dateTime={schedule.fecha_inicio}>
+          {formateador.format(inicio)}
+        </time>
+      </div>
 
-        <div className={styles.intervalo}>
-          {esPersonalizado ? (
-            <div className={styles.duracion}>
-              <p className={styles.p1}>{schedule.intervalo_dias}</p>
-              <p>{schedule.intervalo_dias === 1 ? "día" : "días"}</p>
-            </div>
-          ) : schedule.periodo === "SEMANAL" ? (
-            <div className={styles.diaDeInicio}>
-              <p>Día de inicio</p>
-              <p className={styles.p1}>{DIAS_SEMANA[schedule.dia_semana] ?? "Sin definir"}</p>
-            </div>
-          ) : null}
-        </div>
+      <div
+        className={styles.barra}
+        role="progressbar"
+        aria-label="Tiempo transcurrido del período"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={
+          ahora === null ? undefined : Number(progreso.toFixed(1))
+        }
+        aria-valuetext={
+          ahora === null
+            ? "Cargando"
+            : `${progreso.toFixed(1)}% transcurrido`
+        }
+      >
+        <div
+          className={styles.progreso}
+          style={{ width: `${progreso}%` }}
+        />
+      </div>
+
+      <div className={`${styles.fecha} ${styles.fechaFin}`}>
+        <time dateTime={schedule.fecha_fin}>
+          {formateador.format(fin)}
+        </time>
       </div>
     </section>
   );

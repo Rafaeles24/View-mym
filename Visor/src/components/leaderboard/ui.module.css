@@ -3,7 +3,7 @@
   --ancho-ventas: clamp(52px, 4.4vw, 170px);
   --relleno-fila: clamp(8px, 0.85vw, 33px);
   --espacio-fila: clamp(6px, 0.5vw, 20px);
-  --altura-maxima: 800px;
+  --altura-maxima: 730px;
   --separacion: 1px;
 
   display: flex;

@@ -5,5 +5,6 @@ import { ConfigRankingController } from './config-ranking.controller';
 @Module({
   controllers: [ConfigRankingController],
   providers: [ConfigRankingService],
+  exports: [ConfigRankingService]
 })
 export class ConfigRankingModule {}

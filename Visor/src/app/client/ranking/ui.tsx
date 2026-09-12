@@ -60,8 +60,6 @@ export default function RankingUI({
             <p>Disciplina hoy, grandes resultados mañana</p>
           </div>
         </div>
-
-        <RankingRango schedule={rankingRango} />
       </header>
 
       <div className={styles.leaderboardContent}>
@@ -85,6 +83,8 @@ export default function RankingUI({
           stats={sedesStatsDiario}
         />
       </div>
+
+      <RankingRango schedule={rankingRango} />
 
       <footer className={styles.footer}>
         <p>Somos equipo, Somos M&M</p>

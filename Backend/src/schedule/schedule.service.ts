@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ConfigRankingService } from 'src/config-ranking/config-ranking.service';
 import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import { SicaService } from 'src/sica/sica.service';
 
@@ -9,7 +10,8 @@ export class ScheduleService {
 
   constructor(
       private readonly rt: RealtimeGateway,
-      private readonly sicaService: SicaService
+      private readonly sicaService: SicaService,
+      private readonly configRankingService: ConfigRankingService
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -40,5 +42,18 @@ export class ScheduleService {
   })
   async emitSyncRankingCierre() {
     await this.emitSyncRanking();
+  }
+
+  @Cron('0 * * * * *', {
+    timeZone: 'America/Lima',
+    waitForCompletion: true,
+  })
+  async renovarRangoRanking() {
+    try {
+      await this.configRankingService.renovarSiCorresponde();
+
+    } catch (error) {
+      this.logger.error(`No se puedo renovar el rango del ranking: ${error instanceof Error ? error.stack : String(error)}`)
+    }
   }
 }

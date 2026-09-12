@@ -1,51 +1,87 @@
 .rango {
   display: flex;
-  gap: 20px;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
   align-items: center;
-  border: 1px solid rgb(217 217 217 / 30%);
-  padding: 10px 30px;
-  border-radius: 10px;
+  box-sizing: border-box;
+  padding-top: 10px;
+
+  color: #fff;
 }
 
-.rangoContent {
+.encabezado {
   display: flex;
-  justify-content: start;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titulo {
+  display: flex;
+  flex-direction: column;
   gap: 5px;
-  flex-direction: column;
 }
 
-.fechas {
-  display: flex;
-  gap: 20px;
-}
-
-.fechaRango {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.intervalo {
-  display: flex;
-  align-items: center;
-}
-
-.duracion, .diaDeInicio {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.duracion .p1 {
-  font-size: 40px;
-  font-weight: 800;
+.titulo h3 {
   margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.estado {
+  color: #a9adb7;
+  font-size: 13px;
+}
+
+.porcentaje {
+  flex-shrink: 0;
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.barra {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+
+  background: #ffffff12;
+  border-radius: 999px;
+}
+
+.progreso {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    #0c0000 0%,
+    #220102 100%
+  );
+
+  transition: width 1s linear;
+}
+
+.fecha time {
+  color: #e3e5ea;
+  font-size: 20px;
+  font-weight: 500;
   line-height: 1;
 }
 
-.diaDeInicio .p1 {
-  font-size: 30px;
-  font-weight: 800;
+.fecha {
+  width: 130px;
+}
+
+
+.error {
   margin: 0;
-  line-height: 1;
+  color: #ff7a85;
+  font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progreso {
+    transition: none;
+  }
 }

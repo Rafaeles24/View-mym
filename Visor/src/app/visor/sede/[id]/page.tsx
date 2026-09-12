@@ -137,8 +137,8 @@ async function getRangofechaRanking(): Promise<RankingRangoFecha> {
     );
   }
 
-  const rankingRango: RankingRangoFecha = await response.json();
-  return rankingRango;
+  const rankingRango: RankingRangoFecha[] = await response.json();
+  return rankingRango[0];
 }
 
 export default async function SedePage({

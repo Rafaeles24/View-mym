@@ -1,287 +1,304 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { ConfigRanking, Periodo } from '@prisma/client';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
+import {
+  ConfigRanking,
+  ModoRanking,
+} from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ActualizarConfigRankingInput } from './types/ConfigRankingInput.type';
 import { RealtimeGateway } from 'src/realtime/realtime.gateway';
+
+import type {
+  ActualizarConfigRankingInput,
+} from './types/ConfigRankingInput.type';
 
 @Injectable()
 export class ConfigRankingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly rt: RealtimeGateway
+    private readonly rt: RealtimeGateway,
   ) {}
 
   private readonly configId = 1;
+  private readonly zona = 'America/Lima';
 
-  async obtener() {
-    const config = await this.prisma.configRanking.upsert({
-      where: {
-        id: this.configId,
-      },
-      create: {
-        id: this.configId,
-        periodo: Periodo.SEMANAL,
-        hora_inicio: 0,
-        minuto_inicio: 0,
-        dia_semana: 1,
-        dia_mes: 1,
-        mes_inicio: 1,
-        fecha_ancla: null,
-        intervalo_dias: null,
-        zona_horaria: 'America/Lima',
-      },
-      update: {},
-    });
-  
-    let fechaFin: string | null = null;
-  
+  private ahora(): DateTime {
+    return DateTime.now().setZone(this.zona);
+  }
+
+  private calcularDefault(
+    referencia: DateTime,
+    siguienteSiEsFinDeSemana: boolean,
+  ): {
+    fecha_inicio: Date;
+    fecha_fin: Date;
+  } {
+
+    // Luxon: lunes = 1 ... domingo = 7.
+    let lunes = referencia
+      .startOf('day')
+      .minus({ days: referencia.weekday - 1 });
+
     if (
-      config.fecha_ancla &&
-      config.intervalo_dias !== null
+      siguienteSiEsFinDeSemana &&
+      referencia.weekday >= 6
     ) {
-      const fechaLocal = config.fecha_ancla
-        .toISOString()
-        .slice(0, 10);
-    
-      fechaFin = DateTime.fromISO(fechaLocal, {
-        zone: config.zona_horaria,
-      })
-        .set({
-          hour: config.hora_inicio,
-          minute: config.minuto_inicio,
-          second: 0,
-          millisecond: 0,
-        })
-        .plus({ days: config.intervalo_dias })
-        .toISO();
+      lunes = lunes.plus({ weeks: 1 });
     }
-  
+
+    const corte = lunes.plus({ days: 5 });
+
     return {
-      ...config,
-      fecha_fin: fechaFin,
+      fecha_inicio: lunes.toUTC().toJSDate(),
+      fecha_fin: corte.toUTC().toJSDate(),
     };
   }
 
-  async actualizar(
-    input: ActualizarConfigRankingInput,
-  ): Promise<ConfigRanking> {
+  private async leerOCrear(): Promise<ConfigRanking> {
+    const existente =
+      await this.prisma.configRanking.findUnique({
+        where: { id: this.configId },
+      });
+
+    if (existente) {
+      return existente;
+    }
+
+    // Si se configura por primera vez un fin de semana,
+    // se prepara la siguiente semana.
+    const rango = this.calcularDefault(this.ahora(), true);
+
+    return this.prisma.configRanking.upsert({
+      where: { id: this.configId },
+      create: {
+        id: this.configId,
+        modo: ModoRanking.DEFAULT,
+        ...rango,
+        zona_horaria: this.zona,
+      },
+      update: {},
+    });
+  }
+
+  private notificarCambio(): void {
+    this.rt.emitSyncConfigRankingEvent('sync');
+    this.rt.emitSyncRankingEvent('refresh');
+  }
+
+  /**
+   * Se llama desde el cron y desde las consultas del visor.
+   * No escribe ni emite eventos si el rango sigue vigente.
+   */
+  async renovarSiCorresponde(): Promise<ConfigRanking> {
+    for (let intento = 0; intento < 5; intento++) {
+      const config = await this.leerOCrear();
+      const ahora = this.ahora();
+
+      let nuevoRango:
+        | {
+            fecha_inicio: Date;
+            fecha_fin: Date;
+          }
+        | undefined;
+
+      if (config.modo === ModoRanking.PERSONALIZADO) {
+        const vencido =
+          ahora.toMillis() >= config.fecha_fin.getTime();
+
+        if (!vencido) {
+          return config;
+        }
+
+        // Lunes–viernes: semana actual.
+        // Sábado–domingo: siguiente semana.
+        nuevoRango = this.calcularDefault(ahora, true);
+      } else {
+        const inicioGuardado = DateTime.fromJSDate(
+          config.fecha_inicio,
+          { zone: this.zona },
+        );
+
+        // El DEFAULT se renueva el lunes siguiente,
+        // no al terminar el viernes.
+        const siguienteLunes = inicioGuardado
+          .startOf('day')
+          .minus({ days: inicioGuardado.weekday - 1 })
+          .plus({ weeks: 1 });
+
+        if (ahora.toMillis() < siguienteLunes.toMillis()) {
+          return config;
+        }
+
+        // Recupera también renovaciones omitidas por apagado.
+        nuevoRango = this.calcularDefault(ahora, false);
+      }
+
+      const resultado =
+        await this.prisma.configRanking.updateMany({
+          where: {
+            id: this.configId,
+            modo: config.modo,
+            fecha_inicio: config.fecha_inicio,
+            fecha_fin: config.fecha_fin,
+            zona_horaria: config.zona_horaria,
+            updateAt: config.updateAt,
+          },
+          data: {
+            modo: ModoRanking.DEFAULT,
+            ...nuevoRango,
+            zona_horaria: this.zona,
+          },
+        });
+
+      if (resultado.count === 1) {
+        this.notificarCambio();
+      }
+
+    }
+
+    throw new ConflictException(
+      'La configuración cambió simultáneamente. Reintenta la consulta.',
+    );
+  }
+
+  async obtener() {
+    const config = await this.renovarSiCorresponde();
+
+    return this.crearRespuesta(config);
+  }
+
+  /**
+   * Devuelve DateTime para conservar fechaParaBD()
+   * en el VisorService que ya tienes.
+   */
+  async obtenerRangoVigente() {
+    const config = await this.renovarSiCorresponde();
+
+    return {
+      config,
+      inicio: DateTime.fromJSDate(config.fecha_inicio, {
+        zone: this.zona,
+      }),
+      fin: DateTime.fromJSDate(config.fecha_fin, {
+        zone: this.zona,
+      }),
+    };
+  }
+
+  async actualizar(input: ActualizarConfigRankingInput) {
     if (
       !input ||
       typeof input !== 'object' ||
       Array.isArray(input)
     ) {
       throw new BadRequestException(
-        'La configuración debe ser un objeto',
+        'Debes enviar fecha_inicio y fecha_fin',
       );
     }
 
-    const actual = await this.obtener();
+    const inicio = this.convertirFechaLocal(
+      input.fecha_inicio,
+      'fecha_inicio',
+    );
 
-    // Solo se aceptan campos de configuración.
-    // Los undefined conservan el valor actual.
-    const siguiente = {
-      periodo:
-        input.periodo === undefined
-          ? actual.periodo
-          : input.periodo,
+    const ultimoMinuto = this.convertirFechaLocal(
+      input.fecha_fin,
+      'fecha_fin',
+    );
 
-      hora_inicio:
-        input.hora_inicio === undefined
-          ? actual.hora_inicio
-          : input.hora_inicio,
-
-      minuto_inicio:
-        input.minuto_inicio === undefined
-          ? actual.minuto_inicio
-          : input.minuto_inicio,
-
-      dia_semana:
-        input.dia_semana === undefined
-          ? actual.dia_semana
-          : input.dia_semana,
-
-      dia_mes:
-        input.dia_mes === undefined
-          ? actual.dia_mes
-          : input.dia_mes,
-
-      mes_inicio:
-        input.mes_inicio === undefined
-          ? actual.mes_inicio
-          : input.mes_inicio,
-
-      intervalo_dias:
-        input.intervalo_dias === undefined
-          ? actual.intervalo_dias
-          : input.intervalo_dias,
-
-      zona_horaria:
-        input.zona_horaria === undefined
-          ? actual.zona_horaria
-          : input.zona_horaria,
-
-      fecha_ancla:
-        input.fecha_ancla === undefined
-          ? actual.fecha_ancla
-          : this.convertirFechaAncla(input.fecha_ancla),
-    };
-
-    this.validarConfiguracion(siguiente);
-
-    this.rt.emitSyncConfigRankingEvent('sync');
-
-    return this.prisma.configRanking.update({
-      where: {
-        id: this.configId,
-      },
-      data: siguiente,
-    });
-  }
-
-  private convertirFechaAncla(
-    valor: string | null,
-  ): Date | null {
-    if (valor === null) {
-      return null;
-    }
+    const corte = ultimoMinuto.plus({ minutes: 1 });
 
     if (
-      typeof valor !== 'string' ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(valor)
+      !corte.isValid ||
+      corte.year > 9999 ||
+      corte.toMillis() <= inicio.toMillis()
     ) {
       throw new BadRequestException(
-        'fecha_ancla debe tener el formato YYYY-MM-DD',
+        'El rango de fechas no es válido',
       );
     }
 
-    // UTC se usa para representar el campo @db.Date.
-    // El visor interpreta esta fecha en zona_horaria.
+    if (corte.toMillis() <= this.ahora().toMillis()) {
+      throw new BadRequestException(
+        'El rango personalizado ya terminó',
+      );
+    }
+
+    const datos = {
+      modo: ModoRanking.PERSONALIZADO,
+      fecha_inicio: inicio.toUTC().toJSDate(),
+      fecha_fin: corte.toUTC().toJSDate(),
+      zona_horaria: this.zona,
+    };
+
+    const config = await this.prisma.configRanking.upsert({
+      where: { id: this.configId },
+      create: {
+        id: this.configId,
+        ...datos,
+      },
+      update: datos,
+    });
+
+    this.notificarCambio();
+
+    return this.crearRespuesta(config);
+  }
+
+  private convertirFechaLocal(
+    valor: string,
+    campo: string,
+  ): DateTime {
+    if (
+      typeof valor !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(valor)
+    ) {
+      throw new BadRequestException(
+        `${campo} debe tener formato YYYY-MM-DDTHH:mm`,
+      );
+    }
+
     const fecha = DateTime.fromISO(valor, {
-      zone: 'UTC',
+      zone: this.zona,
     });
 
     if (
       !fecha.isValid ||
-      fecha.toISODate() !== valor ||
       fecha.year < 1000 ||
-      fecha.year > 9999
+      fecha.year > 9999 ||
+      fecha.toFormat("yyyy-MM-dd'T'HH:mm") !== valor
     ) {
       throw new BadRequestException(
-        'fecha_ancla debe ser una fecha válida entre los años 1000 y 9999',
+        `${campo} no es una fecha válida`,
       );
     }
 
-    return fecha.startOf('day').toJSDate();
+    return fecha;
   }
 
-  private validarConfiguracion(
-    config: Omit<ConfigRanking, 'id' | 'updateAt'>,
-  ): void {
-    if (!Object.values(Periodo).includes(config.periodo)) {
-      throw new BadRequestException(
-        'periodo debe ser DIARIO, SEMANAL, PERSONALIZADO, MENSUAL o ANUAL',
-      );
-    }
+  private crearRespuesta(config: ConfigRanking) {
+    const inicio = DateTime.fromJSDate(config.fecha_inicio, {
+      zone: this.zona,
+    });
 
-    this.validarEntero(
-      'hora_inicio',
-      config.hora_inicio,
-      0,
-      23,
-    );
+    const corte = DateTime.fromJSDate(config.fecha_fin, {
+      zone: this.zona,
+    });
 
-    this.validarEntero(
-      'minuto_inicio',
-      config.minuto_inicio,
-      0,
-      59,
-    );
+    return {
+      id: config.id,
+      modo: config.modo,
+      fecha_inicio: inicio.toISO(),
 
-    // Domingo = 0, lunes = 1 ... sábado = 6.
-    this.validarEntero(
-      'dia_semana',
-      config.dia_semana,
-      0,
-      6,
-    );
+      fecha_fin: corte.minus({ milliseconds: 1 }).toISO(),
 
-    // Misma regla que utiliza VisorService.
-    this.validarEntero(
-      'dia_mes',
-      config.dia_mes,
-      1,
-      28,
-    );
+      fecha_corte: corte.toISO(),
 
-    this.validarEntero(
-      'mes_inicio',
-      config.mes_inicio,
-      1,
-      12,
-    );
-
-    if (
-      typeof config.zona_horaria !== 'string' ||
-      !config.zona_horaria.trim() ||
-      !DateTime.now().setZone(config.zona_horaria).isValid
-    ) {
-      throw new BadRequestException(
-        'zona_horaria debe ser válida, por ejemplo America/Lima',
-      );
-    }
-
-    if (config.intervalo_dias !== null) {
-      this.validarEntero(
-        'intervalo_dias',
-        config.intervalo_dias,
-        1,
-        2_147_483_647,
-      );
-    }
-
-    if (
-      config.fecha_ancla !== null &&
-      (
-        !(config.fecha_ancla instanceof Date) ||
-        !Number.isFinite(config.fecha_ancla.getTime())
-      )
-    ) {
-      throw new BadRequestException(
-        'fecha_ancla no es válida',
-      );
-    }
-
-    if (config.periodo === Periodo.PERSONALIZADO) {
-      if (config.fecha_ancla === null) {
-        throw new BadRequestException(
-          'fecha_ancla es obligatoria para PERSONALIZADO',
-        );
-      }
-
-      if (config.intervalo_dias === null) {
-        throw new BadRequestException(
-          'intervalo_dias es obligatorio para PERSONALIZADO',
-        );
-      }
-    }
+      zona_horaria: config.zona_horaria,
+      updateAt: config.updateAt,
+    };
   }
-
-  private validarEntero(
-    campo: string,
-    valor: number,
-    minimo: number,
-    maximo: number,
-  ): void {
-    if (
-      !Number.isInteger(valor) ||
-      valor < minimo ||
-      valor > maximo
-    ) {
-      throw new BadRequestException(
-        `${campo} debe ser un entero entre ${minimo} y ${maximo}`,
-      );
-    }
-  }  
-  
 }

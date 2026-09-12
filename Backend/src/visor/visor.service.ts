@@ -5,8 +5,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  ConfigRanking,
-  Periodo,
   Prisma,
   TipoEmpleado,
 } from '@prisma/client';
@@ -14,10 +12,14 @@ import { DateTime } from 'luxon';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilaRanking } from './interface/ranking.interface';
 import { GrupoRanking } from './types/ranking.type';
+import { ConfigRankingService } from 'src/config-ranking/config-ranking.service';
 
 @Injectable()
 export class VisorService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configRankingService: ConfigRankingService,
+  ) {}
 
   private readonly fechaGuardadaEnUTC = true;
 
@@ -31,6 +33,10 @@ export class VisorService {
     });
   }
 
+  async getRangoFechas() {
+    return this.prisma.configRanking.findMany();
+  }
+
   private validarSedeId(sedeId: number): void {
     if (!Number.isInteger(sedeId) || sedeId <= 0) {
       throw new BadRequestException(
@@ -39,20 +45,8 @@ export class VisorService {
     }
   }
 
-  private async obtenerPeriodoGlobal() {
-    const config = await this.prisma.configRanking.findUnique({
-      where: { id: 1 },
-    });
-
-    if (!config) {
-      throw new NotFoundException(
-        'No existe la configuración global del ranking',
-      );
-    }
-
-    const { inicio, fin } = this.calcularPeriodo(config);
-
-    return { config, inicio, fin };
+  private obtenerPeriodoGlobal() {
+    return this.configRankingService.obtenerRangoVigente();
   }
 
   private obtenerPeriodoDiario(): {
@@ -78,7 +72,7 @@ export class VisorService {
 
     return this.obtenerEstadisticasPorSede(
       tipoEmpleado,
-      Periodo.DIARIO,
+      'DIARIO',
       inicio,
       fin,
     );
@@ -94,7 +88,7 @@ export class VisorService {
 
     return this.obtenerEstadisticasPorSede(
       tipoEmpleado,
-      config.periodo,
+      config.modo,
       inicio,
       fin,
     );
@@ -102,7 +96,7 @@ export class VisorService {
 
   private async obtenerEstadisticasPorSede(
     tipoEmpleado: TipoEmpleado,
-    periodo: Periodo,
+    periodo: string,
     inicio: DateTime,
     fin: DateTime,
   ) {
@@ -371,260 +365,6 @@ export class VisorService {
 
   // CÁLCULO DEL PERIODO GLOBAL
 
-  private calcularPeriodo(
-    config: ConfigRanking,
-    referencia: Date = new Date(),
-  ): { inicio: DateTime; fin: DateTime } {
-    this.validarConfiguracion(config);
-
-    const ahora = DateTime.fromJSDate(referencia, {
-      zone: config.zona_horaria,
-    });
-
-    if (!ahora.isValid) {
-      throw new InternalServerErrorException(
-        'Zona horaria o fecha de referencia inválida',
-      );
-    }
-
-    const horario = {
-      hour: config.hora_inicio,
-      minute: config.minuto_inicio,
-      second: 0,
-      millisecond: 0,
-    };
-
-    let inicio: DateTime;
-    let fin: DateTime;
-
-    switch (config.periodo) {
-      case Periodo.DIARIO: {
-        inicio = ahora.startOf('day').set(horario);
-
-        if (inicio.toMillis() > ahora.toMillis()) {
-          inicio = inicio.minus({ days: 1 });
-        }
-
-        fin = inicio.plus({ days: 1 });
-        break;
-      }
-
-      case Periodo.SEMANAL: {
-        // Configuración: domingo = 0 ... sábado = 6.
-        const diaActual = ahora.weekday % 7;
-
-        const diasDesdeInicio =
-          (diaActual - config.dia_semana + 7) % 7;
-
-        inicio = ahora
-          .startOf('day')
-          .minus({ days: diasDesdeInicio })
-          .set(horario);
-
-        if (inicio.toMillis() > ahora.toMillis()) {
-          inicio = inicio.minus({ weeks: 1 });
-        }
-
-        fin = inicio.plus({ weeks: 1 });
-        break;
-      }
-
-      case Periodo.PERSONALIZADO: {
-        const fechaAncla = config.fecha_ancla;
-        const dias = config.intervalo_dias;
-
-        if (
-          !fechaAncla ||
-          dias === null ||
-          !Number.isInteger(dias) ||
-          dias <= 0
-        ) {
-          throw new InternalServerErrorException(
-            'PERSONALIZADO requiere fecha_ancla e intervalo_dias positivo',
-          );
-        }
-
-        // @db.Date representa una fecha sin hora.
-        // Se interpreta esa fecha en la zona configurada.
-        const fechaLocal = fechaAncla
-          .toISOString()
-          .slice(0, 10);
-
-        const ancla = DateTime.fromISO(fechaLocal, {
-          zone: config.zona_horaria,
-        }).set(horario);
-
-        if (!ancla.isValid) {
-          throw new InternalServerErrorException(
-            'La fecha de inicio del periodo es inválida',
-          );
-        }
-
-        // Antes del primer ciclo, se utiliza el intervalo
-        // inicial programado, sin crear ciclos anteriores.
-        if (ahora.toMillis() < ancla.toMillis()) {
-          inicio = ancla;
-          fin = ancla.plus({ days: dias });
-          break;
-        }
-
-        const diasTranscurridos = ahora
-          .startOf('day')
-          .diff(ancla.startOf('day'), 'days')
-          .days;
-
-        const ciclo = Math.floor(diasTranscurridos / dias);
-
-        inicio = ancla.plus({
-          days: ciclo * dias,
-        });
-
-        // En el día del corte, antes de la hora configurada,
-        // todavía corresponde el ciclo anterior.
-        if (inicio.toMillis() > ahora.toMillis()) {
-          inicio = inicio.minus({ days: dias });
-        }
-
-        fin = inicio.plus({ days: dias });
-        break;
-      }
-
-      case Periodo.MENSUAL: {
-        let mesBase = ahora.startOf('month');
-
-        inicio = mesBase.set({
-          day: config.dia_mes,
-          ...horario,
-        });
-
-        if (inicio.toMillis() > ahora.toMillis()) {
-          mesBase = mesBase.minus({ months: 1 });
-
-          inicio = mesBase.set({
-            day: config.dia_mes,
-            ...horario,
-          });
-        }
-
-        fin = mesBase.plus({ months: 1 }).set({
-          day: config.dia_mes,
-          ...horario,
-        });
-
-        break;
-      }
-
-      case Periodo.ANUAL: {
-        let anioBase = ahora.startOf('year');
-
-        inicio = anioBase.set({
-          month: config.mes_inicio,
-          day: config.dia_mes,
-          ...horario,
-        });
-
-        if (inicio.toMillis() > ahora.toMillis()) {
-          anioBase = anioBase.minus({ years: 1 });
-
-          inicio = anioBase.set({
-            month: config.mes_inicio,
-            day: config.dia_mes,
-            ...horario,
-          });
-        }
-
-        fin = anioBase.plus({ years: 1 }).set({
-          month: config.mes_inicio,
-          day: config.dia_mes,
-          ...horario,
-        });
-
-        break;
-      }
-
-      default:
-        throw new InternalServerErrorException(
-          'Periodo de ranking no válido',
-        );
-    }
-
-    if (
-      !inicio.isValid ||
-      !fin.isValid ||
-      fin.toMillis() <= inicio.toMillis()
-    ) {
-      throw new InternalServerErrorException(
-        'No se pudo calcular el periodo del ranking',
-      );
-    }
-
-    return { inicio, fin };
-  }
-
-  private validarConfiguracion(config: ConfigRanking): void {
-    const validarEntero = (
-      campo: string,
-      valor: number,
-      minimo: number,
-      maximo: number,
-    ) => {
-      if (
-        !Number.isInteger(valor) ||
-        valor < minimo ||
-        valor > maximo
-      ) {
-        throw new InternalServerErrorException(
-          `Configuración inválida: ${campo} debe estar entre ` +
-          `${minimo} y ${maximo}`,
-        );
-      }
-    };
-
-    validarEntero('hora_inicio', config.hora_inicio, 0, 23);
-    validarEntero('minuto_inicio', config.minuto_inicio, 0, 59);
-
-    if (config.periodo === Periodo.SEMANAL) {
-      validarEntero('dia_semana', config.dia_semana, 0, 6);
-    }
-
-    if (
-      config.periodo === Periodo.MENSUAL ||
-      config.periodo === Periodo.ANUAL
-    ) {
-      // Se conserva la regla de 1–28 para evitar
-      // fechas inexistentes en algunos meses.
-      validarEntero('dia_mes', config.dia_mes, 1, 28);
-    }
-
-    if (config.periodo === Periodo.ANUAL) {
-      validarEntero('mes_inicio', config.mes_inicio, 1, 12);
-    }
-
-    if (config.periodo === Periodo.PERSONALIZADO) {
-      if (
-        !(config.fecha_ancla instanceof Date) ||
-        !Number.isFinite(config.fecha_ancla.getTime())
-      ) {
-        throw new InternalServerErrorException(
-          'Configuración inválida: fecha_ancla es obligatoria y debe ser válida',
-        );
-      }
-
-      if (config.intervalo_dias === null) {
-        throw new InternalServerErrorException(
-          'Configuración inválida: intervalo_dias es obligatorio',
-        );
-      }
-
-      validarEntero(
-        'intervalo_dias',
-        config.intervalo_dias,
-        1,
-        2_147_483_647,
-      );
-    }
-  }
-
   private fechaParaBD(fecha: DateTime): Date {
     if (this.fechaGuardadaEnUTC) {
       return fecha.toUTC().toJSDate();
@@ -646,60 +386,6 @@ export class VisorService {
       .normalize('NFC')
       .replace(/\s+/g, ' ');
   }
-
-  // RANGO DE FECHAS DE RANKING
-
-  private readonly configId = 1;
-
-  async obtenerRangoRanking() {
-    const config = await this.prisma.configRanking.upsert({
-      where: {
-        id: this.configId,
-      },
-      create: {
-        id: this.configId,
-        periodo: Periodo.SEMANAL,
-        hora_inicio: 0,
-        minuto_inicio: 0,
-        dia_semana: 1,
-        dia_mes: 1,
-        mes_inicio: 1,
-        fecha_ancla: null,
-        intervalo_dias: null,
-        zona_horaria: 'America/Lima',
-      },
-      update: {},
-    });
-  
-    let fechaFin: string | null = null;
-  
-    if (
-      config.fecha_ancla &&
-      config.intervalo_dias !== null
-    ) {
-      const fechaLocal = config.fecha_ancla
-        .toISOString()
-        .slice(0, 10);
-    
-      fechaFin = DateTime.fromISO(fechaLocal, {
-        zone: config.zona_horaria,
-      })
-        .set({
-          hour: config.hora_inicio,
-          minute: config.minuto_inicio,
-          second: 0,
-          millisecond: 0,
-        })
-        .plus({ days: config.intervalo_dias })
-        .toISO();
-    }
-  
-    return {
-      ...config,
-      fecha_fin: fechaFin,
-    };
-  }
-
 
   // FLYERS
 
