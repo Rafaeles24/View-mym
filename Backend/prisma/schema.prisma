@@ -24,8 +24,7 @@ model Campaign {
 
   storage_key String @unique
 
-  sedes        CampaignSede[]
-  asignaciones AsignacionMedia[]
+  sedes CampaignSede[]
 
   ventas Venta[]
 }
@@ -37,6 +36,8 @@ model Sede {
   campaigns CampaignSede[]
   captions  SedeCaption[]
   ventas    Venta[]
+
+  medias AsignacionMedia[]
 }
 
 model Media {
@@ -111,20 +112,20 @@ model CampaignSede {
 }
 
 model AsignacionMedia {
-  campaign_id Int
-  media_id    Int
+  sede_id  Int
+  media_id Int
 
   started_at DateTime?
   ended_at   DateTime?
   prioridad  Int       @default(0)
 
-  campaign Campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
-  media    Media    @relation(fields: [media_id], references: [id], onDelete: Cascade)
+  sede  Sede  @relation(fields: [sede_id], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
 
-  @@id([campaign_id, media_id])
-  @@index([campaign_id])
+  @@id([sede_id, media_id])
+  @@index([sede_id])
   @@index([started_at, ended_at])
-  @@index([campaign_id, prioridad])
+  @@index([sede_id, prioridad])
 }
 
 model SedeCaption {
@@ -143,16 +144,22 @@ model SedeCaption {
 }
 
 //CONFIG
-
 model ConfigRanking {
-  id            Int          @id @default(1)
-  modo          ModoRanking @default(DEFAULT)
+  id   Int         @id @default(1)
+  modo ModoRanking @default(DEFAULT)
 
-  fecha_inicio  DateTime
-  fecha_fin     DateTime
+  fecha_inicio DateTime
+  fecha_fin    DateTime
 
-  zona_horaria String @default("America/Lima")
-  updateAt  DateTime @updatedAt
+  intervalo_actualizacion Int       @default(15)
+  ultima_actualizacion    DateTime?
+  proxima_actualizacion   DateTime?
+
+  hora_inicio_actualizacion String @default("07:00") @db.VarChar(5)
+  hora_fin_actualizacion    String @default("16:00") @db.VarChar(5)
+
+  zona_horaria String   @default("America/Lima")
+  updateAt     DateTime @updatedAt
 }
 
 enum ModoRanking {

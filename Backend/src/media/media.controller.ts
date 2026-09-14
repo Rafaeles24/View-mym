@@ -9,8 +9,8 @@ import { DeleteMediaDto } from './dto/delete-media.dto';
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
-  @Get()
-  /* @UseGuards(JwtAuthGuard) */
+  /* @Get()
+  @UseGuards(JwtAuthGuard) 
   getMedias(
     @Query() dto: MediaPagination
   ) {
@@ -18,7 +18,7 @@ export class MediaController {
   }
 
   @Post("/create")
-  /* @UseGuards(JwtAuthGuard) */
+  @UseGuards(JwtAuthGuard) 
   @UseInterceptors(FilesInterceptor('files'))
   create (
     @UploadedFiles() files: Express.Multer.File[]
@@ -38,5 +38,5 @@ export class MediaController {
     @Body() dto: DeleteMediaDto[]
   ) {
     return this.mediaService.delete(dto);
-  }
+  } */
 }

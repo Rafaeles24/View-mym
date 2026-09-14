@@ -6,6 +6,7 @@ import Image from "next/image";
 import LogoSvg from "@/icons/logo.svg";
 import { SedeStats } from "@/types/stats";
 import RankingRango from "@/components/rankingRangoFecha/ui";
+import ResumenStatsSede from "@/components/resumenStatsSede/ui";
 
 export default function RankingUI({
   sedeOrigin,
@@ -26,13 +27,13 @@ export default function RankingUI({
     {
       id: "agentes-sede",
       titulo: `${sedeOrigin.nombre}`,
-      subtitulo: `Top agentes`,
+      subtitulo: `Top asesores`,
       datos: rankingAgenteSede,
     },
     {
       id: "agentes-global",
       titulo: "M&M",
-      subtitulo: "Top agentes",
+      subtitulo: "Top asesores",
       datos: rankingGlobalAgente,
     },
     {
@@ -60,7 +61,15 @@ export default function RankingUI({
             <p>Disciplina hoy, grandes resultados mañana</p>
           </div>
         </div>
+
+        <div className={styles.rankingRango}>
+          <RankingRango schedule={rankingRango} />
+        </div>
       </header>
+
+      <div className={styles.resumendDiario}>
+        <ResumenStatsSede stats={sedesStatsDiario} />
+      </div>
 
       <div className={styles.leaderboardContent}>
         {rankings.map(({ id, titulo, subtitulo, datos }) => (
@@ -73,22 +82,7 @@ export default function RankingUI({
           />
           
         ))}
-
-        <Leaderboard
-          key="stats-sede"
-          id="stats-sede"
-          titulo="POR SEDE"
-          subtitulo="Resumen de hoy"
-          ranking={[]}
-          stats={sedesStatsDiario}
-        />
       </div>
-
-      <RankingRango schedule={rankingRango} />
-
-      <footer className={styles.footer}>
-        <p>Somos equipo, Somos M&M</p>
-      </footer>
     </main>
   );
 }

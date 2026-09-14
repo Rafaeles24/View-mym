@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ConfigRankingService } from './config-ranking.service';
 import type { ActualizarConfigRankingInput } from './types/ConfigRankingInput.type';
+import { ActualizarProgramacionDto } from './dto/programacion.dto';
 
 @Controller('config-ranking')
 export class ConfigRankingController {
@@ -16,5 +17,12 @@ export class ConfigRankingController {
     @Body() dto: ActualizarConfigRankingInput
   ) {
     return this.configRankingService.actualizar(dto);
+  }
+
+  @Patch('programacion')
+  actualizarProgramacion(
+    @Body() dto: ActualizarProgramacionDto
+  ) {
+    return this.configRankingService.actualizarProgramacion(dto);
   }
 }

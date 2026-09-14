@@ -56,11 +56,4 @@ export class VisorController {
   getRankingRango() {
     return this.visorService.getRangoFechas();
   } 
-
-  @Get('media/:sedeId')
-  getMediaPorSede(
-    @Param('sedeId') sedeId: number
-  ) {
-    return this.visorService.flyersPorSede(sedeId);
-  }
 }

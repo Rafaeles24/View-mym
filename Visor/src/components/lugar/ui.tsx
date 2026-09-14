@@ -61,8 +61,8 @@ export default function Lugar({ persona, mostrarSede=false }: { persona: Ranking
             <Image
               src={campaign.logo_url}
               alt=""
-              width={20}
-              height={20}
+              width={35}
+              height={35}
               unoptimized
             />
           )}

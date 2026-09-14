@@ -14,6 +14,7 @@ import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import type {
   ActualizarConfigRankingInput,
 } from './types/ConfigRankingInput.type';
+import { RankingCountdown } from 'src/realtime/types/ranking-countdown.type';
 
 @Injectable()
 export class ConfigRankingService {
@@ -291,14 +292,322 @@ export class ConfigRankingService {
     return {
       id: config.id,
       modo: config.modo,
+    
       fecha_inicio: inicio.toISO(),
-
       fecha_fin: corte.minus({ milliseconds: 1 }).toISO(),
-
       fecha_corte: corte.toISO(),
+    
+      zona_horaria: config.zona_horaria,
+    
+      hora_inicio_actualizacion:
+        config.hora_inicio_actualizacion,
+    
+      hora_fin_actualizacion:
+        config.hora_fin_actualizacion,
+    
+      intervalo_actualizacion:
+        config.intervalo_actualizacion,
+    
+      ultima_actualizacion:
+        config.ultima_actualizacion?.toISOString() ?? null,
+    
+      proxima_actualizacion:
+        config.proxima_actualizacion?.toISOString() ?? null,
+    
+      updateAt: config.updateAt,
+    };
+  }
+
+  private validarProgramacion(config: {
+    hora_inicio_actualizacion: string;
+    hora_fin_actualizacion: string;
+    intervalo_actualizacion: number;
+  }): void {
+    const formatoHora = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+    if (
+      typeof config.hora_inicio_actualizacion !== 'string' ||
+      !formatoHora.test(config.hora_inicio_actualizacion) ||
+      typeof config.hora_fin_actualizacion !== 'string' ||
+      !formatoHora.test(config.hora_fin_actualizacion)
+    ) {
+      throw new BadRequestException(
+        'Las horas deben tener formato HH:mm',
+      );
+    }
+
+    // Comparación válida para horas con formato HH:mm.
+    if (
+      config.hora_inicio_actualizacion >=
+      config.hora_fin_actualizacion
+    ) {
+      throw new BadRequestException(
+        'La hora final debe ser posterior a la hora inicial',
+      );
+    }
+
+    if (
+      !Number.isInteger(config.intervalo_actualizacion) ||
+      config.intervalo_actualizacion < 1 ||
+      config.intervalo_actualizacion > 1440
+    ) {
+      throw new BadRequestException(
+        'intervalo_actualizacion debe ser un entero entre 1 y 1440 minutos',
+      );
+    }
+  }
+
+  /**
+   * Calcula el siguiente punto de la secuencia diaria:
+   * apertura + múltiplos del intervalo + cierre obligatorio.
+   *
+   * incluirReferencia:
+   * true  -> permite devolver el instante consultado.
+   * false -> devuelve un instante estrictamente posterior.
+   */
+  siguienteActualizacionRanking(
+    referencia: DateTime,
+    config: Pick<
+      ConfigRanking,
+      | 'hora_inicio_actualizacion'
+      | 'hora_fin_actualizacion'
+      | 'intervalo_actualizacion'
+      | 'zona_horaria'
+    >,
+    incluirReferencia = false,
+  ): DateTime {
+    this.validarProgramacion(config);
+
+    const local = referencia.setZone(config.zona_horaria);
+
+    if (!local.isValid) {
+      throw new BadRequestException(
+        'La fecha o zona horaria de programación no es válida',
+      );
+    }
+
+    const [horaInicio, minutoInicio] =
+      config.hora_inicio_actualizacion.split(':').map(Number);
+
+    const [horaFin, minutoFin] =
+      config.hora_fin_actualizacion.split(':').map(Number);
+
+    const intervaloMs =
+      config.intervalo_actualizacion * 60_000;
+
+    const referenciaMs = local.toMillis();
+
+    let dia = local.startOf('day');
+
+    // Como máximo se necesita llegar al próximo día laborable.
+    for (let intento = 0; intento < 8; intento++) {
+      if (dia.weekday <= 5) {
+        const apertura = dia.set({
+          hour: horaInicio,
+          minute: minutoInicio,
+          second: 0,
+          millisecond: 0,
+        });
+
+        const cierre = dia.set({
+          hour: horaFin,
+          minute: minutoFin,
+          second: 0,
+          millisecond: 0,
+        });
+
+        const transcurrido =
+          referenciaMs - apertura.toMillis();
+
+        const posicion = Math.max(
+          0,
+          incluirReferencia
+            ? Math.ceil(transcurrido / intervaloMs)
+            : Math.floor(transcurrido / intervaloMs) + 1,
+        );
+
+        const candidato = apertura.plus({
+          milliseconds: posicion * intervaloMs,
+        });
+
+        // Si el intervalo sobrepasa el cierre,
+        // se utiliza el cierre como último batch.
+        const siguiente =
+          candidato.toMillis() <= cierre.toMillis()
+            ? candidato
+            : cierre;
+
+        const valido = incluirReferencia
+          ? siguiente.toMillis() >= referenciaMs
+          : siguiente.toMillis() > referenciaMs;
+
+        if (valido) {
+          return siguiente;
+        }
+      }
+
+      dia = dia.plus({ days: 1 }).startOf('day');
+    }
+
+    throw new BadRequestException(
+      'No se pudo calcular la siguiente actualización',
+    );
+  }
+
+  async obtenerProgramacion(): Promise<ConfigRanking> {
+    const config = await this.leerOCrear();
+
+    if (config.proxima_actualizacion) {
+      return config;
+    }
+
+    const proxima = this.siguienteActualizacionRanking(
+      DateTime.now(),
+      config,
+      true,
+    );
+
+    await this.prisma.configRanking.updateMany({
+      where: {
+        id: config.id,
+        proxima_actualizacion: null,
+        hora_inicio_actualizacion:
+          config.hora_inicio_actualizacion,
+        hora_fin_actualizacion:
+          config.hora_fin_actualizacion,
+        intervalo_actualizacion:
+          config.intervalo_actualizacion,
+        zona_horaria: config.zona_horaria,
+      },
+      data: {
+        proxima_actualizacion: proxima.toUTC().toJSDate(),
+      },
+    });
+
+    return this.prisma.configRanking.findUniqueOrThrow({
+      where: { id: config.id },
+    });
+  }
+
+  async actualizarProgramacion(input: {
+    hora_inicio_actualizacion: string;
+    hora_fin_actualizacion: string;
+    intervalo_actualizacion: number;
+  }) {
+    if (
+      !input ||
+      typeof input !== 'object' ||
+      Array.isArray(input)
+    ) {
+      throw new BadRequestException(
+        'Debes enviar las horas y el intervalo de actualización',
+      );
+    }
+
+    this.validarProgramacion(input);
+
+    const actual = await this.leerOCrear();
+
+    const datos = {
+      hora_inicio_actualizacion:
+        input.hora_inicio_actualizacion,
+      hora_fin_actualizacion:
+        input.hora_fin_actualizacion,
+      intervalo_actualizacion:
+        input.intervalo_actualizacion,
+    };
+
+    const proxima = this.siguienteActualizacionRanking(
+      DateTime.now(),
+      {
+        ...datos,
+        zona_horaria: actual.zona_horaria,
+      },
+      true,
+    );
+
+    const config = await this.prisma.configRanking.update({
+      where: { id: this.configId },
+      data: {
+        ...datos,
+        proxima_actualizacion: proxima.toUTC().toJSDate(),
+      },
+    });
+
+    this.rt.emitSyncConfigRankingEvent('sync');
+
+    return this.crearRespuesta(config);
+  }
+
+  // Mantiene compatibilidad con el endpoint anterior,
+  // si todavía lo utilizas para cambiar solo el intervalo.
+  async actualizarIntervalo(minutos: number) {
+    const actual = await this.leerOCrear();
+
+    return this.actualizarProgramacion({
+      hora_inicio_actualizacion:
+        actual.hora_inicio_actualizacion,
+      hora_fin_actualizacion:
+        actual.hora_fin_actualizacion,
+      intervalo_actualizacion: minutos,
+    });
+  }
+
+  async obtenerCuentaRegresiva(): Promise<RankingCountdown> {
+    const config = await this.obtenerProgramacion();
+    const ahora = DateTime.now();
+
+    const segundosRestantes = config.proxima_actualizacion
+      ? Math.max(
+          0,
+          Math.ceil(
+            (
+              config.proxima_actualizacion.getTime() -
+              ahora.toMillis()
+            ) / 1000,
+          ),
+        )
+      : null;
+
+    let cuentaRegresiva: string | null = null;
+
+    if (segundosRestantes !== null) {
+      // Minutos totales: también permite contar hasta el lunes.
+      const minutos = Math.floor(segundosRestantes / 60);
+      const segundos = segundosRestantes % 60;
+
+      cuentaRegresiva =
+        `${String(minutos).padStart(2, '0')}:` +
+        `${String(segundos).padStart(2, '0')}`;
+    }
+
+    return {
+      hora_inicio_actualizacion:
+        config.hora_inicio_actualizacion,
+
+      hora_fin_actualizacion:
+        config.hora_fin_actualizacion,
+
+      intervalo_actualizacion:
+        config.intervalo_actualizacion,
 
       zona_horaria: config.zona_horaria,
-      updateAt: config.updateAt,
+      hora_servidor: ahora.toUTC().toJSDate().toISOString(),
+
+      ultima_actualizacion:
+        config.ultima_actualizacion?.toISOString() ?? null,
+
+      proxima_actualizacion:
+        config.proxima_actualizacion?.toISOString() ?? null,
+
+      segundos_restantes: segundosRestantes,
+
+      // Minutos completos pendientes, redondeados hacia arriba.
+      minutos_restantes: segundosRestantes === null
+        ? null
+        : Math.ceil(segundosRestantes / 60),
+
+      cuenta_regresiva: cuentaRegresiva,
     };
   }
 }

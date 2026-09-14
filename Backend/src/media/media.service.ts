@@ -30,7 +30,7 @@ export class MediaService {
     return { total, minutes, seconds }
   }
 
-  async getMedias({
+  /* async getMedias({
     page = 1,
     limit = 50,
     mimetype,
@@ -250,5 +250,5 @@ export class MediaService {
               `Error eliminando el media: ${error}`
           );
       }
-  }
+  } */
 }

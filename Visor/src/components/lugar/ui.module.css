@@ -42,7 +42,7 @@
 
   padding-right: 20px;
 
-  font-size: 25px;
+  font-size: 30px;
   font-weight: 700;
 }
 
@@ -66,14 +66,14 @@
   padding: 5px 10px;
   border-radius: 5px;
 
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 700;
 }
 
 .sedeNombre {
   padding: 5px 10px;
   border-radius: 5px;
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 700;
 
   background: #363636;
@@ -115,11 +115,11 @@
 }
 
 .alta {
-  background: #149225;
+  background: #0d681a;
   color: #fff5f5;
 }
 
 .ojt {
-  background: #969901;
+  background: #595a10;
   color: #fff5f5;
 }

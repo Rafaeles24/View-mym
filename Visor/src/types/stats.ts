@@ -6,6 +6,7 @@ export type SedeStats = {
 
 type SedeStatsDetail = {
   puesto: number;
+  sede_id: number;
   sede: string;
   cantidad: number;
 }

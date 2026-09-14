@@ -1,5 +1,6 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import type { RankingCountdown } from './types/ranking-countdown.type';
 
 @WebSocketGateway({
   cors: { origin: '*', credentials: true },
@@ -187,5 +188,10 @@ export class RealtimeGateway {
     this.server.emit('time:sync', { 
       utc: new Date().toISOString()
     });
+  }
+
+  @SubscribeMessage('countdown')
+  emitRankingCountdown(data: RankingCountdown): void {
+    this.server.emit('ranking:countdown', data);
   }
 }

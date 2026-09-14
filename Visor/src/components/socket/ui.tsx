@@ -10,6 +10,7 @@ export default function SocketConnection() {
   useEffect(() => {
     function onConnect() {
       console.log(`Socket conectado: ${socket.id}`);
+      router.refresh();
     }
 
     function onDisconnect(reason: string) {

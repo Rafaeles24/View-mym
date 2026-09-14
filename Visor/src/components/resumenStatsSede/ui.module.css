@@ -1,0 +1,259 @@
+.resumenStatsSede {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  color: #fff;
+  border: 1px solid rgb(217 217 217 / 30%);
+  border-radius: clamp(8px, 0.6vw, 24px);
+
+  background: linear-gradient(
+    180deg,
+    #090a0c 0%,
+    #08090b 30%,
+    #090a0c 70%
+  );
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 20px 16px;
+}
+
+.icono {
+  flex-shrink: 0;
+  width: clamp(32px, 2.5vw, 48px);
+  height: auto;
+}
+
+.textosCabecera {
+  min-width: 0;
+}
+
+.subtitulo {
+  margin: 0 0 6px;
+  color: var(--gris, #aaa);
+  font-size: clamp(10px, 0.7vw, 14px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.titulo {
+  margin: 0;
+  color: #d40b1b;
+  font-size: clamp(20px, 1.5vw, 32px);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.scrollSedes {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 14px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4b0509 #101114;
+}
+
+.scrollSedes:focus-visible {
+  outline: 2px solid var(--rojo, #d40b1b);
+  outline-offset: -3px;
+}
+
+.listaSedes {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filaSede {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  /* Cuatro tarjetas con tres espacios de 10px. */
+  flex: 0 0 calc((100% - 30px) / 4);
+  width: 100px;
+  box-sizing: border-box;
+  padding: 10px 20px;
+
+  background: #0c0e10;
+  border: 1px solid #24272b;
+  border-radius: 12px;
+}
+
+.sedePuesto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sedePrimera {
+  border-color: #9c1320;
+  background: linear-gradient(135deg, #290508, #100c0d);
+}
+
+.puestoSede {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 34px;
+  height: 34px;
+
+  color: #fff;
+  background: #1b1b1b;
+  border-radius: 9px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.sedePrimera .puestoSede {
+  background: #d40b1b;
+}
+
+.nombreSede {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(19px, 1.7vw, 22px);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ventasSede {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.ventasSede strong {
+  font-size: clamp(28px, 2vw, 44px);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ventasSede span {
+  color: #aaa;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.conteoTotal {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex: 0 0 clamp(200px, 20vw, 400px);
+
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 14px;
+  border-left: 1px solid rgb(217 217 217 / 15%);
+}
+
+.sinSede {
+  flex: 0.5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  border: 1px solid #24272b;
+  border-radius: 12px;
+}
+
+.sinSede p {
+  margin: 0;
+  color: var(--gris, #aaa);
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.sinSede strong {
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalSedes {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 12px;
+
+  color: #fff;
+  background: linear-gradient(90deg, #0a0000 0%, #240203 100%);
+  border: 1px solid #370508;
+  border-radius: 12px;
+}
+
+.totalSedes > span {
+  font-size: clamp(11px, 0.8vw, 16px);
+  font-weight: 800;
+}
+
+.totalSedes > strong {
+  font-size: clamp(30px, 2.3vw, 48px);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.vacio {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 24px;
+  color: var(--gris, #aaa);
+  text-align: center;
+}
+
+.vacio p {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .resumenStatsSede {
+    flex-wrap: wrap;
+  }
+
+  .cabecera {
+    flex-basis: 100%;
+    padding: 14px 16px;
+    border-right: 0;
+    border-bottom: 3px solid var(--rojo, #d40b1b);
+  }
+
+  .scrollSedes {
+    flex-basis: 100%;
+  }
+
+  .conteoTotal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-basis: 100%;
+    border-left: 0;
+    border-top: 1px solid rgb(217 217 217 / 15%);
+  }
+
+}
