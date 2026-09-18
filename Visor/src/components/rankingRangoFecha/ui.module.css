@@ -30,6 +30,7 @@
   overflow: hidden;
   border-radius: 999px;
   background: #260909;
+  border: 1px solid #9c1320;
 }
 
 .progreso {

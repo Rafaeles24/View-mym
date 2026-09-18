@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ConfigRanking,
@@ -15,6 +16,7 @@ import type {
   ActualizarConfigRankingInput,
 } from './types/ConfigRankingInput.type';
 import { RankingCountdown } from 'src/realtime/types/ranking-countdown.type';
+import { RankingConfigSync } from './types/ranking-config-sync.type';
 
 @Injectable()
 export class ConfigRankingService {
@@ -45,12 +47,12 @@ export class ConfigRankingService {
 
     if (
       siguienteSiEsFinDeSemana &&
-      referencia.weekday >= 6
+      referencia.weekday >= 7
     ) {
       lunes = lunes.plus({ weeks: 1 });
     }
 
-    const corte = lunes.plus({ days: 5 });
+    const corte = lunes.plus({ days: 6 });
 
     return {
       fecha_inicio: lunes.toUTC().toJSDate(),
@@ -84,9 +86,11 @@ export class ConfigRankingService {
     });
   }
 
-  private notificarCambio(): void {
-    this.rt.emitSyncConfigRankingEvent('sync');
-    this.rt.emitSyncRankingEvent('refresh');
+  private notificarCambio(config: ConfigRanking): void {
+    const schedule = this.crearRespuesta(config);
+
+    this.rt.emitSyncConfigRankingEvent(schedule);
+    this.rt.emitRankingRefresh();
   }
 
   /**
@@ -147,17 +151,28 @@ export class ConfigRankingService {
             zona_horaria: config.zona_horaria,
             updateAt: config.updateAt,
           },
+        
           data: {
             modo: ModoRanking.DEFAULT,
             ...nuevoRango,
             zona_horaria: this.zona,
           },
         });
-
+      
       if (resultado.count === 1) {
-        this.notificarCambio();
+        const configActualizada =
+          await this.prisma.configRanking.findUniqueOrThrow({
+            where: {
+              id: this.configId,
+            },
+          });
+        
+        this.notificarCambio(
+          configActualizada
+        );
+      
+        return configActualizada;
       }
-
     }
 
     throw new ConflictException(
@@ -244,7 +259,7 @@ export class ConfigRankingService {
       update: datos,
     });
 
-    this.notificarCambio();
+    this.notificarCambio(config);
 
     return this.crearRespuesta(config);
   }
@@ -280,40 +295,74 @@ export class ConfigRankingService {
     return fecha;
   }
 
-  private crearRespuesta(config: ConfigRanking) {
-    const inicio = DateTime.fromJSDate(config.fecha_inicio, {
-      zone: this.zona,
-    });
+  private crearRespuesta(
+    config: ConfigRanking
+  ): RankingConfigSync {
+    const inicio = DateTime.fromJSDate(
+      config.fecha_inicio,
+      {
+        zone: this.zona,
+      }
+    );
 
-    const corte = DateTime.fromJSDate(config.fecha_fin, {
-      zone: this.zona,
-    });
+    const corte = DateTime.fromJSDate(
+      config.fecha_fin,
+      {
+        zone: this.zona,
+      }
+    );
+
+    if (!inicio.isValid || !corte.isValid) {
+      throw new InternalServerErrorException(
+        "La configuración del ranking contiene fechas inválidas"
+      );
+    }
+
+    const fechaInicio = inicio.toISO();
+
+    const fechaCorte = corte.toISO();
+
+    const fechaFin = corte
+      .minus({ milliseconds: 1 })
+      .toISO();
+
+    if (
+      fechaInicio === null ||
+      fechaFin === null ||
+      fechaCorte === null
+    ) {
+      throw new InternalServerErrorException(
+        "No se pudieron serializar las fechas del ranking"
+      );
+    }
 
     return {
       id: config.id,
       modo: config.modo,
-    
-      fecha_inicio: inicio.toISO(),
-      fecha_fin: corte.minus({ milliseconds: 1 }).toISO(),
-      fecha_corte: corte.toISO(),
-    
+
+      fecha_inicio: fechaInicio,
+      fecha_fin: fechaFin,
+      fecha_corte: fechaCorte,
+
       zona_horaria: config.zona_horaria,
-    
+
       hora_inicio_actualizacion:
         config.hora_inicio_actualizacion,
-    
+
       hora_fin_actualizacion:
         config.hora_fin_actualizacion,
-    
+
       intervalo_actualizacion:
         config.intervalo_actualizacion,
-    
+
       ultima_actualizacion:
-        config.ultima_actualizacion?.toISOString() ?? null,
-    
+        config.ultima_actualizacion?.toISOString() ??
+        null,
+
       proxima_actualizacion:
-        config.proxima_actualizacion?.toISOString() ?? null,
-    
+        config.proxima_actualizacion?.toISOString() ??
+        null,
+
       updateAt: config.updateAt,
     };
   }
@@ -496,11 +545,11 @@ export class ConfigRankingService {
   }) {
     if (
       !input ||
-      typeof input !== 'object' ||
+      typeof input !== "object" ||
       Array.isArray(input)
     ) {
       throw new BadRequestException(
-        'Debes enviar las horas y el intervalo de actualización',
+        "Debes enviar las horas y el intervalo de actualización"
       );
     }
 
@@ -511,30 +560,40 @@ export class ConfigRankingService {
     const datos = {
       hora_inicio_actualizacion:
         input.hora_inicio_actualizacion,
+
       hora_fin_actualizacion:
         input.hora_fin_actualizacion,
+
       intervalo_actualizacion:
         input.intervalo_actualizacion,
     };
 
-    const proxima = this.siguienteActualizacionRanking(
-      DateTime.now(),
-      {
-        ...datos,
-        zona_horaria: actual.zona_horaria,
-      },
-      true,
+    const proxima =
+      this.siguienteActualizacionRanking(
+        DateTime.now(),
+        {
+          ...datos,
+          zona_horaria: actual.zona_horaria,
+        },
+        true
+      );
+
+    const config =
+      await this.prisma.configRanking.update({
+        where: {
+          id: this.configId,
+        },
+        data: {
+          ...datos,
+          proxima_actualizacion:
+            proxima.toUTC().toJSDate(),
+        },
+      });
+
+    // Envía la configuración nueva al navegador.
+    this.rt.emitSyncConfigRankingEvent(
+      this.crearRespuesta(config)
     );
-
-    const config = await this.prisma.configRanking.update({
-      where: { id: this.configId },
-      data: {
-        ...datos,
-        proxima_actualizacion: proxima.toUTC().toJSDate(),
-      },
-    });
-
-    this.rt.emitSyncConfigRankingEvent('sync');
 
     return this.crearRespuesta(config);
   }
@@ -582,6 +641,8 @@ export class ConfigRankingService {
     }
 
     return {
+      estado: this.estadoActualizacion,
+      
       hora_inicio_actualizacion:
         config.hora_inicio_actualizacion,
 
@@ -610,4 +671,12 @@ export class ConfigRankingService {
       cuenta_regresiva: cuentaRegresiva,
     };
   }
-}
+
+  private estadoActualizacion: | "EN_ESPERA" | "SINCRONIZANDO" | "ERROR" = "EN_ESPERA";
+
+  establecerEstadoActualizacion(
+    estado: "EN_ESPERA" | "SINCRONIZANDO" | "ERROR"
+  ): void {
+    this.estadoActualizacion = estado;
+  }
+} 

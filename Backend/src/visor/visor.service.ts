@@ -21,6 +21,20 @@ export class VisorService {
     private readonly configRankingService: ConfigRankingService,
   ) {}
 
+  // TODA LA DATA EN UNA SOLA PETICION PARA EL FRONTEND
+  async getAllData(sedeId: number) {
+    return {
+      sede: await this.getSede(sedeId),
+      rankingAgenteSede: await this.leaderboardAgentesPorSede(sedeId),
+      rankingGlobalAgente: await this.leaderboardAgentes(),
+      rankingGlobalCerrador: await this.leaderboardCerradores(),
+      sedesStatsDiario: await this.statsDiarioPorSede(),
+      rankingRango: await this.getRangoFechas(),
+      flyerSede: await this.getFlyersPorSede(sedeId),
+      time: this.getCurrentTime(),
+    }
+  }
+
   private readonly fechaGuardadaEnUTC = true;
 
   private normalizeUrl(url: string): string {
@@ -28,13 +42,27 @@ export class VisorService {
   }
 
   async getSede(sedeId: number) {
-    return this.prisma.sede.findFirst({
+    const response = await this.prisma.sede.findUnique({
       where: { id: sedeId },
+      select: {
+        id: true,
+        nombre: true,
+      }
     });
+
+    if (!response) throw new NotFoundException(`Sede no encontrado.`);
+
+    return {
+      id: response.id,
+      nombre: response.nombre == "TOMAS VALLE"
+        ? "TOMAS V." : response.nombre == "BACKOFFICE" ? "BO" : response.nombre
+    }
   }
 
   async getRangoFechas() {
-    return this.prisma.configRanking.findMany();
+    return this.prisma.configRanking.findFirst({
+      where: { id: 1 }
+    });
   }
 
   private validarSedeId(sedeId: number): void {
@@ -179,6 +207,7 @@ export class VisorService {
         .map((sede, index) => ({
           puesto: index + 1,
           ...sede,
+          sede: sede.sede == "TOMAS VALLE" ? "TOMAS V." : sede.sede,
         })),
     };
   }
@@ -388,4 +417,38 @@ export class VisorService {
   }
 
   // FLYERS
+
+  async getFlyersPorSede(sedeId: number) {
+    const sede = await this.prisma.sede.findUniqueOrThrow({
+      where: { id: sedeId },
+      include: {
+        medias: {
+          include: {
+            media: true
+          }
+        }
+      }
+    });
+
+    return {
+      ...sede,
+      medias: sede.medias ? 
+        sede.medias.map((sede) => ({
+          id: sede.media.id,
+          url: this.normalizeUrl(`${process.env.BASE_URL}/${sede.media.url}`),
+          prioridad: sede.prioridad,
+          inicio: sede.started_at,
+          fin: sede.ended_at,
+          mimetype: sede.media.mimeType,
+          duracionms: sede.media.durationMs
+        }))
+      : []
+    };
+  }
+  
+  getCurrentTime() {
+    return { 
+        utc: new Date().toISOString()
+    }
+  }
 }

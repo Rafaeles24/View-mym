@@ -19,7 +19,7 @@ export class SicaService {
     private readonly rt: RealtimeGateway
   ) {}
 
-  async sincronizar() {
+  async sincronizar(notificar = true) {
     await this.authService.asegurarSesion();
 
     const ventas: VentaSica[] = [];
@@ -38,7 +38,9 @@ export class SicaService {
 
     const resultado = await this.ventaImportService.importar(ventas);
 
-    this.rt.emitSyncRankingEvent('refresh');
+    if (notificar) {
+      this.rt.emitRankingRefresh();
+    }
 
     return resultado;
   }

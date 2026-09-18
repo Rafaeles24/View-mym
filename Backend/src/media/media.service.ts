@@ -7,6 +7,7 @@ import { MediaPagination } from './pagination/mediaPagination.dto';
 import { DeleteMediaDto } from './dto/delete-media.dto';
 import path from 'path';
 import { OptimizeService } from 'src/optimize/optimize.service';
+import { AssignMediaToSedesDto } from './dto/add-media.dto';
 
 @Injectable()
 export class MediaService {
@@ -30,11 +31,11 @@ export class MediaService {
     return { total, minutes, seconds }
   }
 
-  /* async getMedias({
+  async getMedias({
     page = 1,
     limit = 50,
     mimetype,
-    campaignId,
+    sedeId,
     startDate,
     endDate
   } : MediaPagination) {
@@ -48,12 +49,12 @@ export class MediaService {
           }
         }),
 
-        ...(campaignId || startDate || endDate 
+        ...(sedeId || startDate || endDate 
           ? {
             asignaciones: {
               some: {
-                ...(campaignId && {
-                  campaign_id: campaignId
+                ...(sedeId && {
+                  sedeId: sedeId
                 }),
 
                 ...((startDate || endDate) && {
@@ -90,7 +91,7 @@ export class MediaService {
           include: {
             asignaciones: {
               include: {
-                campaign: true
+                sede: true
               }
             }
           },
@@ -123,12 +124,10 @@ export class MediaService {
               0,
             createdat: media.createdAt,
 
-            campanias:
+            sedes:
               media.asignaciones?.map(a => ({
-                id: a.campaign.id,
-                nombre: a.campaign.nombre,
-                url: this.normalizeUrl(`${process.env.BASE_URL}/${a.campaign.logo_url}`),
-                hex: a.campaign.hex,
+                id: a.sede.id,
+                nombre: a.sede.nombre,
                 prioridad: a.prioridad,
                 started_at: a.started_at,
                 ended_at: a.ended_at
@@ -250,5 +249,215 @@ export class MediaService {
               `Error eliminando el media: ${error}`
           );
       }
-  } */
+  } 
+
+  async asignarMediaASedes(
+    dto: AssignMediaToSedesDto,
+  ) {
+    /*
+     * Validar que la media exista.
+     */
+    const media = await this.prisma.media.findUnique({
+      where: {
+        id: dto.mediaId,
+      },
+      select: {
+        id: true,
+        nombre: true,
+      },
+    });
+
+    if (!media) {
+      throw new NotFoundException(
+        `La media ${dto.mediaId} no existe.`,
+      );
+    }
+
+    /*
+     * Quitar posibles duplicados.
+     */
+    const sedeIds = [
+      ...new Set(dto.sedeIds),
+    ];
+
+    /*
+     * Aquí guardaremos todas las sedes que
+     * necesitan refrescarse por Socket.IO.
+     */
+    const sedesAfectadas = new Set<number>();
+
+    const resultado =
+      await this.prisma.$transaction(
+        async (tx) => {
+          /*
+           * 1. Validar que todas las sedes existan.
+           */
+          if (sedeIds.length > 0) {
+            const sedes =
+              await tx.sede.findMany({
+                where: {
+                  id: {
+                    in: sedeIds,
+                  },
+                },
+
+                select: {
+                  id: true,
+                },
+              });
+
+            const sedesExistentes =
+              new Set(
+                sedes.map(
+                  (sede) => sede.id,
+                ),
+              );
+
+            const sedesNoExistentes =
+              sedeIds.filter(
+                (id) =>
+                  !sedesExistentes.has(id),
+              );
+
+            if (
+              sedesNoExistentes.length > 0
+            ) {
+              throw new NotFoundException(
+                `Las siguientes sedes no existen: ${sedesNoExistentes.join(', ')}`,
+              );
+            }
+          }
+
+          /*
+           * 2. Obtener las asignaciones actuales
+           *    de esta media.
+           */
+          const asignacionesActuales =
+            await tx.asignacionMedia.findMany({
+              where: {
+                media_id:
+                  dto.mediaId,
+              },
+
+              select: {
+                sede_id: true,
+              },
+            });
+
+          const idsActuales =
+            asignacionesActuales.map(
+              (asignacion) =>
+                asignacion.sede_id,
+            );
+
+          /*
+           * 3. Calcular diferencias.
+           */
+
+          // Nuevas sedes donde debe aparecer.
+          const idsAgregar =
+            sedeIds.filter(
+              (id) =>
+                !idsActuales.includes(id),
+            );
+
+          // Sedes donde ya no debe aparecer.
+          const idsEliminar =
+            idsActuales.filter(
+              (id) =>
+                !sedeIds.includes(id),
+            );
+
+          /*
+           * 4. Registrar todas las sedes
+           *    afectadas.
+           */
+          for (const id of idsAgregar) {
+            sedesAfectadas.add(id);
+          }
+
+          for (const id of idsEliminar) {
+            sedesAfectadas.add(id);
+          }
+
+          /*
+           * 5. Eliminar relaciones
+           *    que ya no corresponden.
+           */
+          if (idsEliminar.length > 0) {
+            await tx.asignacionMedia.deleteMany({
+              where: {
+                media_id:
+                  dto.mediaId,
+
+                sede_id: {
+                  in: idsEliminar,
+                },
+              },
+            });
+          }
+
+          /*
+           * 6. Crear nuevas asignaciones.
+           */
+          if (idsAgregar.length > 0) {
+            await tx.asignacionMedia.createMany({
+              data: idsAgregar.map(
+                (sedeId) => ({
+                  media_id:
+                    dto.mediaId,
+
+                  sede_id:
+                    sedeId,
+                }),
+              ),
+
+              skipDuplicates: true,
+            });
+          }
+
+          return {
+            idsAgregar,
+            idsEliminar,
+            sedeIds,
+          };
+        },
+      );
+
+    /*
+     * IMPORTANTE:
+     *
+     * Emitimos sockets solamente después
+     * de que la transacción terminó bien.
+     */
+    for (
+      const sedeId of sedesAfectadas
+    ) {
+      this.rt.emitSyncSede(
+        sedeId,
+      );
+    }
+
+    return {
+      message:
+        'Asignaciones de la media actualizadas exitosamente.',
+
+      statusCode: 200,
+
+      data: {
+        media: {
+          id: media.id,
+          nombre: media.nombre,
+        },
+
+        sedes: resultado.sedeIds,
+
+        agregadas:
+          resultado.idsAgregar,
+
+        eliminadas:
+          resultado.idsEliminar,
+      },
+    };
+  }
 }

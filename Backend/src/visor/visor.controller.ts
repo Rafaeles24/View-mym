@@ -6,8 +6,19 @@ import { TipoEmpleado } from '@prisma/client';
 export class VisorController {
   constructor(private readonly visorService: VisorService) {}
 
+  @Get('all/:id')
+  getAllData(
+    @Param('id') id: number
+  ) {
+    return this.visorService.getAllData(id);
+  }
+
+  @Get('time')
+  getTime() {
+    return this.visorService.getCurrentTime();
+  }
+
   //SEDES
-  
   @Get('sede/:sedeId')
   getSede(
     @Param('sedeId') sedeId: number
@@ -55,5 +66,12 @@ export class VisorController {
   @Get('ranking/rango') 
   getRankingRango() {
     return this.visorService.getRangoFechas();
-  } 
+  }
+  
+  @Get('flyers/:sedeId') 
+  getFlyers(
+    @Param('sedeId') sedeId: number
+  ) {
+    return this.visorService.getFlyersPorSede(sedeId);
+  }
 }

@@ -1,15 +1,16 @@
-import { Body, Controller, Delete, Get, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { JwtAuthGuard } from 'src/auth/guard/jwtAuthGuard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { MediaPagination } from './pagination/mediaPagination.dto';
 import { DeleteMediaDto } from './dto/delete-media.dto';
+import { AssignMediaToSedesDto } from './dto/add-media.dto';
 
 @Controller('media')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
-  /* @Get()
+  @Get()
   @UseGuards(JwtAuthGuard) 
   getMedias(
     @Query() dto: MediaPagination
@@ -18,7 +19,7 @@ export class MediaController {
   }
 
   @Post("/create")
-  @UseGuards(JwtAuthGuard) 
+  /* @UseGuards(JwtAuthGuard)  */
   @UseInterceptors(FilesInterceptor('files'))
   create (
     @UploadedFiles() files: Express.Multer.File[]
@@ -38,5 +39,12 @@ export class MediaController {
     @Body() dto: DeleteMediaDto[]
   ) {
     return this.mediaService.delete(dto);
-  } */
+  } 
+
+  @Patch('/sedes/asignar')
+  asignarMediaASedes(
+    @Body() dto: AssignMediaToSedesDto,
+  ) {
+    return this.mediaService.asignarMediaASedes(dto);
+  }
 }

@@ -12,7 +12,7 @@ export class MediaPagination extends PartialType(Pagination) {
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
-    campaignId?: number;
+    sedeId?: number;
 
     @IsOptional()
     @IsString()

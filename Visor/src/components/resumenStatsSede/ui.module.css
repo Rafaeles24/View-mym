@@ -197,11 +197,11 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 16px 12px;
+  padding: 16px 20px;
 
   color: #fff;
   background: linear-gradient(90deg, #0a0000 0%, #240203 100%);
-  border: 1px solid #370508;
+  border: 1px solid #9c1320;
   border-radius: 12px;
 }
 

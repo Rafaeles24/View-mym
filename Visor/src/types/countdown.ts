@@ -1,4 +1,5 @@
 export type RankingCountdown = {
+  estado: string;
   hora_inicio_actualizacion: string;
   hora_fin_actualizacion: string;
   intervalo_actualizacion: number;

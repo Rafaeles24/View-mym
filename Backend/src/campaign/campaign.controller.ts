@@ -26,5 +26,8 @@ export class CampaignController {
       size: file.size
     };
 
+    return this.campaignService.create(createCampaignDto, nFile);
   }
+
+  
 }

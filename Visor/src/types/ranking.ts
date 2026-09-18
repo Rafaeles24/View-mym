@@ -24,7 +24,11 @@ export type RankingRangoFecha = {
   modo: string;
   fecha_inicio: string;
   fecha_fin: string;
-  fecha_corte: string;
+  intervalo_actualizacion: number;
+  ultima_actualizacion: string;
+  proxima_actualizacion: string;
+  hora_inicio_actualizacion: string;
+  hora_fin_actualizacion: string;
   zona_horaria: string;
   updateAt: string;
 };

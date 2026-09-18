@@ -1,6 +1,7 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import type { RankingCountdown } from './types/ranking-countdown.type';
+import { RankingConfigSync } from './types/ranking-config.type';
 
 @WebSocketGateway({
   cors: { origin: '*', credentials: true },
@@ -12,7 +13,7 @@ import type { RankingCountdown } from './types/ranking-countdown.type';
 
 export class RealtimeGateway {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   // EVENTOS DE CAMPAÑA
   @SubscribeMessage('join-campaign')
@@ -31,13 +32,53 @@ export class RealtimeGateway {
     socket.leave(`room:campaign-${campaignId}`);
   }
 
-  emitSyncCampaign<T>(
-    campaignId: number,
-    payload: T
+  emitSyncCampaign(
+    campaignId: number
   ) {
     this.server
       .to(`room:campaign-${campaignId}`)
-      .emit(`campaign:sync`, payload);
+      .emit(`campaign:sync`);
+  }
+
+  //SEDE
+  @SubscribeMessage('sede:join')
+  async joinSede(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    data: {
+      sedeId: number;
+    }
+  ) {
+    await client.join(`sede:${data.sedeId}`);
+
+    return {
+      event: 'sede:joined',
+      data: {
+        sedeId: data.sedeId,
+        room: `sede:${data.sedeId}`
+      },
+    }
+  }
+
+  @SubscribeMessage('sede:leave')
+  async leaveSede(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    data: {
+      sedeId: number;
+    }
+  ) {
+    await client.leave(`sede:${data.sedeId}`);
+  }
+
+  emitSyncSede(
+    sedeId: number
+  ) {
+    this.server.to(`sede:${sedeId}`).emit(`sede:refresh`, { sedeId, timestamp: new Date().toISOString(), });
   }
 
   emitCampaignMediaEvent<T>(
@@ -161,26 +202,42 @@ export class RealtimeGateway {
   handleJoinRanking(
     @ConnectedSocket() socket: Socket
   ) {
-    socket.join('room:ranking')
+    socket.join('room:ranking');
+
+    console.log(
+      `[SOCKET] ${socket.id} entró a room:ranking`
+    );
   }
 
   @SubscribeMessage('leave-ranking')
   handleLeaveRanking(
     @ConnectedSocket() socket: Socket
   ) {
-    socket.leave('room:ranking')
+    socket.leave('room:ranking');
+    
+    console.log(
+      `[SOCKET] ${socket.id} salió de room:ranking`
+    );
   }
 
-  emitSyncRankingEvent(
-    event: 'refresh'
-  ) {
-    this.server.emit(`ranking:${event}`);
+  emitRankingRefresh() {
+    this.server.to("room:ranking")
+      .emit(`ranking:refresh`, {
+        timestamp: new Date().toISOString(),
+      });
   }
 
   emitSyncConfigRankingEvent(
-    event: 'sync'
+    schedule: RankingConfigSync
   ) {
-    this.server.emit(`ranking-config:${event}`);
+    console.log(
+      "[SOCKET] emitiendo ranking-config:sync",
+      schedule
+    );
+
+    this.server
+      .to("room:ranking")
+      .emit("ranking-config:sync", schedule);
   }
   
   //La hora en tiempo real
