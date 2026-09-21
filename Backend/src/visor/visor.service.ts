@@ -35,8 +35,6 @@ export class VisorService {
     }
   }
 
-  private readonly fechaGuardadaEnUTC = true;
-
   private normalizeUrl(url: string): string {
     return url.replace(/\\/g, '/');
   }
@@ -60,9 +58,7 @@ export class VisorService {
   }
 
   async getRangoFechas() {
-    return this.prisma.configRanking.findFirst({
-      where: { id: 1 }
-    });
+    return this.configRankingService.obtener();
   }
 
   private validarSedeId(sedeId: number): void {
@@ -134,8 +130,8 @@ export class VisorService {
         where: {
           tipo_empleado: tipoEmpleado,
           fecha: {
-            gte: this.fechaParaBD(inicio),
-            lt: this.fechaParaBD(fin),
+            gte: this.fechaLimaParaBD(inicio),
+            lt: this.fechaLimaParaBD(fin),
           },
         },
         _count: {
@@ -277,8 +273,8 @@ export class VisorService {
     const where: Prisma.VentaWhereInput = {
       tipo_empleado: tipoEmpleado,
       fecha: {
-        gte: this.fechaParaBD(inicio),
-        lt: this.fechaParaBD(fin),
+        gte: this.fechaLimaParaBD(inicio),
+        lt: this.fechaLimaParaBD(fin),
       },
     };
 
@@ -294,7 +290,7 @@ export class VisorService {
         variante_empleado: true,
         sede_id: true,
         campaign_id: true,
-        fecha: true,
+        fecha_lima: true,
         sede: {
           select: {
             id: true,
@@ -330,7 +326,11 @@ export class VisorService {
         venta.campaign_id,
       ]);
 
-      const fecha = venta.fecha.getTime();
+      if (!venta.fecha_lima) {
+        continue;
+      }
+
+      const fecha = venta.fecha_lima.getTime();
       const grupo = grupos.get(clave);
 
       if (!grupo) {
@@ -394,14 +394,39 @@ export class VisorService {
 
   // CÁLCULO DEL PERIODO GLOBAL
 
-  private fechaParaBD(fecha: DateTime): Date {
-    if (this.fechaGuardadaEnUTC) {
-      return fecha.toUTC().toJSDate();
+  private fechaLimaParaBD(
+    fecha: DateTime,
+  ): Date {
+
+    const local =
+      fecha.setZone(
+        'America/Lima',
+      );
+
+    if (!local.isValid) {
+      throw new InternalServerErrorException(
+        'Fecha Lima inválida para consulta',
+      );
     }
 
-    // Para DATETIME guardado como hora local.
-    return fecha
-      .setZone('UTC', { keepLocalTime: true })
+    /*
+     * fecha_lima es DATETIME local.
+     *
+     * 2026-09-21 00:00 Lima
+     *
+     * debe compararse contra:
+     *
+     * 2026-09-21 00:00:00
+     *
+     * sin desplazarlo a 05:00 UTC.
+     */
+    return local
+      .setZone(
+        'UTC',
+        {
+          keepLocalTime: true,
+        },
+      )
       .toJSDate();
   }
 

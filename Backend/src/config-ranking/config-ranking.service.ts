@@ -32,6 +32,48 @@ export class ConfigRankingService {
     return DateTime.now().setZone(this.zona);
   }
 
+  private fechaLimaParaBD(
+    fecha: DateTime,
+  ): Date {
+
+    const local =
+      fecha.setZone(this.zona);
+
+    if (!local.isValid) {
+      throw new InternalServerErrorException(
+        'No se pudo convertir la fecha Lima para la base de datos',
+      );
+    }
+
+    return local
+      .setZone(
+        'UTC',
+        {
+          keepLocalTime: true,
+        },
+      )
+      .toJSDate();
+  }
+
+  private fechaBDALima(
+    fecha: Date,
+  ): DateTime {
+
+    return DateTime
+      .fromJSDate(
+        fecha,
+        {
+          zone: 'UTC',
+        },
+      )
+      .setZone(
+        this.zona,
+        {
+          keepLocalTime: true,
+        },
+      );
+  }
+
   private calcularDefault(
     referencia: DateTime,
     siguienteSiEsFinDeSemana: boolean,
@@ -40,49 +82,81 @@ export class ConfigRankingService {
     fecha_fin: Date;
   } {
 
-    // Luxon: lunes = 1 ... domingo = 7.
-    let lunes = referencia
-      .startOf('day')
-      .minus({ days: referencia.weekday - 1 });
+    const referenciaLima =
+      referencia.setZone(this.zona);
+
+    let lunes =
+      referenciaLima
+        .startOf('day')
+        .minus({
+          days:
+            referenciaLima.weekday - 1,
+        });
 
     if (
       siguienteSiEsFinDeSemana &&
-      referencia.weekday >= 7
+      referenciaLima.weekday >= 6
     ) {
-      lunes = lunes.plus({ weeks: 1 });
+      lunes =
+        lunes.plus({
+          weeks: 1,
+        });
     }
 
-    const corte = lunes.plus({ days: 6 });
+    const corte =
+      lunes.plus({
+        days: 5,
+      });
 
     return {
-      fecha_inicio: lunes.toUTC().toJSDate(),
-      fecha_fin: corte.toUTC().toJSDate(),
+      fecha_inicio:
+        this.fechaLimaParaBD(
+          lunes,
+        ),
+
+      fecha_fin:
+        this.fechaLimaParaBD(
+          corte,
+        ),
     };
   }
 
   private async leerOCrear(): Promise<ConfigRanking> {
+
     const existente =
       await this.prisma.configRanking.findUnique({
-        where: { id: this.configId },
+        where: {
+          id: this.configId,
+        },
       });
 
     if (existente) {
       return existente;
     }
 
-    // Si se configura por primera vez un fin de semana,
-    // se prepara la siguiente semana.
-    const rango = this.calcularDefault(this.ahora(), true);
+    const rango =
+      this.calcularDefault(
+        this.ahora(),
+        true,
+      );
 
-    return this.prisma.configRanking.upsert({
-      where: { id: this.configId },
-      create: {
-        id: this.configId,
-        modo: ModoRanking.DEFAULT,
-        ...rango,
-        zona_horaria: this.zona,
+    return this.prisma.configRanking.create({
+      data: {
+        id:
+          this.configId,
+
+        modo:
+          ModoRanking.DEFAULT,
+
+        fecha_inicio:
+          rango.fecha_inicio,
+
+        fecha_fin:
+          rango.fecha_fin,
+
+        zona_horaria:
+          this.zona,
       },
-      update: {},
     });
   }
 
@@ -93,10 +167,6 @@ export class ConfigRankingService {
     this.rt.emitRankingRefresh();
   }
 
-  /**
-   * Se llama desde el cron y desde las consultas del visor.
-   * No escribe ni emite eventos si el rango sigue vigente.
-   */
   async renovarSiCorresponde(): Promise<ConfigRanking> {
     for (let intento = 0; intento < 5; intento++) {
       const config = await this.leerOCrear();
@@ -110,24 +180,26 @@ export class ConfigRankingService {
         | undefined;
 
       if (config.modo === ModoRanking.PERSONALIZADO) {
+        const finGuardado =
+          this.fechaBDALima(
+            config.fecha_fin,
+          );
+        
         const vencido =
-          ahora.toMillis() >= config.fecha_fin.getTime();
+          ahora.toMillis() >=
+          finGuardado.toMillis();
 
         if (!vencido) {
           return config;
         }
 
-        // Lunes–viernes: semana actual.
-        // Sábado–domingo: siguiente semana.
         nuevoRango = this.calcularDefault(ahora, true);
       } else {
-        const inicioGuardado = DateTime.fromJSDate(
-          config.fecha_inicio,
-          { zone: this.zona },
-        );
+        const inicioGuardado =
+          this.fechaBDALima(
+            config.fecha_inicio,
+          );
 
-        // El DEFAULT se renueva el lunes siguiente,
-        // no al terminar el viernes.
         const siguienteLunes = inicioGuardado
           .startOf('day')
           .minus({ days: inicioGuardado.weekday - 1 })
@@ -137,7 +209,6 @@ export class ConfigRankingService {
           return config;
         }
 
-        // Recupera también renovaciones omitidas por apagado.
         nuevoRango = this.calcularDefault(ahora, false);
       }
 
@@ -191,16 +262,22 @@ export class ConfigRankingService {
    * en el VisorService que ya tienes.
    */
   async obtenerRangoVigente() {
-    const config = await this.renovarSiCorresponde();
+
+    const config =
+      await this.renovarSiCorresponde();
 
     return {
       config,
-      inicio: DateTime.fromJSDate(config.fecha_inicio, {
-        zone: this.zona,
-      }),
-      fin: DateTime.fromJSDate(config.fecha_fin, {
-        zone: this.zona,
-      }),
+
+      inicio:
+        this.fechaBDALima(
+          config.fecha_inicio,
+        ),
+
+      fin:
+        this.fechaBDALima(
+          config.fecha_fin,
+        ),
     };
   }
 
@@ -244,10 +321,21 @@ export class ConfigRankingService {
     }
 
     const datos = {
-      modo: ModoRanking.PERSONALIZADO,
-      fecha_inicio: inicio.toUTC().toJSDate(),
-      fecha_fin: corte.toUTC().toJSDate(),
-      zona_horaria: this.zona,
+      modo:
+        ModoRanking.PERSONALIZADO,
+    
+      fecha_inicio:
+        this.fechaLimaParaBD(
+          inicio,
+        ),
+      
+      fecha_fin:
+        this.fechaLimaParaBD(
+          corte,
+        ),
+      
+      zona_horaria:
+        this.zona,
     };
 
     const config = await this.prisma.configRanking.upsert({
@@ -298,19 +386,15 @@ export class ConfigRankingService {
   private crearRespuesta(
     config: ConfigRanking
   ): RankingConfigSync {
-    const inicio = DateTime.fromJSDate(
-      config.fecha_inicio,
-      {
-        zone: this.zona,
-      }
-    );
-
-    const corte = DateTime.fromJSDate(
-      config.fecha_fin,
-      {
-        zone: this.zona,
-      }
-    );
+    const inicio =
+      this.fechaBDALima(
+        config.fecha_inicio,
+      );
+    
+    const corte =
+      this.fechaBDALima(
+        config.fecha_fin,
+      );
 
     if (!inicio.isValid || !corte.isValid) {
       throw new InternalServerErrorException(
@@ -368,32 +452,8 @@ export class ConfigRankingService {
   }
 
   private validarProgramacion(config: {
-    hora_inicio_actualizacion: string;
-    hora_fin_actualizacion: string;
     intervalo_actualizacion: number;
   }): void {
-    const formatoHora = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-    if (
-      typeof config.hora_inicio_actualizacion !== 'string' ||
-      !formatoHora.test(config.hora_inicio_actualizacion) ||
-      typeof config.hora_fin_actualizacion !== 'string' ||
-      !formatoHora.test(config.hora_fin_actualizacion)
-    ) {
-      throw new BadRequestException(
-        'Las horas deben tener formato HH:mm',
-      );
-    }
-
-    // Comparación válida para horas con formato HH:mm.
-    if (
-      config.hora_inicio_actualizacion >=
-      config.hora_fin_actualizacion
-    ) {
-      throw new BadRequestException(
-        'La hora final debe ser posterior a la hora inicial',
-      );
-    }
 
     if (
       !Number.isInteger(config.intervalo_actualizacion) ||
@@ -418,89 +478,106 @@ export class ConfigRankingService {
     referencia: DateTime,
     config: Pick<
       ConfigRanking,
-      | 'hora_inicio_actualizacion'
-      | 'hora_fin_actualizacion'
       | 'intervalo_actualizacion'
       | 'zona_horaria'
     >,
     incluirReferencia = false,
   ): DateTime {
-    this.validarProgramacion(config);
 
-    const local = referencia.setZone(config.zona_horaria);
+    const intervalo =
+      config.intervalo_actualizacion;
 
-    if (!local.isValid) {
+    if (
+      !Number.isInteger(intervalo) ||
+      intervalo <= 0
+    ) {
       throw new BadRequestException(
-        'La fecha o zona horaria de programación no es válida',
+        'intervalo_actualizacion debe ser un entero positivo',
       );
     }
 
-    const [horaInicio, minutoInicio] =
-      config.hora_inicio_actualizacion.split(':').map(Number);
+    const local =
+      referencia.setZone(
+        config.zona_horaria,
+      );
 
-    const [horaFin, minutoFin] =
-      config.hora_fin_actualizacion.split(':').map(Number);
-
-    const intervaloMs =
-      config.intervalo_actualizacion * 60_000;
-
-    const referenciaMs = local.toMillis();
-
-    let dia = local.startOf('day');
-
-    // Como máximo se necesita llegar al próximo día laborable.
-    for (let intento = 0; intento < 8; intento++) {
-      if (dia.weekday <= 5) {
-        const apertura = dia.set({
-          hour: horaInicio,
-          minute: minutoInicio,
-          second: 0,
-          millisecond: 0,
-        });
-
-        const cierre = dia.set({
-          hour: horaFin,
-          minute: minutoFin,
-          second: 0,
-          millisecond: 0,
-        });
-
-        const transcurrido =
-          referenciaMs - apertura.toMillis();
-
-        const posicion = Math.max(
-          0,
-          incluirReferencia
-            ? Math.ceil(transcurrido / intervaloMs)
-            : Math.floor(transcurrido / intervaloMs) + 1,
-        );
-
-        const candidato = apertura.plus({
-          milliseconds: posicion * intervaloMs,
-        });
-
-        // Si el intervalo sobrepasa el cierre,
-        // se utiliza el cierre como último batch.
-        const siguiente =
-          candidato.toMillis() <= cierre.toMillis()
-            ? candidato
-            : cierre;
-
-        const valido = incluirReferencia
-          ? siguiente.toMillis() >= referenciaMs
-          : siguiente.toMillis() > referenciaMs;
-
-        if (valido) {
-          return siguiente;
-        }
-      }
-
-      dia = dia.plus({ days: 1 }).startOf('day');
+    if (!local.isValid) {
+      throw new BadRequestException(
+        'Fecha o zona horaria inválida',
+      );
     }
 
-    throw new BadRequestException(
-      'No se pudo calcular la siguiente actualización',
-    );
+    /*
+     * Todos los horarios se anclan
+     * desde las 00:00 del día.
+     *
+     * Ejemplo con intervalo 60:
+     *
+     * 00:00
+     * 01:00
+     * 02:00
+     * ...
+     *
+     * Ejemplo con intervalo 15:
+     *
+     * 00:00
+     * 00:15
+     * 00:30
+     * 00:45
+     */
+    const inicioDia =
+      local.startOf('day');
+
+    const minutosDesdeMedianoche =
+      local.diff(
+        inicioDia,
+        'minutes',
+      ).minutes;
+
+    let posicion: number;
+
+    if (incluirReferencia) {
+
+      posicion =
+        Math.ceil(
+          minutosDesdeMedianoche /
+          intervalo,
+        );
+
+    } else {
+
+      posicion =
+        Math.floor(
+          minutosDesdeMedianoche /
+          intervalo,
+        ) + 1;
+    }
+
+    let siguiente =
+      inicioDia.plus({
+        minutes:
+          posicion * intervalo,
+      });
+
+    /*
+     * Protección:
+     *
+     * si incluirReferencia = false,
+     * nunca devolver el instante actual.
+     */
+    if (
+      !incluirReferencia &&
+      siguiente.toMillis() <=
+        local.toMillis()
+    ) {
+
+      siguiente =
+        siguiente.plus({
+          minutes: intervalo,
+        });
+    }
+
+    return siguiente;
   }
 
   async obtenerProgramacion(): Promise<ConfigRanking> {
@@ -539,8 +616,6 @@ export class ConfigRankingService {
   }
 
   async actualizarProgramacion(input: {
-    hora_inicio_actualizacion: string;
-    hora_fin_actualizacion: string;
     intervalo_actualizacion: number;
   }) {
     if (
@@ -558,12 +633,6 @@ export class ConfigRankingService {
     const actual = await this.leerOCrear();
 
     const datos = {
-      hora_inicio_actualizacion:
-        input.hora_inicio_actualizacion,
-
-      hora_fin_actualizacion:
-        input.hora_fin_actualizacion,
-
       intervalo_actualizacion:
         input.intervalo_actualizacion,
     };
@@ -601,13 +670,8 @@ export class ConfigRankingService {
   // Mantiene compatibilidad con el endpoint anterior,
   // si todavía lo utilizas para cambiar solo el intervalo.
   async actualizarIntervalo(minutos: number) {
-    const actual = await this.leerOCrear();
 
     return this.actualizarProgramacion({
-      hora_inicio_actualizacion:
-        actual.hora_inicio_actualizacion,
-      hora_fin_actualizacion:
-        actual.hora_fin_actualizacion,
       intervalo_actualizacion: minutos,
     });
   }

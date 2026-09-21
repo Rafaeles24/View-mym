@@ -15,5 +15,6 @@ export interface VentaSica {
 
   fechaTramitacion: string;
 
-  fechaEdicion: string;
+  fechaEdicionMadrid: string;
+  fechaEdicionLima: string;
 }

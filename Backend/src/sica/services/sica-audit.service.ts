@@ -45,60 +45,45 @@ export class SicaAuditService {
 
     sheet.columns = [
       {
-        header:
-          'CERRADOR',
-
-        key:
-          'cerrador',
-
-        width:
-          35,
+        header: 'CERRADOR',
+        key: 'cerrador',
+        width: 35,
       },
       {
-        header:
-          'AGENTE',
-
-        key:
-          'agente',
-
-        width:
-          35,
+        header: 'AGENTE',
+        key: 'agente',
+        width: 35,
       },
       {
-        header:
-          'VARIANTE AGENTE',
-
-        key:
-          'varianteAgente',
-
-        width:
-          22,
+        header: 'VARIANTE AGENTE',
+        key: 'varianteAgente',
+        width: 22,
       },
       {
-        header:
-          'CAMPAIGN',
-
-        key:
-          'campaign',
-
-        width:
-          20,
+        header: 'CAMPAIGN',
+        key: 'campaign',
+        width: 20,
       },
       {
-        header:
-          'SEDE',
-
-        key:
-          'sede',
-
-        width:
-          20,
+        header: 'SEDE',
+        key: 'sede',
+        width: 20,
       },
       {
         header: 'FECHA TRAMITACION',
-        key: 'fechaTramitacionExcel',
+        key: 'fechaTramitacion',
         width: 24,
-      }
+      },
+      {
+        header: 'FECHA EDICION MADRID',
+        key: 'fechaEdicionMadrid',
+        width: 24,
+      },
+      {
+        header: 'FECHA EDICION LIMA',
+        key: 'fechaEdicionLima',
+        width: 24,
+      },
     ];
 
     for (const venta of ventas) {
@@ -106,21 +91,27 @@ export class SicaAuditService {
       sheet.addRow({
         cerrador:
           venta.cerrador,
-
+            
         agente:
           venta.agente,
-
+            
         varianteAgente:
           venta.varianteAgente,
-
+            
         campaign:
           venta.campaign,
-
+            
         sede:
           venta.sede,
-        
-        fechaTramitacionExcel: 
-          venta.fechaEdicion,
+            
+        fechaTramitacion:
+          venta.fechaTramitacion,
+            
+        fechaEdicionMadrid:
+          venta.fechaEdicionMadrid,
+            
+        fechaEdicionLima:
+          venta.fechaEdicionLima,
       });
     }
 

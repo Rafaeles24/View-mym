@@ -20,13 +20,6 @@ export class SedeController {
     return this.sedeService.create(dto);
   }
 
-  @Post('/captions/add')
-  addCaptions(
-    @Body() dto: AddCaptionDto
-  ) {
-    return this.sedeService.addCaptionsToSede(dto);
-  }
-
   @Put('/update/:id')
   update(
     @Param('id', ParseIntPipe) id: number,

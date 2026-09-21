@@ -204,9 +204,6 @@ export class RealtimeGateway {
   ) {
     socket.join('room:ranking');
 
-    console.log(
-      `[SOCKET] ${socket.id} entró a room:ranking`
-    );
   }
 
   @SubscribeMessage('leave-ranking')
@@ -215,9 +212,6 @@ export class RealtimeGateway {
   ) {
     socket.leave('room:ranking');
     
-    console.log(
-      `[SOCKET] ${socket.id} salió de room:ranking`
-    );
   }
 
   emitRankingRefresh() {
@@ -230,10 +224,6 @@ export class RealtimeGateway {
   emitSyncConfigRankingEvent(
     schedule: RankingConfigSync
   ) {
-    console.log(
-      "[SOCKET] emitiendo ranking-config:sync",
-      schedule
-    );
 
     this.server
       .to("room:ranking")

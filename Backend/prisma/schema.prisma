@@ -34,7 +34,6 @@ model Sede {
   nombre String
 
   campaigns CampaignSede[]
-  captions  SedeCaption[]
   ventas    Venta[]
 
   medias AsignacionMedia[]
@@ -52,19 +51,6 @@ model Media {
   asignaciones AsignacionMedia[]
 }
 
-model Caption {
-  id    Int     @id @default(autoincrement())
-  title String
-  text  String  @db.LongText
-  hex   String?
-
-  createdAt DateTime @default(now())
-
-  sedes SedeCaption[]
-
-  @@index([createdAt])
-}
-
 model Venta {
   id                Int              @id @default(autoincrement())
   sica_id           String
@@ -74,6 +60,7 @@ model Venta {
   sede_id           Int?
   campaign_id       Int?
   fecha             DateTime
+  fecha_lima        DateTime?
 
   campaign Campaign? @relation(fields: [campaign_id], references: [id])
   sede     Sede?     @relation(fields: [sede_id], references: [id])
@@ -82,9 +69,10 @@ model Venta {
   @@index([campaign_id])
   @@index([sede_id])
   @@index([fecha])
+  @@index([fecha_lima])
   @@index([variante_empleado])
   @@index([nombre_empleado])
-  @@index([campaign_id, sede_id, nombre_empleado, variante_empleado, fecha])
+  @@index([campaign_id, sede_id, nombre_empleado, variante_empleado, fecha, fecha_lima])
 }
 
 enum VarianteEmpleado {
@@ -126,21 +114,6 @@ model AsignacionMedia {
   @@index([sede_id])
   @@index([started_at, ended_at])
   @@index([sede_id, prioridad])
-}
-
-model SedeCaption {
-  sede_id    Int
-  caption_id Int
-
-  started_at DateTime?
-  ended_at   DateTime?
-
-  sede    Sede    @relation(fields: [sede_id], references: [id], onDelete: Cascade)
-  caption Caption @relation(fields: [caption_id], references: [id], onDelete: Cascade)
-
-  @@id([sede_id, caption_id])
-  @@index([sede_id])
-  @@index([started_at, ended_at])
 }
 
 //CONFIG
