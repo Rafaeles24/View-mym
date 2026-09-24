@@ -14,7 +14,7 @@ import TimeUI from "../time/ui";
 import { Time } from "@/types/time";
 
 
-const DEFAULT_RANKING_DURATION = 2 * 60 * 1000;
+const DEFAULT_RANKING_DURATION = 60 * 60 * 1000;
 
 export default function SedeViews({
   sede,
