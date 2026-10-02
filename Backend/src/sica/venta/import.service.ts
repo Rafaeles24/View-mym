@@ -23,6 +23,7 @@ export class VentaImportService {
     let ventasSicaProcesadas = 0;
     let registrosVentasProcesadas = 0;
     let omitidos = 0;
+    let ventaCerradorNoRegistrado = 0;
 
     for (const venta of ventas) {
 
@@ -101,6 +102,19 @@ export class VentaImportService {
             venta.fechaEdicionLima,
           );
 
+        const cerradorNormalizado = this.normalizarNombre(venta.cerrador);
+
+        const cerrador = await this.prisma.cerrador.findUnique({
+          where: {
+            nombre_normalizado: cerradorNormalizado
+          }
+        });
+
+        if (!cerrador) {
+          ventaCerradorNoRegistrado++;
+          console.warn(`[SICA] Cerrador no registrado ${venta.cerrador}`);
+        }
+
         await this.prisma.$transaction(
           async (tx) => {
 
@@ -147,6 +161,8 @@ export class VentaImportService {
 
                 fecha_lima:
                   fechaLima,
+                
+                cerrador_id: cerrador?.id ?? null,
               },
 
               update: {
@@ -164,6 +180,8 @@ export class VentaImportService {
 
                 fecha_lima:
                   fechaLima,
+
+                cerrador_id: cerrador?.id ?? null,
               },
             });
 
@@ -210,6 +228,8 @@ export class VentaImportService {
 
                 fecha_lima:
                   fechaLima,
+
+                cerrador_id: cerrador?.id ?? null,
               },
 
               update: {
@@ -227,6 +247,8 @@ export class VentaImportService {
 
                 fecha_lima:
                   fechaLima,
+                
+                cerrador_id: cerrador?.id ?? null,
               },
             });
           },
@@ -252,8 +274,18 @@ export class VentaImportService {
     return {
       ventasSicaProcesadas,
       registrosVentasProcesadas,
+      ventaCerradorNoRegistrado,
       omitidos,
     };
+  }
+
+  private normalizarNombre(nombre: string): string {
+    return nombre
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toUpperCase();
   }
 
   private convertirFechaLocal(

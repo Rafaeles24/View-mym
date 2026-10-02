@@ -2,12 +2,31 @@ import SedeViews from "@/app/client/sedeViews/ui";
 import { AllSedeData } from "@/types/allSedeData";
 import { notFound } from "next/navigation";
 
+
+function construirUrl(
+  baseUrl: string,
+  ruta: string,
+): string {
+  return `${baseUrl.replace(/\/$/, "")}/${ruta.replace(/^\//, "")}`;
+}
+
 async function getAllData(sedeId: string): Promise<AllSedeData> {
   if (!/^[1-9]\d*$/.test(sedeId)) {
     notFound();
   }
 
-  const response = await fetch(`${process.env.BACKEND_INTERNAL_URL}system/api/visor/all/${sedeId}`, {
+  const baseUrl = process.env.BACKEND_INTERNAL_URL;
+  if (!baseUrl) {
+    throw new Error("BACKEND_INTERNAL_URL no está definido");
+  }
+
+/*   console.log('[SEDE PAGE] Consultando datos', {
+    sedeId,
+    url: construirUrl(baseUrl, `system/api/visor/all/${sedeId}`),
+    timestamp: new Date().toISOString()
+  }) */
+
+  const response = await fetch(`${construirUrl(baseUrl, `system/api/visor/all/${sedeId}`)}`, {
     cache: 'no-store'
   });
 

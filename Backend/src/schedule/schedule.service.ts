@@ -3,10 +3,13 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { DateTime } from "luxon";
 
 import { PrismaService } from "src/prisma/prisma.service";
-import { RealtimeGateway } from "src/realtime/realtime.gateway";
 import { SicaService } from "src/sica/sica.service";
 import { ConfigRankingService } from
   "src/config-ranking/config-ranking.service";
+import { SedeGateway } from "src/realtime/gateways/sede.gateway";
+import { TimeGateway } from "src/realtime/gateways/time.gateway";
+import { MediaGateway } from "src/realtime/gateways/media.gateway";
+import { RankingGateway } from "src/realtime/gateways/ranking.gateway";
 
 @Injectable()
 export class ScheduleService {
@@ -15,10 +18,13 @@ export class ScheduleService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly rt: RealtimeGateway,
     private readonly sicaService: SicaService,
-    private readonly configRankingService:
-      ConfigRankingService,
+    private readonly configRankingService: ConfigRankingService,
+
+    private readonly rankingGateway: RankingGateway,
+    private readonly mediaGateway: MediaGateway,
+    private readonly timeGateway: TimeGateway,
+    private readonly sedeGateway: SedeGateway,
   ) {}
 
   /*
@@ -29,7 +35,7 @@ export class ScheduleService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   emitCurrentTime() {
-    this.rt.emitCurrentTime();
+    this.timeGateway.emitCurrentTime();
   }
 
   /*
@@ -257,7 +263,7 @@ export class ScheduleService {
          * ÚNICA señal que obliga al visor
          * a volver a consultar /all/:sede.
          */
-        this.rt.emitRankingRefresh();
+        this.rankingGateway.emitRankingRefresh();
 
         this.logger.log(
           "Batch del ranking completado.",
@@ -296,7 +302,7 @@ export class ScheduleService {
         await this.configRankingService
           .obtenerCuentaRegresiva();
 
-      this.rt.emitRankingCountdown(
+      this.rankingGateway.emitRankingCountdown(
         cuentaRegresiva,
       );
     } catch (error: unknown) {

@@ -1,13 +1,21 @@
 "use client";
 
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import Image from "next/image";
+
 import { formatTime } from "@/lib/formatTime";
 import { socket } from "@/lib/socket";
-import { useCallback, useEffect, useRef, useState } from "react";
-import styles from "./ui.module.css";
 import { Time } from "@/types/time";
-import Image from "next/image";
+
 import FlagPe from "@/icons/bandera peru.svg";
 import FlagEs from "@/icons/bandera españa.svg";
+
+import styles from "./ui.module.css";
 
 type ClockTime = {
   hour: string;
@@ -23,8 +31,11 @@ const EMPTY_TIME: ClockTime = {
   period: "",
 };
 
-const TIME_ZONE_PE = "America/Lima";
-const TIME_ZONE_ES = "Europe/Madrid";
+const TIME_ZONE_PE =
+  "America/Lima";
+
+const TIME_ZONE_ES =
+  "Europe/Madrid";
 
 export default function TimeUI({
   time,
@@ -32,44 +43,92 @@ export default function TimeUI({
   time: Time;
 }) {
   const [timePe, setTimePe] =
-    useState<ClockTime>(EMPTY_TIME);
+    useState<ClockTime>(
+      EMPTY_TIME,
+    );
 
   const [timeEs, setTimeEs] =
-    useState<ClockTime>(EMPTY_TIME);
+    useState<ClockTime>(
+      EMPTY_TIME,
+    );
 
-  const offsetRef = useRef(0);
+  /*
+   * Hora UTC recibida en la última
+   * sincronización válida.
+   */
+  const serverTimeRef =
+    useRef<number | null>(null);
 
-  const sincronizadoRef = useRef(false);
+  /*
+   * performance.now() es monotónico:
+   * no cambia aunque Windows ajuste
+   * la hora del sistema.
+   */
+  const receivedAtRef =
+    useRef<number | null>(null);
+
+  /*
+   * Evita que una respuesta antigua de
+   * router.refresh() sobrescriba una
+   * sincronización más reciente.
+   */
+  const latestServerTimeRef =
+    useRef<number | null>(null);
 
   /*
    * ==========================================
-   * ACTUALIZAR RELOJ
+   * OBTENER HORA ACTUAL DEL SERVIDOR
    * ==========================================
    */
 
-  const actualizarRelojes = useCallback(() => {
-    if (!sincronizadoRef.current) {
-      return;
-    }
+  const obtenerHoraServidor =
+    useCallback((): Date | null => {
+      if (
+        serverTimeRef.current === null ||
+        receivedAtRef.current === null
+      ) {
+        return null;
+      }
 
-    const ahoraServidor = new Date(
-      Date.now() + offsetRef.current
-    );
+      const transcurrido =
+        performance.now() -
+        receivedAtRef.current;
 
-    setTimePe(
-      formatTime(
-        ahoraServidor,
-        TIME_ZONE_PE
-      )
-    );
+      return new Date(
+        serverTimeRef.current +
+          transcurrido,
+      );
+    }, []);
 
-    setTimeEs(
-      formatTime(
-        ahoraServidor,
-        TIME_ZONE_ES
-      )
-    );
-  }, []);
+  /*
+   * ==========================================
+   * ACTUALIZAR RELOJES
+   * ==========================================
+   */
+
+  const actualizarRelojes =
+    useCallback(() => {
+      const ahoraServidor =
+        obtenerHoraServidor();
+
+      if (!ahoraServidor) {
+        return;
+      }
+
+      setTimePe(
+        formatTime(
+          ahoraServidor,
+          TIME_ZONE_PE,
+        ),
+      );
+
+      setTimeEs(
+        formatTime(
+          ahoraServidor,
+          TIME_ZONE_ES,
+        ),
+      );
+    }, [obtenerHoraServidor]);
 
   /*
    * ==========================================
@@ -77,45 +136,78 @@ export default function TimeUI({
    * ==========================================
    */
 
-  const handleTimeSync = useCallback(
-    ({ utc }: { utc: string }) => {
-      const servidorMs =
-        Date.parse(utc);
+  const handleTimeSync =
+    useCallback(
+      ({
+        utc,
+      }: {
+        utc: string;
+      }) => {
+        const servidorMs =
+          Date.parse(utc);
 
-      if (
-        !Number.isFinite(servidorMs)
-      ) {
-        console.error(
-          "[TIME] Hora inválida:",
-          utc
-        );
+        if (
+          !Number.isFinite(
+            servidorMs,
+          )
+        ) {
+          console.error(
+            "[TIME] Hora inválida:",
+            utc,
+          );
 
-        return;
-      }
+          return;
+        }
 
-      /*
-       * Calculamos cuánto difiere el reloj
-       * del servidor del reloj del navegador.
-       */
-      offsetRef.current =
-        servidorMs - Date.now();
+        /*
+         * No aceptar una marca de tiempo
+         * anterior a la última recibida.
+         *
+         * Puede ocurrir si router.refresh()
+         * entrega una prop antigua después
+         * de haber recibido un socket nuevo.
+         */
+        if (
+          latestServerTimeRef.current !==
+            null &&
+          servidorMs <=
+            latestServerTimeRef.current
+        ) {
+          console.warn(
+            "[TIME] Sincronización antigua ignorada:",
+            {
+              recibida: utc,
+              ultima: new Date(
+                latestServerTimeRef.current,
+              ).toISOString(),
+            },
+          );
 
-      sincronizadoRef.current =
-        true;
+          return;
+        }
 
-      actualizarRelojes();
-    },
-    [actualizarRelojes]
-  );
+        latestServerTimeRef.current =
+          servidorMs;
+
+        serverTimeRef.current =
+          servidorMs;
+
+        receivedAtRef.current =
+          performance.now();
+
+        actualizarRelojes();
+      },
+      [actualizarRelojes],
+    );
 
   /*
    * ==========================================
-   * HORA INICIAL
+   * HORA INICIAL DEL SERVER COMPONENT
    * ==========================================
    */
 
   useEffect(() => {
-    if (!time) {
+    if (!time?.utc) {
       return;
     }
 
@@ -123,7 +215,7 @@ export default function TimeUI({
       utc: time.utc,
     });
   }, [
-    time,
+    time?.utc,
     handleTimeSync,
   ]);
 
@@ -134,14 +226,12 @@ export default function TimeUI({
    */
 
   useEffect(() => {
-    function onTimeSync(
-      data: {
-        utc: string;
-      }
-    ) {
+    function onTimeSync(data: {
+      utc: string;
+    }) {
       console.log(
         "[SOCKET] time:sync",
-        data.utc
+        data.utc,
       );
 
       handleTimeSync(data);
@@ -149,45 +239,45 @@ export default function TimeUI({
 
     socket.on(
       "time:sync",
-      onTimeSync
+      onTimeSync,
     );
 
     return () => {
       socket.off(
         "time:sync",
-        onTimeSync
+        onTimeSync,
       );
     };
   }, [handleTimeSync]);
 
   /*
    * ==========================================
-   * SEGUNDOS EN TIEMPO REAL
+   * RELOJ EN TIEMPO REAL
    * ==========================================
    */
 
   useEffect(() => {
     /*
-     * Ejecutamos varias veces por segundo
-     * para evitar que el intervalo quede
-     * visualmente desplazado respecto al
-     * cambio real del segundo.
+     * Se ejecuta cuatro veces por segundo,
+     * pero el tiempo se calcula desde la
+     * referencia monotónica del servidor.
      */
     const timer =
-      window.setInterval(
-        actualizarRelojes,
-        250
-      );
+      window.setInterval(() => {
+        actualizarRelojes();
+      }, 250);
 
     return () => {
-      window.clearInterval(
-        timer
-      );
+      window.clearInterval(timer);
     };
   }, [actualizarRelojes]);
 
   return (
-    <div className={styles.container}>
+    <div
+      className={
+        styles.container
+      }
+    >
       <Clock
         country="PE"
         label="Lima"
@@ -195,7 +285,9 @@ export default function TimeUI({
       />
 
       <div
-        className={styles.divider}
+        className={
+          styles.divider
+        }
       />
 
       <Clock
@@ -212,24 +304,42 @@ function Clock({
   label,
   time,
 }: {
-  country: string;
+  country: "PE" | "ES";
   label: string;
   time: ClockTime;
 }) {
+  const isPeru =
+    country === "PE";
+
   return (
-    <div className={styles.clock}>
+    <div
+      className={styles.clock}
+    >
       <div
-        className={styles.location}
+        className={
+          styles.location
+        }
       >
         <Image
-          src={country === "PE" ? FlagPe : FlagEs}
+          src={
+            isPeru
+              ? FlagPe
+              : FlagEs
+          }
           width={48}
           height={48}
-          alt="flag"
+          alt={`Bandera de ${label}`}
         />
-        
+
         <span
-          className={`${styles.country} ${country === "PE" ? styles.pe : styles.es}`}
+          className={`
+            ${styles.country}
+            ${
+              isPeru
+                ? styles.pe
+                : styles.es
+            }
+          `}
         >
           {country}
         </span>
@@ -238,17 +348,43 @@ function Clock({
       </div>
 
       <div
-        className={styles.time}
+        className={
+          styles.time
+        }
       >
-        <span className={`${styles.hour} ${country === "PE" ? styles.pehour : styles.eshour}`}>{time.hour}</span>
+        <span
+          className={`
+            ${styles.hour}
+            ${
+              isPeru
+                ? styles.pehour
+                : styles.eshour
+            }
+          `}
+        >
+          {time.hour}
+        </span>
 
         <span
-          className={styles.separator}
+          className={
+            styles.separator
+          }
         >
           :
         </span>
 
-        <span className={`${styles.minute} ${country === "PE" ? styles.peminute : styles.esminute}`}>{time.minute}</span>
+        <span
+          className={`
+            ${styles.minute}
+            ${
+              isPeru
+                ? styles.peminute
+                : styles.esminute
+            }
+          `}
+        >
+          {time.minute}
+        </span>
 
         <span
           className={

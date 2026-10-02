@@ -1,7 +1,6 @@
 "use client";
 
 import { ViewConfig } from "@/types/viewConfig";
-
 import {
   useCallback,
   useEffect,
@@ -15,438 +14,330 @@ const FADE_MS = 500;
 
 type Layer = "a" | "b";
 
-const oppositeLayer = (
-  layer: Layer,
-): Layer => {
-  return layer === "a"
-    ? "b"
-    : "a";
-};
+const oppositeLayer = (layer: Layer): Layer =>
+  layer === "a" ? "b" : "a";
 
 export default function ViewRotator({
   views,
 }: {
   views: ViewConfig[];
 }) {
-  /*
-   * ==========================
-   * ESTADO
-   * ==========================
-   */
+  const [index, setIndex] = useState(0);
+  const [active, setActive] = useState<Layer>("a");
+  const [leaving, setLeaving] =
+    useState<Layer | null>(null);
 
-  const [index, setIndex] =
-    useState(0);
-
-  const [active, setActive] =
-    useState<Layer>("a");
-
-  /*
-   * La capa que se está retirando.
-   *
-   * Se mantiene encima mientras
-   * baja su opacity.
-   */
-  const [
-    leaving,
-    setLeaving,
-  ] = useState<Layer | null>(
-    null,
-  );
-
-  /*
-   * Igual que layerMedia del Player.
-   *
-   * Guardamos las vistas reales y
-   * no simplemente sus IDs.
-   *
-   * Esto además permite mantener
-   * una playlist/vista estable
-   * durante su pasada actual.
-   */
-  const [
-    layerViews,
-    setLayerViews,
-  ] = useState<
-    Record<
-      Layer,
-      ViewConfig | null
-    >
+  const [layerViews, setLayerViews] = useState<
+    Record<Layer, ViewConfig | null>
   >({
-    a:
-      views[0] ??
-      null,
-
-    b:
-      views[1] ??
-      null,
+    a: views[0] ?? null,
+    b: views[1] ?? null,
   });
 
   /*
-   * ==========================
+   * ==========================================
    * REFS
-   * ==========================
+   * ==========================================
    */
 
-  const activeRef =
-    useRef<Layer>("a");
+  const activeRef = useRef<Layer>("a");
+  const indexRef = useRef(0);
+  const viewsRef = useRef<ViewConfig[]>(views);
 
-  const indexRef =
-    useRef(0);
+  const layerViewsRef = useRef<
+    Record<Layer, ViewConfig | null>
+  >({
+    a: views[0] ?? null,
+    b: views[1] ?? null,
+  });
 
-  const viewsRef =
-    useRef<ViewConfig[]>(
-      views,
-    );
-
-  const layerViewsRef =
-    useRef<
-      Record<
-        Layer,
-        ViewConfig | null
-      >
-    >({
-      a:
-        views[0] ??
-        null,
-
-      b:
-        views[1] ??
-        null,
-    });
-
-  const transitioningRef =
-    useRef(false);
+  const transitioningRef = useRef(false);
 
   const transitionTimerRef =
-    useRef<number | null>(
-      null,
-    );
+    useRef<number | null>(null);
 
   const viewTimerRef =
-    useRef<number | null>(
-      null,
-    );
+    useRef<number | null>(null);
 
   /*
-   * Si un controlled termina
-   * mientras todavía estamos
-   * realizando el fade.
+   * Si una vista controlada termina durante
+   * la transición, se avanza cuando termine
+   * el efecto de fade.
    */
   const pendingCompleteRef =
-    useRef<string | null>(
-      null,
-    );
+    useRef<string | null>(null);
+
+  const advanceRef =
+    useRef<() => void>(() => {});
 
   /*
-   * ==========================
+   * ==========================================
    * SINCRONIZAR REFS
-   * ==========================
+   * ==========================================
    */
 
   useEffect(() => {
-    activeRef.current =
-      active;
+    activeRef.current = active;
   }, [active]);
 
   useEffect(() => {
-    indexRef.current =
-      index;
+    indexRef.current = index;
   }, [index]);
 
   useEffect(() => {
-    viewsRef.current =
-      views;
+    viewsRef.current = views;
   }, [views]);
 
   useEffect(() => {
-    layerViewsRef.current =
-      layerViews;
+    layerViewsRef.current = layerViews;
   }, [layerViews]);
 
   /*
-   * ==========================
-   * CAMBIAR CAPAS
-   * ==========================
+   * ==========================================
+   * CAMBIAR DE VISTA
+   * ==========================================
    */
 
-  const transitionTo =
-    useCallback(
-      (
-        nextView: ViewConfig,
-        nextIndex: number,
-      ) => {
-        if (
-          transitioningRef.current
-        ) {
-          return;
-        }
+  const transitionTo = useCallback(
+    (
+      nextView: ViewConfig,
+      nextIndex: number,
+    ) => {
+      if (transitioningRef.current) {
+        return;
+      }
 
-        const from =
-          activeRef.current;
+      const from = activeRef.current;
+      const to = oppositeLayer(from);
 
-        const to =
-          oppositeLayer(from);
+      /*
+       * Colocar la siguiente vista en la
+       * capa que actualmente está oculta.
+       */
+      setLayerViews((previous) => {
+        const next = {
+          ...previous,
+          [to]: nextView,
+        };
 
-        /*
-         * La siguiente vista se coloca
-         * en la capa que estaba oculta.
-         */
-        setLayerViews(
-          (prev) => {
+        layerViewsRef.current = next;
+
+        return next;
+      });
+
+      transitioningRef.current = true;
+
+      setLeaving(from);
+      setActive(to);
+
+      activeRef.current = to;
+
+      if (transitionTimerRef.current !== null) {
+        window.clearTimeout(
+          transitionTimerRef.current,
+        );
+      }
+
+      transitionTimerRef.current =
+        window.setTimeout(() => {
+          const latestViews =
+            viewsRef.current;
+
+          /*
+           * Durante los 500 ms de transición
+           * pudo llegar un router.refresh().
+           *
+           * Buscamos la versión más reciente
+           * de la vista por su ID.
+           */
+          let currentIndex =
+            latestViews.findIndex(
+              (view) =>
+                view.id === nextView.id,
+            );
+
+          let currentView:
+            | ViewConfig
+            | null = null;
+
+          if (currentIndex >= 0) {
+            currentView =
+              latestViews[currentIndex];
+          } else if (
+            latestViews.length > 0
+          ) {
+            /*
+             * La vista fue eliminada durante
+             * la transición. Se utiliza la
+             * primera vista disponible.
+             */
+            currentIndex = 0;
+            currentView =
+              latestViews[0];
+          }
+
+          setIndex(
+            currentIndex >= 0
+              ? currentIndex
+              : nextIndex,
+          );
+
+          indexRef.current =
+            currentIndex >= 0
+              ? currentIndex
+              : nextIndex;
+
+          let preloadView:
+            | ViewConfig
+            | null = null;
+
+          if (
+            latestViews.length > 1 &&
+            currentIndex >= 0
+          ) {
+            const preloadIndex =
+              (currentIndex + 1) %
+              latestViews.length;
+
+            preloadView =
+              latestViews[
+                preloadIndex
+              ] ?? null;
+          }
+
+          /*
+           * Actualizamos ambas capas:
+           *
+           * - La capa activa recibe la versión
+           *   más reciente de la vista.
+           * - La capa anterior se reutiliza
+           *   para precargar la siguiente.
+           */
+          setLayerViews((previous) => {
             const next = {
-              ...prev,
-
-              [to]:
-                nextView,
+              ...previous,
+              [to]: currentView,
+              [from]: preloadView,
             };
 
-            layerViewsRef.current =
-              next;
+            layerViewsRef.current = next;
 
             return next;
-          },
-        );
+          });
 
-        transitioningRef.current =
-          true;
+          setLeaving(null);
 
-        /*
-         * Igual conceptualmente
-         * que PlayerUI:
-         *
-         * from = capa anterior
-         * to   = capa nueva
-         */
-        setLeaving(
-          from,
-        );
+          transitioningRef.current =
+            false;
 
-        setActive(
-          to,
-        );
+          transitionTimerRef.current =
+            null;
 
-        activeRef.current =
-          to;
+          /*
+           * Una vista controlada pudo terminar
+           * durante el fade.
+           */
+          if (
+            currentView &&
+            pendingCompleteRef.current ===
+              currentView.id
+          ) {
+            pendingCompleteRef.current =
+              null;
 
-        if (
-          transitionTimerRef.current !==
-          null
-        ) {
-          window.clearTimeout(
-            transitionTimerRef.current,
-          );
-        }
-
-        transitionTimerRef.current =
-          window.setTimeout(
-            () => {
-              setIndex(
-                nextIndex,
-              );
-
-              indexRef.current =
-                nextIndex;
-
-              /*
-               * =====================
-               * PRECARGAR SIGUIENTE
-               * =====================
-               */
-
-              const latestViews =
-                viewsRef.current;
-
-              const latestIndex =
-                latestViews.findIndex(
-                  (view) =>
-                    view.id ===
-                    nextView.id,
-                );
-
-              let preloadView:
-                ViewConfig | null =
-                null;
-
-              if (
-                latestViews.length >
-                  1 &&
-                latestIndex >= 0
-              ) {
-                const preloadIndex =
-                  (latestIndex + 1) %
-                  latestViews.length;
-
-                preloadView =
-                  latestViews[
-                    preloadIndex
-                  ] ?? null;
-              }
-
-              /*
-               * La capa que desapareció
-               * se recicla para la
-               * próxima vista.
-               */
-              setLayerViews(
-                (prev) => {
-                  const next = {
-                    ...prev,
-
-                    [from]:
-                      preloadView,
-                  };
-
-                  layerViewsRef.current =
-                    next;
-
-                  return next;
-                },
-              );
-
-              setLeaving(
-                null,
-              );
-
-              transitioningRef.current =
-                false;
-
-              transitionTimerRef.current =
-                null;
-
-              /*
-               * Caso extremo:
-               * controlled terminó
-               * durante el fade.
-               */
-              if (
-                pendingCompleteRef.current ===
-                nextView.id
-              ) {
-                pendingCompleteRef.current =
-                  null;
-
-                window.setTimeout(
-                  () => {
-                    advanceRef.current();
-                  },
-                  0,
-                );
-              }
-            },
-
-            FADE_MS,
-          );
-      },
-      [],
-    );
+            window.setTimeout(() => {
+              advanceRef.current();
+            }, 0);
+          }
+        }, FADE_MS);
+    },
+    [],
+  );
 
   /*
-   * ==========================
+   * ==========================================
    * AVANZAR
-   * ==========================
+   * ==========================================
    */
 
-  const advanceRef =
-    useRef<() => void>(
-      () => {},
-    );
+  const advance = useCallback(() => {
+    if (transitioningRef.current) {
+      return;
+    }
 
-  const advance =
-    useCallback(() => {
-      if (
-        transitioningRef.current
-      ) {
-        return;
-      }
+    const currentViews =
+      viewsRef.current;
 
-      const list =
-        viewsRef.current;
+    if (currentViews.length <= 1) {
+      return;
+    }
 
-      if (
-        list.length <= 1
-      ) {
-        return;
-      }
+    const currentLayer =
+      activeRef.current;
 
-      const currentLayer =
-        activeRef.current;
+    const currentView =
+      layerViewsRef.current[
+        currentLayer
+      ];
 
-      const currentView =
-        layerViewsRef.current[
-          currentLayer
-        ];
+    if (!currentView) {
+      return;
+    }
 
-      if (!currentView) {
-        return;
-      }
-
-      /*
-       * Buscamos la posición según ID
-       * porque las vistas pueden cambiar
-       * dinámicamente.
-       */
-      const currentIndex =
-        list.findIndex(
-          (view) =>
-            view.id ===
-            currentView.id,
-        );
-
-      /*
-       * Si la vista activa ya no existe,
-       * volver a la primera disponible.
-       */
-      if (
-        currentIndex < 0
-      ) {
-        transitionTo(
-          list[0],
-          0,
-        );
-
-        return;
-      }
-
-      const nextIndex =
-        (currentIndex + 1) %
-        list.length;
-
-      transitionTo(
-        list[nextIndex],
-        nextIndex,
+    const currentIndex =
+      currentViews.findIndex(
+        (view) =>
+          view.id === currentView.id,
       );
-    }, [
-      transitionTo,
-    ]);
 
-  advanceRef.current =
-    advance;
+    /*
+     * La vista activa ya no existe.
+     * Volver a la primera disponible.
+     */
+    if (currentIndex < 0) {
+      transitionTo(
+        currentViews[0],
+        0,
+      );
+
+      return;
+    }
+
+    const nextIndex =
+      (currentIndex + 1) %
+      currentViews.length;
+
+    transitionTo(
+      currentViews[nextIndex],
+      nextIndex,
+    );
+  }, [transitionTo]);
+
+  advanceRef.current = advance;
 
   /*
-   * ==========================
-   * CAMBIOS EN `views`
-   * ==========================
+   * ==========================================
+   * SINCRONIZAR CAMBIOS EN VIEWS
+   * ==========================================
    *
-   * Esto es importante cuando llega:
+   * Este efecto se ejecuta cuando:
    *
-   * router.refresh()
-   *
-   * por Socket.IO.
+   * - Llega router.refresh().
+   * - Cambia el ranking.
+   * - Cambia el rango de fechas.
+   * - Cambian las estadísticas.
+   * - Se agregan o eliminan medias.
    */
 
   useEffect(() => {
-    viewsRef.current =
-      views;
+    viewsRef.current = views;
 
     /*
-     * No hay ninguna vista.
+     * No quedan vistas.
      */
-    if (
-      views.length === 0
-    ) {
+    if (views.length === 0) {
       if (
-        transitionTimerRef.current !==
-        null
+        transitionTimerRef.current !== null
       ) {
         window.clearTimeout(
           transitionTimerRef.current,
@@ -456,31 +347,47 @@ export default function ViewRotator({
           null;
       }
 
-      transitioningRef.current =
-        false;
+      if (
+        viewTimerRef.current !== null
+      ) {
+        window.clearTimeout(
+          viewTimerRef.current,
+        );
+
+        viewTimerRef.current = null;
+      }
+
+      transitioningRef.current = false;
+      pendingCompleteRef.current = null;
 
       setLeaving(null);
+      setActive("a");
+      setIndex(0);
 
-      setLayerViews({
-        a: null,
-        b: null,
-      });
+      activeRef.current = "a";
+      indexRef.current = 0;
 
-      layerViewsRef.current = {
+      const emptyLayers = {
         a: null,
         b: null,
       };
+
+      setLayerViews(emptyLayers);
+      layerViewsRef.current =
+        emptyLayers;
 
       return;
     }
 
     /*
-     * No modificar capas en medio
-     * de una transición.
+     * Si hay una transición activa, no se
+     * modifican las capas en ese instante.
+     *
+     * Al terminar el fade, transitionTo()
+     * utilizará viewsRef.current y tomará
+     * automáticamente los datos nuevos.
      */
-    if (
-      transitioningRef.current
-    ) {
+    if (transitioningRef.current) {
       return;
     }
 
@@ -488,9 +395,7 @@ export default function ViewRotator({
       activeRef.current;
 
     const hiddenLayer =
-      oppositeLayer(
-        currentLayer,
-      );
+      oppositeLayer(currentLayer);
 
     const currentView =
       layerViewsRef.current[
@@ -498,82 +403,51 @@ export default function ViewRotator({
       ];
 
     /*
-     * Primera carga / recuperación.
+     * Primera carga o recuperación.
      */
     if (!currentView) {
-      const initial = {
-        a:
-          views[0] ??
-          null,
+      const initialLayers = {
+        [currentLayer]:
+          views[0] ?? null,
 
-        b:
-          views[1] ??
-          null,
-      };
+        [hiddenLayer]:
+          views[1] ?? null,
+      } as Record<
+        Layer,
+        ViewConfig | null
+      >;
 
       setLayerViews(
-        initial,
+        initialLayers,
       );
 
       layerViewsRef.current =
-        initial;
-
-      setActive("a");
-
-      activeRef.current =
-        "a";
+        initialLayers;
 
       setIndex(0);
-
-      indexRef.current =
-        0;
+      indexRef.current = 0;
 
       return;
     }
 
     /*
-     * ¿La vista actual todavía existe?
+     * Buscar la vista activa por ID dentro
+     * de la nueva lista recibida.
      */
     const currentIndex =
       views.findIndex(
         (view) =>
-          view.id ===
-          currentView.id,
+          view.id === currentView.id,
       );
 
     /*
-     * EJEMPLO:
+     * La vista activa fue eliminada.
      *
-     * Estábamos en Player.
-     *
-     * [ranking, player]
-     *
-     * Eliminan todas las medias.
-     *
-     * Ahora:
-     *
-     * [ranking]
-     *
-     * Debemos abandonar Player.
+     * Ejemplo:
+     * estábamos en Player, pero se eliminaron
+     * todas las medias.
      */
-    if (
-      currentIndex < 0
-    ) {
-      if (
-        views.length === 1
-      ) {
-        /*
-         * Aunque solo quede una vista,
-         * hacemos fade hacia ella.
-         */
-        transitionTo(
-          views[0],
-          0,
-        );
-
-        return;
-      }
-
+    if (currentIndex < 0) {
       transitionTo(
         views[0],
         0,
@@ -582,44 +456,40 @@ export default function ViewRotator({
       return;
     }
 
-    setIndex(
-      currentIndex,
-    );
-
+    setIndex(currentIndex);
     indexRef.current =
       currentIndex;
 
+    const updatedCurrentView =
+      views[currentIndex];
+
     /*
-     * IMPORTANTE:
+     * Si solamente queda una vista:
      *
-     * NO reemplazamos currentView.
-     *
-     * Así una vista que ya está
-     * corriendo mantiene sus datos
-     * hasta terminar su pasada.
-     *
-     * Actualizamos solamente la
-     * capa oculta.
+     * - Actualizamos inmediatamente los datos
+     *   si no es controlled.
+     * - Limpiamos la capa oculta.
      */
+    if (views.length === 1) {
+      setLayerViews((previous) => {
+        const next = {
+          ...previous,
 
-    if (
-      views.length === 1
-    ) {
-      setLayerViews(
-        (prev) => {
-          const next = {
-            ...prev,
+          [currentLayer]:
+            currentView.type ===
+            "controlled"
+              ? previous[
+                  currentLayer
+                ]
+              : updatedCurrentView,
 
-            [hiddenLayer]:
-              null,
-          };
+          [hiddenLayer]: null,
+        };
 
-          layerViewsRef.current =
-            next;
+        layerViewsRef.current = next;
 
-          return next;
-        },
-      );
+        return next;
+      });
 
       return;
     }
@@ -628,54 +498,64 @@ export default function ViewRotator({
       (currentIndex + 1) %
       views.length;
 
-    setLayerViews(
-      (prev) => {
-        const next = {
-          ...prev,
+    /*
+     * Actualizar las capas.
+     *
+     * Una vista timed, como RankingUI o
+     * TimeUI, recibe inmediatamente los
+     * datos nuevos.
+     *
+     * Una vista controlled, como PlayerUI,
+     * conserva la instancia activa para no
+     * reiniciar el video o la playlist.
+     */
+    setLayerViews((previous) => {
+      const next = {
+        ...previous,
 
-          [hiddenLayer]:
-            views[
-              nextIndex
-            ] ?? null,
-        };
+        [currentLayer]:
+          currentView.type ===
+          "controlled"
+            ? previous[currentLayer]
+            : updatedCurrentView,
 
-        layerViewsRef.current =
-          next;
+        [hiddenLayer]:
+          views[nextIndex] ?? null,
+      };
 
-        return next;
-      },
-    );
+      layerViewsRef.current = next;
+
+      return next;
+    });
   }, [
     views,
     transitionTo,
   ]);
 
   /*
-   * ==========================
+   * ==========================================
    * VISTA ACTIVA
-   * ==========================
+   * ==========================================
    */
 
   const activeView =
     layerViews[active];
 
   /*
-   * ==========================
-   * TIMER DE VISTA
-   * ==========================
+   * ==========================================
+   * TIMER DE LA VISTA
+   * ==========================================
    */
 
   useEffect(() => {
     if (
-      viewTimerRef.current !==
-      null
+      viewTimerRef.current !== null
     ) {
       window.clearTimeout(
         viewTimerRef.current,
       );
 
-      viewTimerRef.current =
-        null;
+      viewTimerRef.current = null;
     }
 
     if (!activeView) {
@@ -683,8 +563,8 @@ export default function ViewRotator({
     }
 
     /*
-     * Player controla su
-     * finalización.
+     * PlayerUI controla por sí mismo cuándo
+     * debe terminar.
      */
     if (
       activeView.type ===
@@ -693,36 +573,42 @@ export default function ViewRotator({
       return;
     }
 
-    viewTimerRef.current =
-      window.setTimeout(
-        () => {
-          viewTimerRef.current =
-            null;
-
-          advance();
-        },
-
+    /*
+     * Evitar timers inválidos o ciclos
+     * inmediatos accidentales.
+     */
+    if (
+      !Number.isFinite(
         activeView.durationMs,
-      );
+      ) ||
+      activeView.durationMs <= 0
+    ) {
+      return;
+    }
+
+    viewTimerRef.current =
+      window.setTimeout(() => {
+        viewTimerRef.current =
+          null;
+
+        advance();
+      }, activeView.durationMs);
 
     return () => {
       if (
-        viewTimerRef.current !==
-        null
+        viewTimerRef.current !== null
       ) {
         window.clearTimeout(
           viewTimerRef.current,
         );
 
-        viewTimerRef.current =
-          null;
+        viewTimerRef.current = null;
       }
     };
   }, [
     activeView?.id,
 
-    activeView?.type ===
-    "timed"
+    activeView?.type === "timed"
       ? activeView.durationMs
       : null,
 
@@ -730,60 +616,69 @@ export default function ViewRotator({
   ]);
 
   /*
-   * ==========================
-   * CONTROLLED COMPLETE
-   * ==========================
+   * ==========================================
+   * FINALIZACIÓN DE VISTA CONTROLADA
+   * ==========================================
    */
 
-  const handleComplete =
-    useCallback(
-      (
-        viewId: string,
-        layer: Layer,
-      ) => {
-        /*
-         * Una vista precargada/oculta
-         * jamás puede cambiar de vista.
-         */
-        if (
-          layer !==
-          activeRef.current
-        ) {
-          return;
-        }
+  const handleComplete = useCallback(
+    (
+      viewId: string,
+      layer: Layer,
+    ) => {
+      /*
+       * Una vista precargada u oculta no
+       * puede provocar el cambio de vista.
+       */
+      if (
+        layer !== activeRef.current
+      ) {
+        return;
+      }
 
-        /*
-         * Si termina durante el fade,
-         * ejecutar después.
-         */
-        if (
-          transitioningRef.current
-        ) {
-          pendingCompleteRef.current =
-            viewId;
+      /*
+       * Validar que el evento corresponda
+       * todavía a la vista activa.
+       */
+      const currentView =
+        layerViewsRef.current[
+          layer
+        ];
 
-          return;
-        }
+      if (
+        !currentView ||
+        currentView.id !== viewId
+      ) {
+        return;
+      }
 
-        advance();
-      },
-      [
-        advance,
-      ],
-    );
+      /*
+       * Si termina durante el fade,
+       * esperar a que concluya.
+       */
+      if (
+        transitioningRef.current
+      ) {
+        pendingCompleteRef.current =
+          viewId;
+
+        return;
+      }
+
+      advance();
+    },
+    [advance],
+  );
 
   /*
-   * ==========================
-   * RENDER VIEW
-   * ==========================
+   * ==========================================
+   * RENDERIZAR UNA VISTA
+   * ==========================================
    */
 
   const renderView = (
-    view:
-      ViewConfig | null,
-
-    layer:
-      Layer,
+    view: ViewConfig | null,
+    layer: Layer,
   ) => {
     if (!view) {
       return null;
@@ -803,7 +698,6 @@ export default function ViewRotator({
             layer,
           );
         },
-
         isActive,
       );
     }
@@ -812,16 +706,15 @@ export default function ViewRotator({
   };
 
   /*
-   * ==========================
+   * ==========================================
    * CLEANUP
-   * ==========================
+   * ==========================================
    */
 
   useEffect(() => {
     return () => {
       if (
-        transitionTimerRef.current !==
-        null
+        transitionTimerRef.current !== null
       ) {
         window.clearTimeout(
           transitionTimerRef.current,
@@ -829,20 +722,22 @@ export default function ViewRotator({
       }
 
       if (
-        viewTimerRef.current !==
-        null
+        viewTimerRef.current !== null
       ) {
         window.clearTimeout(
           viewTimerRef.current,
         );
       }
+
+      transitioningRef.current = false;
+      pendingCompleteRef.current = null;
     };
   }, []);
 
   /*
-   * ==========================
-   * UI
-   * ==========================
+   * ==========================================
+   * RENDER
+   * ==========================================
    */
 
   if (
@@ -853,28 +748,20 @@ export default function ViewRotator({
   }
 
   return (
-    <div
-      className={
-        styles.rotator
-      }
-    >
-      {/* CAPA A */}
+    <div className={styles.rotator}>
       <div
         className={`
           ${styles.layer}
-
           ${
             active === "a"
               ? styles.active
               : ""
           }
-
           ${
             leaving === "a"
               ? styles.leaving
               : ""
           }
-
           ${
             active !== "a" &&
             leaving !== "a"
@@ -889,23 +776,19 @@ export default function ViewRotator({
         )}
       </div>
 
-      {/* CAPA B */}
       <div
         className={`
           ${styles.layer}
-
           ${
             active === "b"
               ? styles.active
               : ""
           }
-
           ${
             leaving === "b"
               ? styles.leaving
               : ""
           }
-
           ${
             active !== "b" &&
             leaving !== "b"

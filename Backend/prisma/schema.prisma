@@ -51,6 +51,29 @@ model Media {
   asignaciones AsignacionMedia[]
 }
 
+model Grupo {
+  id  Int @id @default(autoincrement())
+  nombre String
+  activo Boolean @default(true)
+
+  cerradores Cerrador[]
+  @@index([activo])
+}
+
+model Cerrador {
+  id Int @id @default(autoincrement())
+  nombre String
+  nombre_normalizado String @unique
+  activo Boolean @default(true)
+
+  grupo_id  Int?
+  grupo   Grupo? @relation(fields: [grupo_id], references: [id])
+
+  ventas Venta[]
+
+  @@index([grupo_id])
+}
+
 model Venta {
   id                Int              @id @default(autoincrement())
   sica_id           String
@@ -64,6 +87,9 @@ model Venta {
 
   campaign Campaign? @relation(fields: [campaign_id], references: [id])
   sede     Sede?     @relation(fields: [sede_id], references: [id])
+
+  cerrador_id   Int?
+  cerrador Cerrador? @relation(fields: [cerrador_id], references: [id])
 
   @@unique([sica_id, campaign_id, tipo_empleado], name: "venta_sica_participante")
   @@index([campaign_id])

@@ -2,14 +2,13 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { CreateSedeDto } from './dto/create-sede.dto';
 import { UpdateSedeDto } from './dto/update-sede.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RealtimeGateway } from 'src/realtime/realtime.gateway';
-import { AddCaptionDto } from './dto/add-caption.dto';
+import { SedeGateway } from 'src/realtime/gateways/sede.gateway';
 
 @Injectable()
 export class SedeService {
   constructor ( 
     private readonly prisma: PrismaService,
-    private readonly rt: RealtimeGateway 
+    private readonly sedeGateway: SedeGateway
   ) {}
   
   private normalizeUrl(url: string) {
@@ -56,7 +55,7 @@ export class SedeService {
           data: dto
         });
 
-        this.rt.emitGlobalSedeEvent('create', campaign);
+        this.sedeGateway.emitGlobalSedeEvent('created', campaign);
 
         return { 
           message: `Sede creado satisfactoriamente`,
@@ -77,7 +76,7 @@ export class SedeService {
           data: dto
         });
 
-        this.rt.emitGlobalSedeEvent('updated', update);
+        this.sedeGateway.emitGlobalSedeEvent('updated', update);
 
         return {
           message: `Sede actualizada con exito.`,
@@ -97,7 +96,7 @@ export class SedeService {
           where: { id } 
         });
 
-        this.rt.emitGlobalSedeEvent('deleted', eliminated);
+        this.sedeGateway.emitGlobalSedeEvent('deleted', eliminated);
 
         return {
           message: `Sede eliminada con exito`,

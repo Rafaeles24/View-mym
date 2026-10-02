@@ -3,15 +3,17 @@
   --ancho-ventas: clamp(52px, 4.4vw, 170px);
   --relleno-fila: clamp(8px, 0.85vw, 33px);
   --espacio-fila: clamp(6px, 0.5vw, 20px);
-  --altura-maxima: 746px;
   --separacion: 1px;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  max-height: var(--altura-maxima);
-  box-sizing: border-box;
+
   overflow: hidden;
 
   border: 1px solid rgb(217 217 217 / 30%);

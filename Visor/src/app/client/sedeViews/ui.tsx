@@ -14,7 +14,7 @@ import TimeUI from "../time/ui";
 import { Time } from "@/types/time";
 
 
-const DEFAULT_RANKING_DURATION = 60 * 60 * 1000;
+const DEFAULT_RANKING_DURATION = 5 * 60 * 1000;
 
 export default function SedeViews({
   sede,
@@ -46,33 +46,23 @@ export default function SedeViews({
 
   const router = useRouter();
 
-    useEffect(() => {
-      if (!sede.id) {
-        return;
-      }
+  useEffect(() => {
+    if (!sede.id) {
+      return;
+    }
 
-      const payload = {
-        sedeId:
-          sede.id,
-      };
+    const payload = { sedeId: sede.id };
 
-      const joinSede =
-        () => {
-          console.log(
-          "[SOCKET] sede:join",
-          payload,
-          new Date().toISOString()
-        );
+    const joinSede = () => {
+      socket.emit("join-sede", payload);
 
-        socket.emit(
-          "sede:join",
-          payload,
-        );
-      };
+      console.log(
+        "[SOCKET] join-sede EMITIDO",
+        new Date().toISOString()
+      );
+    }
 
-    if (
-      socket.connected
-    ) {
+    if ( socket.connected ) {
       joinSede();
     }
 
@@ -81,54 +71,22 @@ export default function SedeViews({
      * En ese caso hay que volver
      * a entrar al room.
      */
-    socket.on(
-      "connect",
-      joinSede,
-    );
+    socket.on( "connect", joinSede);
 
     return () => {
-      if (
-        socket.connected
-      ) {
-        socket.emit(
-          "sede:leave",
-          payload,
+      socket.off( "connect", joinSede);
+
+      if ( socket.connected ) {
+        socket.emit("leave-sede", payload);
+
+        console.log(
+          "[SOCKET] leave-sede EMITIDO",
+          new Date().toISOString()
         );
       }
-
-      socket.off(
-        "connect",
-        joinSede,
-      );
-    };
-  }, [
-    sede.id,
-  ]);
-
-  useEffect(() => {
-    const joinRanking = () => {
-      console.log(
-        "[SOCKET] join-ranking",
-        socket.id
-      );
-
-      socket.emit("join-ranking");
     };
 
-    if (socket.connected) {
-      joinRanking();
-    }
-
-    socket.on("connect", joinRanking);
-
-    return () => {
-      if (socket.connected) {
-        socket.emit("leave-ranking");
-      }
-
-      socket.off("connect", joinRanking);
-    };
-  }, []);
+  }, [ sede.id ]);
 
   useEffect(() => {
     let refreshProgramado:

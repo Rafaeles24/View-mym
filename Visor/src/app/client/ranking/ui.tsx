@@ -27,19 +27,19 @@ export default function RankingUI({
     {
       id: "agentes-sede",
       titulo: `${sedeOrigin.nombre}`,
-      subtitulo: `Top asesores`,
+      subtitulo: `Top 10 asesores`,
       datos: rankingAgenteSede,
     },
     {
       id: "agentes-global",
       titulo: "M&M",
-      subtitulo: "Top asesores",
+      subtitulo: "Top 10 asesores",
       datos: rankingGlobalAgente,
     },
     {
       id: "cerradores-global",
       titulo: "M&M",
-      subtitulo: "Top supervirsores",
+      subtitulo: "Top 10 supervisores",
       datos: rankingGlobalCerrador,
     },
   ];

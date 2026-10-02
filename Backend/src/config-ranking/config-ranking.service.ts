@@ -10,19 +10,19 @@ import {
 } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 
 import type {
   ActualizarConfigRankingInput,
 } from './types/ConfigRankingInput.type';
 import { RankingCountdown } from 'src/realtime/types/ranking-countdown.type';
 import { RankingConfigSync } from './types/ranking-config-sync.type';
+import { RankingGateway } from 'src/realtime/gateways/ranking.gateway';
 
 @Injectable()
 export class ConfigRankingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly rt: RealtimeGateway,
+    private readonly rankingGateway: RankingGateway
   ) {}
 
   private readonly configId = 1;
@@ -163,8 +163,10 @@ export class ConfigRankingService {
   private notificarCambio(config: ConfigRanking): void {
     const schedule = this.crearRespuesta(config);
 
-    this.rt.emitSyncConfigRankingEvent(schedule);
-    this.rt.emitRankingRefresh();
+    console.log('[CONFIG-RANKING SERVICE] Notificando cambio en configuración de ranking', schedule);
+
+    this.rankingGateway.emitSyncConfigRankingEvent(schedule);
+    this.rankingGateway.emitRankingRefresh();
   }
 
   async renovarSiCorresponde(): Promise<ConfigRanking> {
@@ -620,31 +622,30 @@ export class ConfigRankingService {
   }) {
     if (
       !input ||
-      typeof input !== "object" ||
+      typeof input !== 'object' ||
       Array.isArray(input)
     ) {
       throw new BadRequestException(
-        "Debes enviar las horas y el intervalo de actualización"
+        'Debes enviar el intervalo de actualización',
       );
     }
 
     this.validarProgramacion(input);
 
-    const actual = await this.leerOCrear();
-
-    const datos = {
-      intervalo_actualizacion:
-        input.intervalo_actualizacion,
-    };
+    const actual =
+      await this.leerOCrear();
 
     const proxima =
       this.siguienteActualizacionRanking(
         DateTime.now(),
         {
-          ...datos,
-          zona_horaria: actual.zona_horaria,
+          intervalo_actualizacion:
+            input.intervalo_actualizacion,
+
+          zona_horaria:
+            actual.zona_horaria,
         },
-        true
+        true,
       );
 
     const config =
@@ -652,23 +653,22 @@ export class ConfigRankingService {
         where: {
           id: this.configId,
         },
+
         data: {
-          ...datos,
+          intervalo_actualizacion:
+            input.intervalo_actualizacion,
+
           proxima_actualizacion:
             proxima.toUTC().toJSDate(),
         },
       });
 
-    // Envía la configuración nueva al navegador.
-    this.rt.emitSyncConfigRankingEvent(
-      this.crearRespuesta(config)
-    );
+
+    this.notificarCambio(config);
 
     return this.crearRespuesta(config);
   }
 
-  // Mantiene compatibilidad con el endpoint anterior,
-  // si todavía lo utilizas para cambiar solo el intervalo.
   async actualizarIntervalo(minutos: number) {
 
     return this.actualizarProgramacion({

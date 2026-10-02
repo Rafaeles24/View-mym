@@ -6,7 +6,7 @@ import { SicaAuthService } from './services/sica-auth.service';
 import { SicaTransformService } from './services/sica-transform.service';
 import { VentaSica } from './interfaces/venta-sica.interface';
 import { SICA_CAMPAIGNS } from './constants/campaign.constant';
-import { RealtimeGateway } from 'src/realtime/realtime.gateway';
+import { RankingGateway } from 'src/realtime/gateways/ranking.gateway';
 
 @Injectable()
 export class SicaService {
@@ -16,7 +16,7 @@ export class SicaService {
     private readonly transformService: SicaTransformService,
     private readonly auditService: SicaAuditService,
     private readonly ventaImportService: VentaImportService,
-    private readonly rt: RealtimeGateway
+    private readonly rankingGateway: RankingGateway,
   ) {}
 
   async sincronizar(notificar = true) {
@@ -39,7 +39,7 @@ export class SicaService {
     const resultado = await this.ventaImportService.importar(ventas);
 
     if (notificar) {
-      this.rt.emitRankingRefresh();
+      this.rankingGateway.emitRankingRefresh();
     }
 
     return resultado;

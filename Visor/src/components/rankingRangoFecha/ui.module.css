@@ -40,7 +40,7 @@
   transition: width 1s linear;
 }
 
-/* Segunda línea: horario — intervalo — contador */
+/* Segunda línea: horario — contador */
 .actualizacion {
   display: flex;
   align-items: center;
@@ -54,7 +54,7 @@
 }
 
 .horario,
-.intervalo,
+.ultimaActualizacion,
 .estadoActualizacion {
   flex-shrink: 0;
   font-size: 20px;

@@ -7,6 +7,7 @@ import * as cheerio from 'cheerio';
 
 import { SicaAuthService } from './sica-auth.service';
 import { FilaSica } from '../interfaces/fila-sica.interface';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class SicaScraperService {
@@ -214,8 +215,8 @@ export class SicaScraperService {
         'CERRADOR',
       );
 
-    const fechaHoy =
-      this.obtenerFechaLima();
+    const fechaPermitidas =
+      this.obtenerFechasExtraccionLima();
 
     const resultados:
       FilaSica[] = [];
@@ -262,7 +263,7 @@ export class SicaScraperService {
           return;
         }
 
-        if (fecha !== fechaHoy) {
+        if (!fechaPermitidas.has(fecha)) {
           return
         }
         
@@ -275,14 +276,6 @@ export class SicaScraperService {
         const fechaEdicionIso = this.fechaHoraAFormatoIso(
           valores[indexFechaEdicion]
         );
-
-        if (!fecha) {
-          return;
-        }
-
-        if (fecha !== fechaHoy) {
-          return;
-        }
 
         // ------------------------------------------------------
         // ID de SICA
@@ -473,42 +466,25 @@ export class SicaScraperService {
   // FECHA ACTUAL LIMA
   // ============================================================
 
-  private obtenerFechaLima(): string {
+  private obtenerFechasExtraccionLima(): Set<string> {
 
-    const parts =
-      new Intl.DateTimeFormat(
-        'en-GB',
-        {
-          timeZone:
-            'America/Lima',
+    const hoy =
+      DateTime.now()
+        .setZone('America/Lima');
 
-          day:
-            '2-digit',
+    const ayer =
+      hoy.minus({
+        days: 1,
+      });
 
-          month:
-            '2-digit',
+    return new Set([
+      hoy.toFormat(
+        'dd/MM/yyyy',
+      ),
 
-          year:
-            'numeric',
-        },
-      ).formatToParts(
-        new Date(),
-      );
-
-    const valores =
-      Object.fromEntries(
-        parts.map(
-          (parte) => [
-            parte.type,
-            parte.value,
-          ],
-        ),
-      );
-
-    return (
-      `${valores.day}/` +
-      `${valores.month}/` +
-      `${valores.year}`
-    );
+      ayer.toFormat(
+        'dd/MM/yyyy',
+      ),
+    ]);
   }
 }

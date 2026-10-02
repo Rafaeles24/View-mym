@@ -2,12 +2,10 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto, UpdateFullCampaignDto } from './dto/update-campaign.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import { FilesService } from 'src/files/files.service';
 import { TimeService } from 'src/time/time.service';
 import { randomUUID } from 'crypto';
-import { AddSedeDto } from './dto/add-sede.dto';
-import { AddMediaDto } from './dto/add-media.dto';
+import { CampaignGateway } from 'src/realtime/gateways/campaign.gateway';
 
 @Injectable()
 export class CampaignService {
@@ -15,7 +13,7 @@ export class CampaignService {
     private readonly prisma: PrismaService,
     private readonly fileService: FilesService,
     private readonly timeService: TimeService,
-    private readonly rt: RealtimeGateway
+    private readonly CampaignGateway: CampaignGateway
   ) {}
 
   private normalizeUrl(url: string) {
@@ -87,7 +85,7 @@ export class CampaignService {
         logoUrl: this.normalizeUrl(`${process.env.BASE_URL}/${campaign.logo_url}`)
       }
 
-      this.rt.emitGlobalCampaignEvent('created', payload);
+      this.CampaignGateway.emitCampaignEvent('created', payload);
 
       return {
         message: `Campaña creado satisfactoriamente.`,
@@ -174,7 +172,7 @@ export class CampaignService {
         fileFullPath = this.normalizeUrl(`${process.env.BASE_URL}/${newFileData.logo_url}`);
       }
 
-      this.rt.emitGlobalCampaignEvent('updated', {
+      this.CampaignGateway.emitCampaignEvent('updated', {
         ...updated,
         logo_url: fileFullPath
       })

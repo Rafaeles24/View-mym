@@ -2,20 +2,20 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { FilesService } from 'src/files/files.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from "crypto";
-import { RealtimeGateway } from 'src/realtime/realtime.gateway';
 import { MediaPagination } from './pagination/mediaPagination.dto';
 import { DeleteMediaDto } from './dto/delete-media.dto';
 import path from 'path';
 import { OptimizeService } from 'src/optimize/optimize.service';
 import { AssignMediaToSedesDto } from './dto/add-media.dto';
+import { SedeGateway } from 'src/realtime/gateways/sede.gateway';
 
 @Injectable()
 export class MediaService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileService: FilesService,
-    private readonly rt: RealtimeGateway,
-    private readonly optimizeService: OptimizeService
+    private readonly optimizeService: OptimizeService,
+    private readonly sedeGateway: SedeGateway,
   ) {}
   
   private normalizeUrl(url: string) {
@@ -433,7 +433,7 @@ export class MediaService {
     for (
       const sedeId of sedesAfectadas
     ) {
-      this.rt.emitSyncSede(
+      this.sedeGateway.emitSyncSede(
         sedeId,
       );
     }

@@ -16,6 +16,8 @@ import { ConfigRankingService } from 'src/config-ranking/config-ranking.service'
 
 @Injectable()
 export class VisorService {
+  private readonly limiteRanking = 10;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly configRankingService: ConfigRankingService,
@@ -235,7 +237,7 @@ export class VisorService {
       inicio,
       fin,
       sedeId,
-      10,
+      this.limiteRanking,
     );
   }
 
@@ -248,6 +250,8 @@ export class VisorService {
       TipoEmpleado.CERRADOR,
       inicio,
       fin,
+      undefined,
+      this.limiteRanking,
     );
   }
 
@@ -260,6 +264,8 @@ export class VisorService {
       TipoEmpleado.AGENTE,
       inicio,
       fin,
+      undefined,
+      this.limiteRanking,
     );
   }
 
@@ -473,7 +479,7 @@ export class VisorService {
   
   getCurrentTime() {
     return { 
-        utc: new Date().toISOString()
+      utc: new Date().toISOString()
     }
   }
 }

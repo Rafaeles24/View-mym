@@ -21,10 +21,13 @@ export default function RankingRango({
     useState<number | null>(null);
 
   const [conectado, setConectado] =
-    useState(socket.connected);
+    useState(false);
 
   const [contador, setContador] =
     useState<RankingCountdown | null>(null);
+
+  const [ hidratado, setHidratado ] = useState(false);
+
 
   /*
    * Copia local de la configuración.
@@ -37,6 +40,11 @@ export default function RankingRango({
   const [scheduleActual, setScheduleActual] =
     useState<RankingRangoFecha>(schedule);
 
+  
+  useEffect(() => {
+    setHidratado(true);
+    setConectado(socket.connected);
+  }, []);
   /*
    * ==========================================
    * SINCRONIZAR PROP
@@ -74,24 +82,7 @@ export default function RankingRango({
     };
   }, []);
 
-  /*
-   * ==========================================
-   * EVENTOS SOCKET.IO
-   * ==========================================
-   *
-   * Importante:
-   *
-   * Este componente NO administra rooms.
-   * El join-ranking/leave-ranking pertenece
-   * a SedeViews.
-   */
-
   useEffect(() => {
-    /*
-     * ------------------------------
-     * Cuenta regresiva
-     * ------------------------------
-     */
 
     function recibirContador(
       datos: RankingCountdown
@@ -169,6 +160,24 @@ export default function RankingRango({
     };
   }, []);
 
+/*   useEffect(() => {
+    function debugEvento(
+      evento: string,
+      ...datos: unknown[]
+    ) {
+      console.log(
+        `[SOCKET] ${evento} RECIBIDO`,
+        ...datos
+      );
+    }
+
+    socket.onAny(debugEvento);
+
+    return () => {
+      socket.offAny(debugEvento);
+    }
+  }, []) */
+
   /*
    * ==========================================
    * FECHAS
@@ -234,6 +243,32 @@ export default function RankingRango({
         year: "numeric",
       }
     );
+
+  function formatoFechaYHora(fecha: string): string {
+    const fechaDate = new Date(fecha);
+
+    if (!Number.isFinite(fechaDate.getTime())) {
+      return "Fecha inválida";
+    }
+
+    return new Intl.DateTimeFormat("es-PE", {
+      timeZone: scheduleActual.zona_horaria,
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    })
+      .format(fechaDate)
+      /*
+       * Node.js y el navegador pueden generar
+       * espacios Unicode diferentes.
+       */
+      .replace(/[\s\u00A0\u202F]+/g, " ")
+      .trim();
+  }
 
   /*
    * ==========================================
@@ -339,15 +374,14 @@ export default function RankingRango({
         aria-label="Estado de actualización del ranking"
       >
 
-        <span
-          className={styles.intervalo}
-        >
-          Actualización cada{" "}
-          {
-            scheduleActual
-              .intervalo_actualizacion
-          }{" "}
-          min
+        <span className={styles.ultimaActualizacion}>
+          Última actualización:{" "}
+          {hidratado &&
+          contador?.ultima_actualizacion
+            ? formatoFechaYHora(
+                contador.ultima_actualizacion,
+              )
+            : "—"}
         </span>
 
         <span
