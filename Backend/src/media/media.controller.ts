@@ -11,7 +11,7 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard) 
+  /* @UseGuards(JwtAuthGuard */
   getMedias(
     @Query() dto: MediaPagination
   ) {

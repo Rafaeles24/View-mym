@@ -84,6 +84,7 @@ model Venta {
   campaign_id       Int?
   fecha             DateTime
   fecha_lima        DateTime?
+  fecha_tramitacion DateTime?
 
   campaign Campaign? @relation(fields: [campaign_id], references: [id])
   sede     Sede?     @relation(fields: [sede_id], references: [id])

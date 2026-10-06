@@ -102,6 +102,11 @@ export class VentaImportService {
             venta.fechaEdicionLima,
           );
 
+        const fechaTramitacion = 
+          this.convertirFechaTramitacion(
+            venta.fechaTramitacion
+          )
+
         const cerradorNormalizado = this.normalizarNombre(venta.cerrador);
 
         const cerrador = await this.prisma.cerrador.findUnique({
@@ -163,6 +168,8 @@ export class VentaImportService {
                   fechaLima,
                 
                 cerrador_id: cerrador?.id ?? null,
+
+                fecha_tramitacion: fechaTramitacion
               },
 
               update: {
@@ -182,6 +189,8 @@ export class VentaImportService {
                   fechaLima,
 
                 cerrador_id: cerrador?.id ?? null,
+
+                fecha_tramitacion: fechaTramitacion
               },
             });
 
@@ -249,6 +258,8 @@ export class VentaImportService {
                   fechaLima,
                 
                 cerrador_id: cerrador?.id ?? null,
+
+                fecha_tramitacion: fechaTramitacion
               },
             });
           },
@@ -322,4 +333,26 @@ export class VentaImportService {
 
     return resultado.toJSDate();
   }
+
+  private convertirFechaTramitacion(
+    fecha: string,
+  ): Date {
+
+    const resultado =
+      DateTime.fromFormat(
+        fecha,
+        'yyyy-MM-dd',
+        {
+          zone: 'America/Lima',
+        },
+      );
+
+    if (!resultado.isValid) {
+      throw new Error(
+        `Fecha de tramitación inválida: ${fecha}`,
+      );
+    }
+
+    return resultado.startOf('day').toJSDate();
+  }  
 }
