@@ -239,6 +239,8 @@ export class VentaImportService {
                   fechaLima,
 
                 cerrador_id: cerrador?.id ?? null,
+
+                fecha_tramitacion: fechaTramitacion,
               },
 
               update: {
