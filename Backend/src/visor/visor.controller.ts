@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, DefaultValuePipe, ParseEnumPipe } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { VisorService } from './visor.service';
-import { TipoEmpleado } from '@prisma/client';
 
 @Controller('visor')
 export class VisorController {
@@ -13,65 +12,4 @@ export class VisorController {
     return this.visorService.getAllData(id);
   }
 
-  @Get('time')
-  getTime() {
-    return this.visorService.getCurrentTime();
-  }
-
-  //SEDES
-  @Get('sede/:sedeId')
-  getSede(
-    @Param('sedeId') sedeId: number
-  ) {
-    return this.visorService.getSede(sedeId);
-  }
-
-  //RANKING
-
-  @Get('stats/sede')
-  statsPorSede(
-    @Query(
-      'tipo_empleado',
-      new DefaultValuePipe(TipoEmpleado.AGENTE),
-      new ParseEnumPipe(TipoEmpleado)
-    ) TipoEmpleado: TipoEmpleado
-  ) {
-    return this.visorService.statsDiarioPorSede(TipoEmpleado);
-  }
-
-  @Get('ranking/diario/agentes/:sedeId')
-  rankingDiarioAsesoresPorSede(
-    @Param('sedeId') sedeId: number
-  ) {
-    return this.visorService.getRankingDiarioDeAsesoresPorSede(sedeId);
-  }
-
-  @Get('ranking/agentes/:sedeId')
-  rankingAsesoresPorSede(
-    @Param('sedeId') sedeId: number
-  ) {
-    return this.visorService.leaderboardAgentesPorSede(sedeId);
-  }
-
-  @Get('ranking/global/cerrador')
-  rankingCerrador() {
-    return this.visorService.leaderboardCerradores();
-  }
-
-  @Get('ranking/global/agente')
-  rankingAgente() {
-    return this.visorService.leaderboardAgentes();
-  }
-
-  @Get('ranking/rango') 
-  getRankingRango() {
-    return this.visorService.getRangoFechas();
-  }
-  
-  @Get('flyers/:sedeId') 
-  getFlyers(
-    @Param('sedeId') sedeId: number
-  ) {
-    return this.visorService.getFlyersPorSede(sedeId);
-  }
 }

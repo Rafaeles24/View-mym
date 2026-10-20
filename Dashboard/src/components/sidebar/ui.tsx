@@ -8,7 +8,8 @@ import EstructuraIcon from "@/icons/estructura";
 import HomeIcon from "@/icons/home";
 import { AuthResponse } from "@/types/auth";
 import UsuarioBadge from "../badges/usuario/ui";
-import logo from "@/img/mymcorp.png"
+import logo from "@/img/mymcorp.png";
+import StartIcon from "@/icons/star";
 
 export default function Sidebar({
   user,
@@ -33,9 +34,13 @@ export default function Sidebar({
           <span>Media</span>
         </Link>
 
-        <Link href={"/dashboard/estructura"} className={`${styles.navLinks} ${pathname === "/dashboard/estructura" && styles.active}`}>
+        <Link href={"/dashboard/ranking"} className={`${styles.navLinks} ${pathname === "/dashboard/ranking" && styles.active}`}>
+          <StartIcon/>
+          <span>Ranking</span>
+        </Link>
+        <Link href={"/dashboard/colaborador"} className={`${styles.navLinks} ${pathname === "/dashboard/colaborador" && styles.active}`}>
           <EstructuraIcon/>
-          <span>Estructura</span>
+          <span>Colaboradores</span>
         </Link>
       </div>
 

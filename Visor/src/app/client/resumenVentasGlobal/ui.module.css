@@ -1,0 +1,396 @@
+
+.main {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 60px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  overflow: hidden;
+
+  color: #ffffff;
+  background: #0d0d0d;
+}
+
+/* HEADER */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.titleContent {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  min-width: 0;
+}
+
+.rankingRango {
+  flex: 1;
+  min-width: 0;
+}
+
+.titleContent img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+.titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  min-width: 0;
+  padding-left: 20px;
+  border-left: 3px solid #ffffff;
+}
+
+
+.titulo h1 {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 1000;
+}
+
+.tituloVentas {
+  color: #ca0000;
+}
+
+.titulo p {
+  margin: 0;
+  color: #a1a1aa;
+  font-size: clamp(13px, 0.95vw, 18px);
+}
+
+.rankingRango {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* CONTENIDO */
+
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
+.resumenContainer {
+  flex: 1;
+  display: grid;
+
+  /* Los gráficos toman el espacio restante.
+     Los tramos ocupan únicamente su altura. */
+  grid-template-rows: minmax(0, 1fr) auto;
+
+  gap: 16px;
+  padding: 10px 0;
+
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* =========================================
+   GRÁFICOS SUPERIORES
+========================================= */
+
+.graficosGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+  min-height: 0;
+  height: 100%;
+}
+
+.chartCard {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+
+  padding: 22px 22px 16px;
+
+  background: #151518;
+  border: 1px solid #29292f;
+  border-radius: 10px;
+}
+
+.chartContainer {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+/* =========================================
+   FILA INFERIOR DE TRAMOS
+========================================= */
+
+.tramosRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+
+  height: auto;
+  min-height: 0;
+  align-items: start;
+}
+
+/* =========================================
+   CONTENEDOR DE CADA SECCIÓN
+========================================= */
+
+.tramosContent {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+
+  padding: 16px;
+
+  background: #151518;
+  border: 1px solid #29292f;
+  border-radius: 10px;
+
+  overflow: hidden;
+}
+
+.tramosContent h3 {
+  margin: 0 0 12px;
+
+  font-size: clamp(17px, 1.1vw, 22px);
+  font-weight: 700;
+
+  color: #f5f5f5;
+}
+
+/* =========================================
+   GRID: EXACTAMENTE 4 COLUMNAS
+========================================= */
+
+.tramosGrid {
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: auto;
+
+  gap: 10px;
+
+  width: 100%;
+  height: auto;
+
+  min-height: 0;
+
+  overflow: visible;
+  padding: 0;
+
+  align-content: start;
+}
+
+/* =========================================
+   TARJETA DE TRAMO COMPACTA
+========================================= */
+
+.tramoCard {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  height: auto;
+
+  background: #1c1c20;
+
+  border: 1px solid #34343a;
+  border-radius: 10px;
+
+  overflow: hidden;
+}
+
+.tramoHorario {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  min-height: 34px;
+  padding: 7px 5px;
+
+  background: #27272d;
+  border-bottom: 1px solid #34343a;
+
+  color: #e4e4e7;
+
+  font-size: clamp(10px, 0.75vw, 14px);
+  font-weight: 700;
+
+  text-align: center;
+}
+
+/* =========================================
+   INFORMACIÓN DE CADA TRAMO
+========================================= */
+
+.comparativaCard {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+  padding: 10px;
+}
+
+.ventasHoy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.cardLabel {
+  color: #a4a4ac;
+  font-size: clamp(10px, 0.7vw, 13px);
+  font-weight: 600;
+}
+
+.tramoCantidad {
+  color: #fff;
+
+  font-size: clamp(22px, 1.7vw, 34px);
+  font-weight: 800;
+
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ventasAyer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  padding-top: 7px;
+
+  border-top: 1px solid #37373c;
+}
+
+.ventasAyer strong {
+  font-size: clamp(10px, 0.7vw, 13px);
+  font-weight: 700;
+}
+
+/* =========================================
+   ESTADO ACTIVO
+========================================= */
+
+.tramoActivo {
+  border-color: #ca0000;
+}
+
+.tramoActivo .tramoHorario {
+  background: #361c21;
+}
+
+.estadoActivo {
+  padding: 2px 5px;
+  border-radius: 4px;
+
+  background: #ca0000;
+  color: #fff;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+/* =========================================
+   RESOLUCIONES INTERMEDIAS
+========================================= */
+
+@media (max-width: 1440px) {
+  .resumenContainer {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .graficosGrid,
+  .tramosRow {
+    gap: 12px;
+  }
+
+  .tramosContent {
+    padding: 12px;
+  }
+
+  .tramosGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .comparativaCard {
+    padding: 8px;
+  }
+}
+
+/* =========================================
+   TABLETS
+========================================= */
+
+@media (max-width: 1024px) {
+  .main {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .resumenContainer {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .graficosGrid,
+  .tramosRow {
+    grid-template-columns: 1fr;
+  }
+
+  .chartCard {
+    height: 380px;
+  }
+
+  .tramosGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* =========================================
+   MÓVILES
+========================================= */
+
+@media (max-width: 600px) {
+  .tramosGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tramosContent {
+    padding: 12px;
+  }
+
+  .tramoCantidad {
+    font-size: 26px;
+  }
+}

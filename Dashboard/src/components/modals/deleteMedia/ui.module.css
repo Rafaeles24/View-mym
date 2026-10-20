@@ -1,0 +1,168 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 1100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.78);
+
+  backdrop-filter: blur(5px);
+}
+
+.modal {
+  width: 100%;
+  max-width: 430px;
+
+  padding: 28px;
+
+  border: 1px solid #303030;
+  border-radius: 14px;
+
+  background: #151515;
+
+  color: #f0f0f0;
+
+  box-shadow:
+    0 30px 100px
+    rgba(0, 0, 0, 0.7);
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 18px;
+
+  border: 1px solid #3b3b3b;
+  border-radius: 10px;
+
+  background: #1d1d1d;
+
+  color: #d3d3d3;
+}
+
+.icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.modal h2 {
+  margin: 0;
+
+  color: #f3f3f3;
+
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.modal > p {
+  margin: 9px 0 0;
+
+  color: #909090;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mediaInfo {
+  margin-top: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  padding: 13px 14px;
+
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+
+  background: #111111;
+}
+
+.mediaInfo strong {
+  overflow: hidden;
+
+  color: #e5e5e5;
+
+  font-size: 13px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mediaInfo span {
+  color: #747474;
+
+  font-size: 11px;
+}
+
+.warning {
+  margin-top: 16px !important;
+
+  color: #858585 !important;
+
+  font-size: 11px !important;
+}
+
+.actions {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 10px;
+
+  margin-top: 25px;
+}
+
+.cancelButton,
+.deleteButton {
+  height: 43px;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.cancelButton {
+  border: 1px solid #383838;
+
+  background: #1c1c1c;
+
+  color: #d2d2d2;
+}
+
+.cancelButton:hover {
+  background: #252525;
+}
+
+.deleteButton {
+  border: 1px solid #e5e5e5;
+
+  background: #e8e8e8;
+
+  color: #111;
+}
+
+.deleteButton:hover {
+  background: #fff;
+}
+
+.cancelButton:disabled,
+.deleteButton:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}

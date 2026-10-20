@@ -12,9 +12,15 @@ import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import TimeUI from "../time/ui";
 import { Time } from "@/types/time";
+import VentasResumenUI from "../resumenVentasGlobal/ui";
+import { ResumenVentas } from "@/types/resumenVenta";
+import VersusUI from "@/components/versus/ui";
+import { VersusRangoFecha, VisorVersus } from "@/types/versus";
 
 
 const DEFAULT_RANKING_DURATION = 5 * 60 * 1000;
+const VERSUS_PAGE_SIZE = 4;
+const VERSUS_PAGE_DURATION_MS = 60_000;
 
 export default function SedeViews({
   sede,
@@ -26,9 +32,13 @@ export default function SedeViews({
 
   sedesStatsDiario,
   rankingRango,
+  versusRango,
+  visorResumenDiario,
+  visorResumenAyer,
 
   rankingDurationMs = DEFAULT_RANKING_DURATION,
 
+  visorVersus,
   time,
 } : {
   sede: Sede;
@@ -40,11 +50,23 @@ export default function SedeViews({
 
   sedesStatsDiario: SedeStats;
   rankingRango: RankingRangoFecha;
+  versusRango: VersusRangoFecha;
+  
+  visorResumenDiario: ResumenVentas;
+  visorResumenAyer: ResumenVentas;
+
   rankingDurationMs?: number;
+  visorVersus: VisorVersus[];
   time: Time;
 }) {
 
   const router = useRouter();
+
+  const versusPages = Math.ceil(
+    visorVersus.length | VERSUS_PAGE_SIZE
+  );
+
+  const versusDurationMs = versusPages * VERSUS_PAGE_DURATION_MS;
 
   useEffect(() => {
     if (!sede.id) {
@@ -138,6 +160,34 @@ export default function SedeViews({
   return (
     <ViewRotator
       views={[
+        ...(visorVersus.length > 0 ? [
+          {
+            id: "versus",
+            type: "timed" as const,
+            durationMs: versusDurationMs,
+            render: (
+              <VersusUI
+                data={visorVersus}
+                durationMs={60000}
+                sedeOrigin={sede}
+                versusRango={versusRango}
+              />
+            )
+          }
+        ]: []),
+        /* {
+          id: "resumen-global",
+          type: "timed",
+          durationMs: rankingDurationMs,
+          render: (
+            <VentasResumenUI
+              sedeOrigin={sede}
+              rankingRango={rankingRango}
+              hoy={visorResumenDiario}
+              ayer={visorResumenAyer}
+            />
+          )
+        },*/
         {
           id: "ranking",
           type: "timed",
@@ -175,7 +225,7 @@ export default function SedeViews({
           render: (
             <TimeUI time={time} />
           )
-        },
+        },  
       ]}
     />
   );

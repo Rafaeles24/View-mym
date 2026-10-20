@@ -1,0 +1,494 @@
+.container {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 60px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  overflow: hidden;
+
+  color: #ffffff;
+  background: #0d0d0d;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.titleContent {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  min-width: 0;
+}
+
+.rankingRango {
+  flex: 1;
+  min-width: 0;
+}
+
+.titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  min-width: 0;
+  padding-left: 20px;
+  border-left: 3px solid #ffffff;
+}
+
+.titulo h1 {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 1000;
+}
+
+.titulo p {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.tituloVentas {
+  color: #ca0000;
+}
+
+
+/* =========================
+   LIST
+========================= */
+
+.list {
+  flex: 1;
+
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+
+  gap: 14px;
+}
+
+/* =========================
+   ROW
+========================= */
+
+.row {
+  width: 100%;
+
+  min-height: 112px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    100px
+    70px
+    100px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding:
+    16px
+    24px;
+
+  box-sizing: border-box;
+
+  background: #151515;
+
+  border: 1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.06
+    );
+
+  border-radius: 10px;
+}
+
+/* =========================
+   SIDE
+========================= */
+
+.side {
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+}
+
+.sideRight {
+  justify-content: flex-end;
+}
+
+/* =========================
+   LOGO
+========================= */
+
+.logoWrap {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+.fallback {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #272727;
+
+  font-size: 24px;
+
+  font-weight: 900;
+}
+
+/* =========================
+   PERSON
+========================= */
+
+.personData {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 5px;
+}
+
+.personDataRight {
+  align-items: flex-end;
+
+  text-align: right;
+}
+
+.personName {
+  width: 100%;
+
+  color: #ffffff;
+
+  font-size: clamp(
+    20px,
+    1.6vw,
+    32px
+  );
+
+  font-weight: 900;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+/* =========================
+   SEDE
+========================= */
+
+.sedeBadge {
+  display: inline-flex;
+
+  align-items: center;
+
+  min-height: 25px;
+
+  padding:
+    3px
+    10px;
+
+  box-sizing: border-box;
+
+  border-radius: 5px;
+
+  background: #e6e6e6;
+
+  color: #111111;
+
+  font-size: 12px;
+
+  font-weight: 900;
+
+  line-height: 1;
+}
+
+/* =========================
+   SCORE
+========================= */
+
+.score {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(
+    255,
+    255,
+    255,
+    0.55
+  );
+
+  font-size: clamp(
+    32px,
+    2.8vw,
+    52px
+  );
+
+  font-weight: 900;
+
+  line-height: 1;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.scoreLeader {
+  color: #ffffff;
+}
+
+.scoreLoser {
+  color: rgba(
+    255,
+    255,
+    255,
+    0.55
+  );
+}
+
+/* =========================
+   VS
+========================= */
+
+.vs {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+
+  font-size: 20px;
+
+  font-weight: 900;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.pagination {
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  margin-top: 18px;
+}
+
+.dot {
+  width: 26px;
+  height: 4px;
+
+  border-radius: 999px;
+
+  background: rgba(
+    255,
+    255,
+    255,
+    0.13
+  );
+
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+
+.dotActive {
+  width: 48px;
+
+  background: #ffffff;
+}
+
+/* =========================
+   FULL HD
+========================= */
+
+@media (
+  min-width: 1600px
+) {
+
+  .header {
+    margin-bottom: 34px;
+  }
+
+  .list {
+    gap: 16px;
+  }
+
+  .row {
+    min-height: 128px;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      115px
+      80px
+      115px
+      minmax(0, 1fr);
+
+    gap: 22px;
+
+    padding:
+      18px
+      28px;
+  }
+
+  .logoWrap,
+  .fallback {
+    width: 64px;
+    height: 64px;
+  }
+
+  .personName {
+    font-size: clamp(
+      24px,
+      1.8vw,
+      34px
+    );
+  }
+
+  .score {
+    font-size: clamp(
+      38px,
+      3vw,
+      56px
+    );
+  }
+
+  .vs {
+    font-size: 22px;
+  }
+}
+
+/* =========================
+   1366 / MENOR
+========================= */
+
+@media (
+  max-width: 1400px
+) {
+  .container {
+    padding:
+      18px
+      26px
+      18px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-size: 38px;
+  }
+
+  .row {
+    min-height: 90px;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      72px
+      46px
+      72px
+      minmax(0, 1fr);
+
+    gap: 10px;
+
+    padding:
+      12px
+      16px;
+  }
+
+  .side {
+    gap: 12px;
+  }
+
+  .logoWrap,
+  .fallback {
+    width: 46px;
+    height: 46px;
+  }
+
+  .personName {
+    font-size: 18px;
+  }
+
+  .sedeBadge {
+    min-height: 21px;
+
+    padding:
+      2px
+      8px;
+
+    font-size: 10px;
+  }
+
+  .score {
+    font-size: 32px;
+  }
+
+  .vs {
+    font-size: 16px;
+  }
+}

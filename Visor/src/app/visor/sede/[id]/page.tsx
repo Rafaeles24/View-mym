@@ -61,6 +61,10 @@ export default async function SedePage({
 
       sedesStatsDiario={data.sedesStatsDiario}
       rankingRango={data.rankingRango}
+      visorResumenDiario={data.visorResumenDiario}
+      visorResumenAyer={data.visorResumenAyer}
+      visorVersus={data.visorVersus ?? []}
+      versusRango={data.versusRango}
       time={data.time}
     />
   )

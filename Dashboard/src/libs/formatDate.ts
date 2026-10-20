@@ -14,3 +14,15 @@ export const formatTime = (date: Date, timeZone: string) => {
         hour, minute, period
     };
 }
+
+export const formatDate = (
+  date: Date | string,
+  timeZone = "America/Lima"
+) => {
+  return new Intl.DateTimeFormat("es-PE", {
+    timeZone,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(date));
+};

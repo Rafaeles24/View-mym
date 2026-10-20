@@ -1,0 +1,95 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  color: #fff;
+}
+
+/* Primera línea: inicio — barra — fin */
+.rango {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.fecha {
+  white-space: nowrap;
+  font-size: 20px;
+}
+
+.fechaFin {
+  text-align: right;
+}
+
+.barra {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #260909;
+  border: 1px solid #9c1320;
+}
+
+.progreso {
+  height: 100%;
+  border-radius: inherit;
+  background: #c90000;
+  transition: width 1s linear;
+}
+
+/* Segunda línea: horario — contador */
+.actualizacion {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #b8b8b8;
+}
+
+.horario,
+.ultimaActualizacion,
+.estadoActualizacion {
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+.estadoActualizacion {
+  margin-left: auto;
+}
+
+.contador {
+  color: #fff;
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+}
+
+.unidad {
+  font-size: 11px;
+  color: #969696;
+}
+
+@media (max-width: 600px) {
+  .rango {
+    gap: 8px;
+  }
+
+  .fecha {
+    font-size: 11px;
+  }
+
+  .actualizacion {
+    gap: 12px;
+    font-size: 11px;
+  }
+
+  .contador {
+    font-size: 13px;
+  }
+}

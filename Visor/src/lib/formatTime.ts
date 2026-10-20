@@ -16,3 +16,19 @@ export const formatTime = (date: Date, timeZone: string) => {
       hour, minute, second, period
   };
 }
+
+export function formatearFecha(fecha: string) {
+  const [anio, mes, dia] = fecha.split("-").map(Number);
+
+  return new Intl.DateTimeFormat("es-PE", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(anio, mes - 1, dia));
+}
+
+export function obtenerMinutos(hora: string): number {
+  const [horas, minutos] = hora.split(":").map(Number);
+
+  return horas * 60 + minutos;
+}

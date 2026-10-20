@@ -52,24 +52,28 @@ model Media {
 }
 
 model Grupo {
-  id  Int @id @default(autoincrement())
+  id     Int     @id @default(autoincrement())
   nombre String
   activo Boolean @default(true)
 
   cerradores Cerrador[]
+
   @@index([activo])
 }
 
 model Cerrador {
-  id Int @id @default(autoincrement())
-  nombre String
-  nombre_normalizado String @unique
-  activo Boolean @default(true)
+  id                 Int     @id @default(autoincrement())
+  nombre             String
+  nombre_normalizado String  @unique
+  activo             Boolean @default(true)
 
-  grupo_id  Int?
-  grupo   Grupo? @relation(fields: [grupo_id], references: [id])
+  grupo_id Int?
+  grupo    Grupo? @relation(fields: [grupo_id], references: [id])
 
   ventas Venta[]
+
+  versus_1 Versus[] @relation("VersusCerrador1")
+  versus_2 Versus[] @relation("VersusCerrador2")
 
   @@index([grupo_id])
 }
@@ -89,8 +93,8 @@ model Venta {
   campaign Campaign? @relation(fields: [campaign_id], references: [id])
   sede     Sede?     @relation(fields: [sede_id], references: [id])
 
-  cerrador_id   Int?
-  cerrador Cerrador? @relation(fields: [cerrador_id], references: [id])
+  cerrador_id Int?
+  cerrador    Cerrador? @relation(fields: [cerrador_id], references: [id])
 
   @@unique([sica_id, campaign_id, tipo_empleado], name: "venta_sica_participante")
   @@index([campaign_id])
@@ -100,6 +104,23 @@ model Venta {
   @@index([variante_empleado])
   @@index([nombre_empleado])
   @@index([campaign_id, sede_id, nombre_empleado, variante_empleado, fecha, fecha_lima])
+}
+
+model Versus {
+  id Int @id @default(autoincrement())
+
+  nombre String
+  activo Boolean @default(true)
+
+  cerrador_1_id Int
+  cerrador_2_id Int
+
+  cerrador_1 Cerrador @relation("VersusCerrador1", fields: [cerrador_1_id], references: [id], onDelete: Restrict)
+  cerrador_2 Cerrador @relation("VersusCerrador2", fields: [cerrador_2_id], references: [id], onDelete: Restrict)
+
+  @@index([activo])
+  @@index([cerrador_1_id])
+  @@index([cerrador_2_id])
 }
 
 enum VarianteEmpleado {
@@ -152,6 +173,24 @@ model ConfigRanking {
   fecha_fin    DateTime
 
   intervalo_actualizacion Int       @default(15)
+  ultima_actualizacion    DateTime?
+  proxima_actualizacion   DateTime?
+
+  hora_inicio_actualizacion String @default("07:00") @db.VarChar(5)
+  hora_fin_actualizacion    String @default("16:00") @db.VarChar(5)
+
+  zona_horaria String   @default("America/Lima")
+  updateAt     DateTime @updatedAt
+}
+
+model ConfigVersus {
+  id   Int         @id @default(1)
+  modo ModoRanking @default(DEFAULT)
+
+  fecha_inicio DateTime
+  fecha_fin    DateTime
+
+  intervalo_actualizacion Int       @default(10)
   ultima_actualizacion    DateTime?
   proxima_actualizacion   DateTime?
 

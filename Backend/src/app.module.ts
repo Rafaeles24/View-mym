@@ -19,9 +19,11 @@ import { ConfigRankingModule } from './config-ranking/config-ranking.module';
 import { GrupoModule } from './grupo/grupo.module';
 import { CerradorModule } from './cerrador/cerrador.module';
 import { RealTimeModule } from './realtime/realtime.module';
+import { VersusModule } from './versus/versus.module';
+import { VersusConfigModule } from './versus-config/versus-config.module';
 
 @Module({
-  imports: [ RealTimeModule, PrismaModule, CampaignModule, FilesModule, ScheduleModule.forRoot(), ScheduleModule1, TimeModule, AuthModule, UsuarioModule, SedeModule, VisorModule, MediaModule, SicaModule, ConfigRankingModule, GrupoModule, CerradorModule],
+  imports: [ RealTimeModule, PrismaModule, CampaignModule, FilesModule, ScheduleModule.forRoot(), ScheduleModule1, TimeModule, AuthModule, UsuarioModule, SedeModule, VisorModule, MediaModule, SicaModule, ConfigRankingModule, GrupoModule, CerradorModule, VersusModule, VersusConfigModule],
   controllers: [AppController],
   providers: [AppService, FilesService, OptimizeService],
 })

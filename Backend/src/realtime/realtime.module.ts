@@ -4,6 +4,7 @@ import { RankingGateway } from "./gateways/ranking.gateway";
 import { SedeGateway } from "./gateways/sede.gateway";
 import { TimeGateway } from './gateways/time.gateway';
 import { CampaignGateway } from "./gateways/campaign.gateway";
+import { VersusGateway } from "./gateways/versus.gateway";
 
 @Global()
 @Module({
@@ -13,6 +14,7 @@ import { CampaignGateway } from "./gateways/campaign.gateway";
       TimeGateway,
       SedeGateway,
       CampaignGateway,
+      VersusGateway,
     ],
     exports: [
       MediaGateway,
@@ -20,6 +22,7 @@ import { CampaignGateway } from "./gateways/campaign.gateway";
       TimeGateway,
       SedeGateway,
       CampaignGateway,
+      VersusGateway,
     ]
 })
 

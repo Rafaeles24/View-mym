@@ -1,9 +1,13 @@
+import { Type } from 'class-transformer';
 import {
-  ArrayUnique,
   IsArray,
+  IsDateString,
   IsInt,
   IsNotEmpty,
+  IsOptional,
+  IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
 
 export class AssignMediaToSedesDto {
@@ -12,7 +16,33 @@ export class AssignMediaToSedesDto {
   @IsNotEmpty()
   mediaId!: number;
 
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  duration?: number;
+
   @IsArray()
-  @ArrayUnique()
-  sedeIds!: number[];
+  @ValidateNested({ each: true })
+  @Type(() => Sede)
+  sedes!: Sede[];
+}
+
+class Sede {
+  @IsInt()
+  @Min(1)
+  @IsNotEmpty()
+  sedeId!: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  prioridad?: number;
+
+  @IsOptional()
+  @IsDateString()
+  started_at?: string;
+
+  @IsOptional()
+  @IsDateString()
+  ended_at?: string;
 }

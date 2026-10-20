@@ -4,9 +4,10 @@ import { FilesModule } from 'src/files/files.module';
 import { CampaignModule } from 'src/campaign/campaign.module';
 import { SicaModule } from 'src/sica/sica.module';
 import { ConfigRankingModule } from 'src/config-ranking/config-ranking.module';
+import { VersusConfigModule } from 'src/versus-config/versus-config.module';
 
 @Module({
-    imports: [FilesModule, CampaignModule, SicaModule, ConfigRankingModule],
+    imports: [FilesModule, CampaignModule, SicaModule, ConfigRankingModule, VersusConfigModule],
     providers: [ScheduleService],
     exports: [ScheduleService],
 })

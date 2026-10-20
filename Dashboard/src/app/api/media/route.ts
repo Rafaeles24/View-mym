@@ -1,4 +1,4 @@
-import { PaginationMedia } from "@/types/cardMedia";
+import { PaginationMedia } from "@/types/media";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(

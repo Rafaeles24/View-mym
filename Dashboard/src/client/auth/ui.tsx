@@ -13,13 +13,16 @@ export default function AuthUI() {
 
   const [ error, setError ] = useState("");
   const [ loginOk, setLoginOk ] = useState(false);
+  const [ onLogin, setOnLogin ] = useState(false);
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
+    setOnLogin(true);
     // Aquí iría la lógica de autenticación, por ejemplo, una llamada a una API
     if (!username || !password) {
+      setOnLogin(false);
       setError("Por favor, complete todos los campos");
       return;
     }
@@ -40,17 +43,19 @@ export default function AuthUI() {
         setError(data.message || "Error en el login");
         return;
       }
+      setOnLogin(false);
       setLoginOk(true);
 
       window.location.href = "/dashboard"; // Redirigir al dashboard
     } catch (error) {
+      setOnLogin(false);
       console.error("Error en el login:", error);
       setError("Error en el login");
     }
   }
 
   return (
-    <div>
+    <div className={styles.formContent}>
       <Modal>
         <form onSubmit={handleLogin} className={styles.form}>
           <h1>Iniciar sesión</h1>
@@ -77,7 +82,8 @@ export default function AuthUI() {
             type="submit"
             disabled={loginOk}
           >
-            { loginOk ? "Login OK, ingresando..." : "Ingresar" }
+            { onLogin ? "Verificando..." : "Ingresar" }
+            { loginOk ? "Ingresando..." : null }
           </Button>
         </form>
       </Modal>

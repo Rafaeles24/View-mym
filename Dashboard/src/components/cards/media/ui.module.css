@@ -1,45 +1,420 @@
-.article {
-  padding: 10px;
-  background-color: #1a1a1a;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  cursor: pointer;
-  max-height: 300px;
-}
-
-.article p {
+.card {
   width: 100%;
-  display: flex;
-  justify-content: center;
-}
+  min-width: 0;
 
-.mediaContent {
-  width: 100%;
-  aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: 10px;
+
+  border: 1px solid #2b2b2b;
+  border-radius: 12px;
+
+  background: #171717;
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.28);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+
+  border-color: #3a3a3a;
+  background: #1b1b1b;
+}
+
+/* =========================
+   PREVIEW
+========================= */
+
+.preview {
+  position: relative;
+
+  aspect-ratio: 16 / 8;
+
+  margin: 14px 14px 0;
+
+  overflow: hidden;
+
+  border-radius: 9px;
+
+  background: #0c0c0c;
 }
 
 .media {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  background: black;
+
+  display: block;
+
+  object-fit: cover;
 }
 
-.badgesContainer {
+.preview::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  background: linear-gradient(
+    180deg,
+    transparent 65%,
+    rgba(0, 0, 0, 0.28)
+  );
+}
+
+/* =========================
+   PLAY BUTTON
+========================= */
+
+.playButton {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  z-index: 3;
+
+  width: 58px;
+  height: 58px;
+
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
+  place-items: center;
+
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.72);
+
+  color: #f3f3f3;
+
+  backdrop-filter: blur(5px);
+
+  transform: translate(-50%, -50%);
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
-.badgesContainerEmpty {
+.playButton:hover {
+  background: rgba(18, 18, 18, 0.92);
+
+  transform:
+    translate(-50%, -50%)
+    scale(1.05);
+}
+
+.playButton svg {
+  width: 24px;
+  height: 24px;
+
+  margin-left: 3px;
+}
+
+/* =========================
+   TYPE INDICATOR
+========================= */
+
+.typeIndicator {
+  position: absolute;
+
+  right: 10px;
+  bottom: 10px;
+
+  z-index: 3;
+
+  width: 32px;
+  height: 32px;
+
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+
+  background: rgba(10, 10, 10, 0.82);
+
+  color: #d4d4d4;
+
+  backdrop-filter: blur(5px);
 }
 
-.selected {
-  background: #00104F;
+.typeIndicator svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* =========================
+   DURATION
+========================= */
+
+.duration {
+  position: absolute;
+
+  right: 10px;
+  bottom: 10px;
+
+  z-index: 4;
+
+  padding: 4px 7px;
+
+  border-radius: 5px;
+
+  background: rgba(0, 0, 0, 0.82);
+
+  color: #f0f0f0;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* para video ocultamos el icono de tipo,
+   porque ya mostramos duración */
+
+.preview:has(.duration) .typeIndicator {
+  display: none;
+}
+
+/* =========================
+   UNKNOWN
+========================= */
+
+.unknownPreview {
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+  place-items: center;
+
+  background: #101010;
+
+  color: #777;
+
+  font-size: 14px;
+}
+
+/* =========================
+   BODY
+========================= */
+
+.cardBody {
+  padding: 14px;
+}
+
+.fileName {
+  margin: 0 0 10px;
+
+  overflow: hidden;
+
+  color: #f1f1f1;
+
+  font-size: 16px;
+  font-weight: 650;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================
+   SEDES
+========================= */
+
+.sedes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-bottom: 10px;
+}
+
+.sedeBadge,
+.noSedeBadge {
+  min-height: 28px;
+
+  padding: 0 11px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sedeBadge {
+  border: 1px solid #454545;
+
+  background: #2c2c2c;
+
+  color: #ededed;
+}
+
+.noSedeBadge {
+  border: 1px solid #3a3a3a;
+
+  background: #242424;
+
+  color: #bdbdbd;
+}
+
+.sedeBadge svg,
+.noSedeBadge svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* =========================
+   META
+========================= */
+
+.meta {
+  min-height: 21px;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-bottom: 13px;
+
+  color: #909090;
+
+  font-size: 12px;
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #5d5d5d;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    48px;
+
+  gap: 10px;
+}
+
+.primaryAction,
+.menuButton {
+  height: 42px;
+
+  border: 1px solid #353535;
+  border-radius: 8px;
+
+  background: #1f1f1f;
+
+  color: #e7e7e7;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.primaryAction:hover,
+.menuButton:hover {
+  border-color: #484848;
+
+  background: #292929;
+}
+
+.primaryAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.primaryAction svg {
+  width: 17px;
+  height: 17px;
+
+  color: #d0d0d0;
+}
+
+/* =========================
+   MENU BUTTON
+========================= */
+
+.deleteButton {
+  width: 48px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #f8000093;
+  border-radius: 8px;
+
+  background: #ff000062;
+
+  color: #9b9b9b;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.deleteButton svg {
+  width: 25px;
+  height: 25px;
+}
+
+.deleteButton:hover {
+  background: #292929;
+  border-color: #555555;
+  color: #f0f0f0;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 700px) {
+  .card {
+    border-radius: 10px;
+  }
+
+  .preview {
+    margin: 10px 10px 0;
+  }
+
+  .cardBody {
+    padding: 12px 10px;
+  }
+
+  .fileName {
+    font-size: 15px;
+  }
 }

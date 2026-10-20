@@ -15,9 +15,21 @@ async function bootstrap() {
       whitelist: true
     })
   );
+
+  const allowedOrigins = [
+    process.env.VISOR_ORIGIN,
+    process.env.DASHBOARD_ORIGIN,
+  ].filter((origin): origin is string => Boolean(origin));
+
   app.enableCors({
-    origin: '*',
+    origin: allowedOrigins,
     credentials: true,
+    methods: [
+      "GET", 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'
+    ],
+    allowedHeaders: [
+      "Content-Type", "Authorization"
+    ]
   });
   
   app.useStaticAssets(join(process.cwd(), 'uploads'), {

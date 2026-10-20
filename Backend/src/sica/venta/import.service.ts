@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { DateTime } from 'luxon';
+import { DateTime } from 'luxon'; 
 
 import { VentaSica } from '../interfaces/venta-sica.interface';
 import { PrismaService } from 'src/prisma/prisma.service';

@@ -1,4 +1,4 @@
-import { CampaniaMedia } from "@/types/cardMedia";
+import { CampaniaMedia } from "@/types/media";
 import styles from "./ui.module.css";
 
 export default function CampaniaBadge({data}: {data: CampaniaMedia}) {
