@@ -152,7 +152,7 @@ export default function SedeViews({
   return (
     <ViewRotator
       views={[
-        /* ...(visorVersus.length > 0 ? [
+        ...(visorVersus.length > 0 ? [
           {
             id: "versus",
             type: "controlled" as const,
@@ -166,7 +166,7 @@ export default function SedeViews({
               />
             )
           }
-        ]: []), */
+        ]: []), 
         {
           id: "resumen-global",
           type: "timed",
@@ -180,7 +180,7 @@ export default function SedeViews({
             />
           )
         },
-        /* {
+        {
           id: "ranking",
           type: "timed",
           durationMs: rankingDurationMs,
@@ -217,7 +217,7 @@ export default function SedeViews({
           render: (
             <TimeUI time={time} />
           )
-        }, */
+        }, 
       ]}
     />
   );
