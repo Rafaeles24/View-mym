@@ -80,7 +80,7 @@
 
   justify-content: center;
 
-  gap: 14px;
+  gap: 10px;
 }
 
 /* =========================
@@ -111,15 +111,9 @@
 
   box-sizing: border-box;
 
-  background: #151515;
+  background: #08090b;
 
-  border: 1px solid
-    rgba(
-      255,
-      255,
-      255,
-      0.06
-    );
+  border: 2px solid #18191a;
 
   border-radius: 10px;
 }
@@ -371,10 +365,6 @@
 
   .header {
     margin-bottom: 34px;
-  }
-
-  .list {
-    gap: 16px;
   }
 
   .row {

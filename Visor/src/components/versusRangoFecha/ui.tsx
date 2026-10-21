@@ -14,7 +14,7 @@ import type {
 } from "@/types/versus";
 
 import styles from "./ui.module.css";
-import { VersusCountdown } from "@/types/countdown";
+import { RankingCountdown } from "@/types/countdown";
 
 export default function VersusRango({
   schedule,
@@ -45,7 +45,7 @@ export default function VersusRango({
     contador,
     setContador,
   ] =
-    useState<VersusCountdown | null>(
+    useState<RankingCountdown | null>(
       null,
     );
 
@@ -134,7 +134,7 @@ export default function VersusRango({
 
   useEffect(() => {
     function recibirContador(
-      datos: VersusCountdown,
+      datos: RankingCountdown,
     ) {
       setContador(
         datos,
@@ -176,7 +176,7 @@ export default function VersusRango({
     }
 
     socket.on(
-      "versus:countdown",
+      "ranking:countdown",
       recibirContador,
     );
 
@@ -205,7 +205,7 @@ export default function VersusRango({
 
     return () => {
       socket.off(
-        "versus:countdown",
+        "ranking:countdown",
         recibirContador,
       );
 

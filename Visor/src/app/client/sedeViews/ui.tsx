@@ -19,8 +19,6 @@ import { VersusRangoFecha, VisorVersus } from "@/types/versus";
 
 
 const DEFAULT_RANKING_DURATION = 5 * 60 * 1000;
-const VERSUS_PAGE_SIZE = 4;
-const VERSUS_PAGE_DURATION_MS = 60_000;
 
 export default function SedeViews({
   sede,
@@ -61,12 +59,6 @@ export default function SedeViews({
 }) {
 
   const router = useRouter();
-
-  const versusPages = Math.ceil(
-    visorVersus.length | VERSUS_PAGE_SIZE
-  );
-
-  const versusDurationMs = versusPages * VERSUS_PAGE_DURATION_MS;
 
   useEffect(() => {
     if (!sede.id) {
@@ -163,19 +155,19 @@ export default function SedeViews({
         ...(visorVersus.length > 0 ? [
           {
             id: "versus",
-            type: "timed" as const,
-            durationMs: versusDurationMs,
-            render: (
+            type: "controlled" as const,
+            render: ( onComplete: () => void, isActive: boolean ) => (
               <VersusUI
                 data={visorVersus}
-                durationMs={60000}
-                sedeOrigin={sede}
+                durationMs={10_000}
+                onComplete={onComplete}
                 versusRango={versusRango}
+                isActive={isActive}
               />
             )
           }
         ]: []),
-        /* {
+        {
           id: "resumen-global",
           type: "timed",
           durationMs: rankingDurationMs,
@@ -187,7 +179,7 @@ export default function SedeViews({
               ayer={visorResumenAyer}
             />
           )
-        },*/
+        },
         {
           id: "ranking",
           type: "timed",
@@ -225,7 +217,7 @@ export default function SedeViews({
           render: (
             <TimeUI time={time} />
           )
-        },  
+        },
       ]}
     />
   );

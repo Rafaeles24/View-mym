@@ -172,19 +172,7 @@ export default function TimeUI({
             null &&
           servidorMs <=
             latestServerTimeRef.current
-        ) {
-          console.warn(
-            "[TIME] Sincronización antigua ignorada:",
-            {
-              recibida: utc,
-              ultima: new Date(
-                latestServerTimeRef.current,
-              ).toISOString(),
-            },
-          );
-
-          return;
-        }
+        ) return;
 
         latestServerTimeRef.current =
           servidorMs;

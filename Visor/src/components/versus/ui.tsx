@@ -19,7 +19,7 @@ import LogoSvg from "@/icons/logo.svg";
 import RankingRango from "../rankingRangoFecha/ui";
 import VersusRango from "../versusRangoFecha/ui";
 
-const ITEMS_PER_PAGE = 4;
+const ITEMS_PER_PAGE = 6;
 
 function VersusRow({
   versus,
@@ -138,14 +138,16 @@ function VersusRow({
 
 export default function VersusUI({
   data,
-  durationMs = 60_000,
-  sedeOrigin,
+  durationMs = 10_000,
+  onComplete,
   versusRango,
+  isActive,
 }: {
   data: VisorVersus[];
   durationMs?: number;
-  sedeOrigin: Sede;
-  versusRango: VersusRangoFecha
+  onComplete?: () => void;
+  versusRango: VersusRangoFecha;
+  isActive: boolean;
 }) {
   const [page, setPage] =
     useState(0);
@@ -171,37 +173,35 @@ export default function VersusUI({
   }, [data]);
 
   useEffect(() => {
-    setPage(0);
-  }, [data]);
+    if (!isActive) return;
+
+    setPage(0)
+  }, [isActive]);
+
 
   useEffect(() => {
-    if (pages.length <= 1) {
+    if (!isActive) return;
+
+    if (pages.length === 0) {
+      onComplete?.();
       return;
     }
 
-    const interval =
-      window.setInterval(() => {
-        setPage((current) => {
-          if (
-            current >=
-            pages.length - 1
-          ) {
-            return current;
-          }
+    const timer = window.setTimeout(() => {
+      const isLastPage = page >= pages.length - 1;
 
-          return current + 1;
-        });
-      }, durationMs);
+      if (isLastPage) {
+        onComplete?.();
+        return;
+      }
+
+      setPage((current) => current + 1);
+    }, durationMs);
 
     return () => {
-      window.clearInterval(
-        interval,
-      );
-    };
-  }, [
-    pages.length,
-    durationMs,
-  ]);
+      window.clearTimeout(timer);
+    }
+  }, [isActive, page, pages.length, durationMs, onComplete])
 
   if (!data.length) {
     return null;

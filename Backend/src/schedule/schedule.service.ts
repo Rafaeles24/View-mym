@@ -10,7 +10,6 @@ import { SedeGateway } from "src/realtime/gateways/sede.gateway";
 import { TimeGateway } from "src/realtime/gateways/time.gateway";
 import { MediaGateway } from "src/realtime/gateways/media.gateway";
 import { RankingGateway } from "src/realtime/gateways/ranking.gateway";
-import { VersusConfigService } from "src/versus-config/versus-config.service";
 import { VersusGateway } from "src/realtime/gateways/versus.gateway";
 
 @Injectable()
@@ -22,7 +21,6 @@ export class ScheduleService {
     private readonly prisma: PrismaService,
     private readonly sicaService: SicaService,
     private readonly configRankingService: ConfigRankingService,
-    private readonly configVersusService: VersusConfigService,
 
     private readonly rankingGateway: RankingGateway,
     private readonly versusGateway: VersusGateway,
@@ -47,116 +45,6 @@ export class ScheduleService {
    * RENOVAR RANGO
    * ========================================
    */
-
-@Cron('* * * * * *')
-async emitirCountdownVersus() {
-  try {
-    const countdown =
-      await this.configVersusService
-        .obtenerCuentaRegresiva();
-
-    this.versusGateway
-      .emitVersusCountdown(
-        countdown,
-      );
-  } catch (error) {
-    console.error(
-      '[VERSUS COUNTDOWN] Error emitiendo countdown',
-      error,
-    );
-  }
-}
-
-@Cron('* * * * * *')
-async verificarActualizacionVersus() {
-  try {
-    const config =
-      await this.configVersusService
-        .obtenerProgramacion();
-
-    if (
-      !config.proxima_actualizacion
-    ) {
-      return;
-    }
-
-    const ahora =
-      DateTime.now();
-
-    const proxima =
-      DateTime.fromJSDate(
-        config.proxima_actualizacion,
-      );
-
-    /*
-     * Todavía no corresponde.
-     */
-    if (
-      ahora.toMillis() <
-      proxima.toMillis()
-    ) {
-      return;
-    }
-
-    // ==========================================
-    // INICIAMOS ACTUALIZACIÓN
-    // ==========================================
-
-    this.configVersusService
-      .establecerEstadoActualizacion(
-        'SINCRONIZANDO',
-      );
-
-    console.log(
-      '[VERSUS SCHEDULE] Iniciando actualización VS',
-    );
-
-    /*
-     * Registra:
-     *
-     * ultima_actualizacion
-     * proxima_actualizacion
-     */
-    const actualizado =
-      await this.configVersusService
-        .registrarActualizacion();
-
-    /*
-     * Avisamos a las TVs que
-     * consulten nuevamente la data.
-     */
-    this.versusGateway
-      .emitVersusRefresh();
-
-    this.configVersusService
-      .establecerEstadoActualizacion(
-        'EN_ESPERA',
-      );
-
-    console.log(
-      '[VERSUS SCHEDULE] Actualización completada',
-      {
-        ultima:
-          actualizado
-            .ultima_actualizacion,
-
-        proxima:
-          actualizado
-            .proxima_actualizacion,
-      },
-    );
-  } catch (error) {
-    this.configVersusService
-      .establecerEstadoActualizacion(
-        'ERROR',
-      );
-
-    console.error(
-      '[VERSUS SCHEDULE] Error actualizando VS',
-      error,
-    );
-  }
-}
 
   @Cron("0 * * * * *", {
     timeZone: "America/Lima",
@@ -380,7 +268,7 @@ async verificarActualizacionVersus() {
         this.rankingGateway.emitRankingRefresh();
 
         this.logger.log(
-          "Batch del ranking completado.",
+          "Batch de datos completado.",
         );
       } catch (error) {
         this.configRankingService
