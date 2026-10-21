@@ -243,8 +243,8 @@ function GraficoVentas({
                 verticalAlign="bottom"
                 height={36}
                 wrapperStyle={{
-                  fontSize: 15,
-                  paddingTop: 8,
+                  fontSize: 25,
+                  paddingTop: 10,
                 }}
               />
 
@@ -253,7 +253,7 @@ function GraficoVentas({
                 dataKey="hoy"
                 name="Hoy"
                 stroke="#ca0000"
-                strokeWidth={3.5}
+                strokeWidth={5}
                 dot={{
                   r: 5,
                   fill: "#ca0000",
@@ -378,26 +378,22 @@ function TramosVentas({
               </div>
 
               <div className={styles.comparativaCard}>
-                <div className={styles.ventasHoy}>
-                  <span className={styles.cardLabel}>
-                    Hoy
-                  </span>
-
-                  <strong className={styles.tramoCantidad}>
-                    {tramo.cantidad.toLocaleString("es-PE")}
-                  </strong>
-                </div>
-
+                {/* IZQUIERDA: AYER Y BALANCE */}
                 <div className={styles.ventasAyer}>
                   <span className={styles.cardLabel}>
-                    Ayer: {cantidadAyer}
+                    Ayer: {cantidadAyer.toLocaleString("es-PE")}
                   </span>
 
                   <strong className={balanceClass}>
                     {balance > 0 ? "+" : ""}
-                    {balance} ventas
+                    {balance.toLocaleString("es-PE")} ventas
                   </strong>
                 </div>
+
+                {/* DERECHA: VENTAS DE HOY */}
+                <strong className={styles.tramoCantidad}>
+                  {tramo.cantidad.toLocaleString("es-PE")}
+                </strong>
               </div>
             </article>
           );

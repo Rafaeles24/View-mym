@@ -152,25 +152,25 @@ export default function SedeViews({
   return (
     <ViewRotator
       views={[
-        ...(visorVersus.length > 0 ? [
+        /* ...(visorVersus.length > 0 ? [
           {
             id: "versus",
             type: "controlled" as const,
             render: ( onComplete: () => void, isActive: boolean ) => (
               <VersusUI
                 data={visorVersus}
-                durationMs={10_000}
+                durationMs={60_000}
                 onComplete={onComplete}
                 versusRango={versusRango}
                 isActive={isActive}
               />
             )
           }
-        ]: []),
+        ]: []), */
         {
           id: "resumen-global",
           type: "timed",
-          durationMs: rankingDurationMs,
+          durationMs: 60_000,
           render: (
             <VentasResumenUI
               sedeOrigin={sede}
@@ -180,7 +180,7 @@ export default function SedeViews({
             />
           )
         },
-        {
+        /* {
           id: "ranking",
           type: "timed",
           durationMs: rankingDurationMs,
@@ -217,7 +217,7 @@ export default function SedeViews({
           render: (
             <TimeUI time={time} />
           )
-        },
+        }, */
       ]}
     />
   );

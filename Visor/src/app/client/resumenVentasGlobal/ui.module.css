@@ -89,9 +89,8 @@
   flex: 1;
   display: grid;
 
-  /* Los gráficos toman el espacio restante.
-     Los tramos ocupan únicamente su altura. */
-  grid-template-rows: minmax(0, 1fr) auto;
+  /* 58% gráficos / 42% tramos */
+  grid-template-rows: minmax(0, 1.4fr) minmax(0, 1fr);
 
   gap: 16px;
   padding: 10px 0;
@@ -187,19 +186,16 @@
 .tramosGrid {
   display: grid;
 
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: auto;
+  /* 2 columnas y 2 filas */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
 
-  gap: 10px;
+  gap: 12px;
 
   width: 100%;
-  height: auto;
-
   min-height: 0;
 
-  overflow: visible;
   padding: 0;
-
   align-content: start;
 }
 
@@ -212,7 +208,7 @@
   flex-direction: column;
 
   min-width: 0;
-  height: auto;
+  height: 100%;
 
   background: #090a0c;
   border: 2px solid #18191a;
@@ -225,23 +221,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
   flex-wrap: wrap;
+  gap: 8px;
 
-  gap: 5px;
-
-  min-height: 34px;
-  padding: 7px 5px;
+  min-height: 38px;
+  padding: 8px 10px;
 
   background: #27272d;
   border-bottom: 1px solid #34343a;
 
   color: #e4e4e7;
 
-  font-size: clamp(10px, 0.75vw, 14px);
+  font-size: clamp(14px, 0.95vw, 19px);
   font-weight: 700;
 
   text-align: center;
 }
+
 
 /* =========================================
    INFORMACIÓN DE CADA TRAMO
@@ -249,10 +246,24 @@
 
 .comparativaCard {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 
-  gap: 8px;
-  padding: 10px;
+  gap: 14px;
+  padding: 12px 30px;
+  min-height: 80px;
+}
+
+.ventasAyer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+  min-width: 0;
+
+  padding: 0;
+  border: none;
 }
 
 .ventasHoy {
@@ -264,34 +275,39 @@
 
 .cardLabel {
   color: #a4a4ac;
-  font-size: clamp(10px, 0.7vw, 13px);
+  font-size: clamp(13px, 2vw, 25px);
   font-weight: 600;
 }
 
 .tramoCantidad {
-  color: #fff;
+  color: #ffffff;
 
-  font-size: clamp(22px, 1.7vw, 34px);
-  font-weight: 800;
-
+  font-size: clamp(40px, 2.8vw, 56px);
+  font-weight: 900;
   line-height: 1;
+
+  flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
 
-.ventasAyer {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  padding-top: 7px;
-
-  border-top: 1px solid #37373c;
+.positivo {
+  color: #22c55e;
+  font-size: 18px;
+  font-weight: 800;
 }
 
-.ventasAyer strong {
-  font-size: clamp(10px, 0.7vw, 13px);
-  font-weight: 700;
+.negativo {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 800;
 }
+
+.neutro {
+  color: #426baf;
+  font-size: 18px;
+  font-weight: 800;
+}
+
 
 /* =========================================
    ESTADO ACTIVO
@@ -336,8 +352,8 @@
   }
 
   .tramosGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 7px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .comparativaCard {

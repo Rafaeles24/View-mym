@@ -12,14 +12,11 @@ import {
   VersusRangoFecha,
   VisorVersus,
 } from "@/types/versus";
-import { Sede } from "@/types/sede";
-import { RankingRangoFecha } from "@/types/ranking";
 import Image from "next/image";
 import LogoSvg from "@/icons/logo.svg";
-import RankingRango from "../rankingRangoFecha/ui";
 import VersusRango from "../versusRangoFecha/ui";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 5;
 
 function VersusRow({
   versus,
