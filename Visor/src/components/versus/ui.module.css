@@ -1,3 +1,8 @@
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
 .container {
   width: 100%;
   height: 100%;
@@ -15,9 +20,9 @@
   background: #0d0d0d;
 }
 
-/* =========================
+/* =========================================
    HEADER
-========================= */
+========================================= */
 
 .header {
   display: flex;
@@ -29,13 +34,23 @@
 .titleContent {
   flex: 1;
   display: flex;
-  gap: 20px;
   align-items: center;
+  gap: 20px;
   min-width: 0;
+}
+
+.titleContent img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .rankingRango {
   flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   min-width: 0;
 }
 
@@ -65,31 +80,28 @@
   color: #ca0000;
 }
 
-
-/* =========================
-   LIST
-========================= */
+/* =========================================
+   LISTA DE VERSUS
+========================================= */
 
 .list {
   flex: 1;
-
   min-height: 0;
 
   display: flex;
   flex-direction: column;
-
   justify-content: center;
 
   gap: 10px;
 }
 
-/* =========================
-   ROW
-========================= */
+/* =========================================
+   FILA VERSUS
+========================================= */
 
 .row {
   width: 100%;
-
+  min-width: 0;
   min-height: 112px;
 
   display: grid;
@@ -102,186 +114,217 @@
     minmax(0, 1fr);
 
   align-items: center;
-
   gap: 18px;
 
-  padding:
-    16px
-    24px;
-
+  padding: 12px 24px;
   box-sizing: border-box;
 
   background: #08090b;
-
   border: 2px solid #18191a;
-
   border-radius: 10px;
 }
 
-/* =========================
-   SIDE
-========================= */
+/* =========================================
+   LADOS DEL VS
+========================================= */
 
 .side {
-  min-width: 0;
-
   display: flex;
-
   align-items: center;
+  justify-content: flex-start;
 
-  gap: 18px;
+  min-width: 0;
+  height: 100%;
 }
+
 
 .sideRight {
   justify-content: flex-end;
 }
 
-/* =========================
-   LOGO
-========================= */
-
-.logoWrap {
-  width: 58px;
-  height: 58px;
-
-  flex-shrink: 0;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-}
-
-.logo {
-  width: 100%;
-  height: 100%;
-
-  object-fit: contain;
-
-  display: block;
-}
-
-.fallback {
-  width: 58px;
-  height: 58px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: #272727;
-
-  font-size: 24px;
-
-  font-weight: 900;
-}
-
-/* =========================
-   PERSON
-========================= */
+/* =========================================
+   INFORMACIÓN DEL CERRADOR
+========================================= */
 
 .personData {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  gap: 10px;
+
+  width: 100%;
   min-width: 0;
 
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: flex-start;
-
-  gap: 5px;
+  text-align: left;
 }
 
-.personDataRight {
+.sideRight .personData {
   align-items: flex-end;
-
   text-align: right;
 }
 
-.personName {
-  width: 100%;
 
-  color: #ffffff;
+/* =========================================
+   CAMPAÑAS HORIZONTALES
+========================================= */
 
-  font-size: clamp(
-    20px,
-    1.6vw,
-    32px
-  );
-
-  font-weight: 900;
-
-  line-height: 1;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-}
-
-/* =========================
-   SEDE
-========================= */
-
-.sedeBadge {
-  display: inline-flex;
+.campaignLogos {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
 
   align-items: center;
+  justify-content: flex-start;
 
-  min-height: 25px;
+  gap: 2px;
 
-  padding:
-    3px
-    10px;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
 
-  box-sizing: border-box;
-
-  border-radius: 5px;
-
-  background: #e6e6e6;
-
-  color: #111111;
-
-  font-size: 12px;
-
-  font-weight: 900;
-
-  line-height: 1;
+  overflow: hidden;
 }
 
-/* =========================
-   SCORE
-========================= */
+.sideRight .campaignLogos {
+  justify-content: flex-end;
+}
 
-.score {
+/* =========================================
+   LOGO CIRCULAR
+========================================= */
+
+.logoWrap {
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 42px;
+
   display: flex;
-
   align-items: center;
   justify-content: center;
 
-  color: rgba(
-    255,
-    255,
-    255,
-    0.55
-  );
+  overflow: hidden;
 
-  font-size: clamp(
-    32px,
-    2.8vw,
-    52px
-  );
+  border-radius: 50%;
 
+  box-sizing: border-box;
+}
+
+.logo {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  padding: 5px;
+
+  object-fit: contain;
+  object-position: center;
+
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+/* =========================================
+   FALLBACK DEL LOGO
+========================================= */
+
+.fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 50%;
+
+  background: #202024;
+  color: #ffffff;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* =========================================
+   NOMBRE DEL CERRADOR
+========================================= */
+
+.personName {
+  width: 100%;
+  min-width: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(20px, 1.5vw, 30px);
   font-weight: 900;
+  line-height: 1.1;
 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  text-align: left;
+}
+.sideRight .personName {
+  text-align: right;
+}
+/* =========================================
+   SEDES
+========================================= */
+
+.sedesList {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+  gap: 5px;
+
+  max-width: 100%;
+  margin: 5px 0;
+}
+
+.sedeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 23px;
+  padding: 10px 10px;
+
+  box-sizing: border-box;
+  border-radius: 5px;
+
+  background: #e6e6e6;
+  color: #111111;
+
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* =========================================
+   MARCADOR
+========================================= */
+
+.score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: clamp(32px, 2.8vw, 52px);
+  font-weight: 900;
   line-height: 1;
 
-  font-variant-numeric:
-    tabular-nums;
+  font-variant-numeric: tabular-nums;
 }
 
 .scoreLeader {
@@ -289,40 +332,32 @@
 }
 
 .scoreLoser {
-  color: rgba(
-    255,
-    255,
-    255,
-    0.55
-  );
+  color: rgba(255, 255, 255, 0.55);
 }
 
-/* =========================
-   VS
-========================= */
+/* =========================================
+   VS CENTRAL
+========================================= */
 
 .vs {
   display: flex;
-
   align-items: center;
   justify-content: center;
 
   color: #ffffff;
 
   font-size: 20px;
-
   font-weight: 900;
 }
 
-/* =========================
-   PAGINATION
-========================= */
+/* =========================================
+   PAGINACIÓN
+========================================= */
 
 .pagination {
   flex-shrink: 0;
 
   display: flex;
-
   align-items: center;
   justify-content: center;
 
@@ -337,12 +372,7 @@
 
   border-radius: 999px;
 
-  background: rgba(
-    255,
-    255,
-    255,
-    0.13
-  );
+  background: rgba(255, 255, 255, 0.13);
 
   transition:
     width 0.3s ease,
@@ -351,20 +381,16 @@
 
 .dotActive {
   width: 48px;
-
   background: #ffffff;
 }
 
-/* =========================
-   FULL HD
-========================= */
+/* =========================================
+   FULL HD - 1600px O MÁS
+========================================= */
 
-@media (
-  min-width: 1600px
-) {
-
+@media (min-width: 1600px) {
   .header {
-    margin-bottom: 34px;
+    margin-bottom: 24px;
   }
 
   .row {
@@ -378,32 +404,25 @@
       minmax(0, 1fr);
 
     gap: 22px;
-
-    padding:
-      18px
-      28px;
+    padding: 12px 28px;
   }
 
-  .logoWrap,
-  .fallback {
-    width: 64px;
-    height: 64px;
+  .campaignLogos {
+    min-height: 46px;
+  }
+
+  .logoWrap {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
   }
 
   .personName {
-    font-size: clamp(
-      24px,
-      1.8vw,
-      34px
-    );
+    font-size: clamp(24px, 1.8vw, 34px);
   }
 
   .score {
-    font-size: clamp(
-      38px,
-      3vw,
-      56px
-    );
+    font-size: clamp(38px, 3vw, 56px);
   }
 
   .vs {
@@ -411,26 +430,25 @@
   }
 }
 
-/* =========================
-   1366 / MENOR
-========================= */
+/* =========================================
+   1366px Y RESOLUCIONES MENORES
+========================================= */
 
-@media (
-  max-width: 1400px
-) {
+@media (max-width: 1400px) {
   .container {
-    padding:
-      18px
-      26px
-      18px;
+    padding: 18px 26px;
   }
 
   .header {
     margin-bottom: 20px;
   }
 
-  .header h1 {
+  .titulo h1 {
     font-size: 38px;
+  }
+
+  .titulo p {
+    font-size: 16px;
   }
 
   .row {
@@ -444,41 +462,79 @@
       minmax(0, 1fr);
 
     gap: 10px;
-
-    padding:
-      12px
-      16px;
+    padding: 10px 16px;
   }
 
-  .side {
-    gap: 12px;
+  .personData {
+    gap: 4px;
   }
 
-  .logoWrap,
+  .campaignLogos {
+    min-height: 34px;
+    gap: 5px;
+  }
+
+  .logoWrap {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .logo {
+    padding: 4px;
+  }
+
   .fallback {
-    width: 46px;
-    height: 46px;
+    font-size: 17px;
   }
 
   .personName {
     font-size: 18px;
   }
-
-  .sedeBadge {
-    min-height: 21px;
-
-    padding:
-      2px
-      8px;
-
-    font-size: 10px;
-  }
-
   .score {
     font-size: 32px;
   }
 
   .vs {
     font-size: 16px;
+  }
+}
+
+/* =========================================
+   PANTALLAS CON MENOR ALTURA
+========================================= */
+
+@media (max-height: 800px) {
+  .container {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .header {
+    margin-bottom: 8px;
+  }
+
+  .list {
+    gap: 6px;
+  }
+
+  .row {
+    min-height: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .campaignLogos {
+    min-height: 30px;
+  }
+
+  .logoWrap {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
+
+  .pagination {
+    margin-top: 8px;
   }
 }

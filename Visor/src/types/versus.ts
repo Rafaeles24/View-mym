@@ -86,3 +86,5 @@ export type VersusRangoFecha = {
 
   updateAt: string;
 };
+
+export type VersusCampaignIcon = VisorVersus["cerrador_1"]["campaigns"][number];

@@ -1,74 +1,127 @@
+
 "use client";
 
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 import styles from "./ui.module.css";
 
-import {
+import type {
+  VersusCampaignIcon,
   VersusRangoFecha,
   VisorVersus,
 } from "@/types/versus";
+
 import Image from "next/image";
 import LogoSvg from "@/icons/logo.svg";
 import VersusRango from "../versusRangoFecha/ui";
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 4;
+
+/* =========================================
+   LOGOS DE CAMPAÑAS
+========================================= */
+
+function CampaignLogos({
+  campaigns,
+}: {
+  campaigns: VersusCampaignIcon[];
+}) {
+  if (!campaigns.length) {
+    return null;
+  }
+
+  return (
+    <div className={styles.campaignLogos}>
+      {campaigns.map((campaign) => (
+        <div
+          key={campaign.id}
+          className={styles.logoWrap}
+          title={campaign.nombre}
+        >
+          {campaign.logo_url ? (
+            <img
+              src={campaign.logo_url}
+              alt={campaign.nombre}
+              className={styles.logo}
+            />
+          ) : (
+            <div className={styles.fallback}>
+              {campaign.nombre
+                .charAt(0)
+                .toUpperCase()}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* =========================================
+   INFORMACIÓN DEL CERRADOR
+========================================= */
+
+function CerradorInfo({
+  cerrador,
+}: {
+  cerrador: VisorVersus["cerrador_1"];
+}) {
+  return (
+    <div className={styles.personData}>
+      {/* LOGOS SUPERIORES */}
+      <CampaignLogos
+        campaigns={cerrador.campaigns}
+      />
+
+      {/* NOMBRE */}
+      <div
+        className={styles.personName}
+        title={cerrador.nombre}
+      >
+        {cerrador.nombre}
+      </div>
+
+      {/* SEDES */}
+      {cerrador.sedes.length > 0 && (
+        <div className={styles.sedesList}>
+          {cerrador.sedes.map((sede) => (
+            <span
+              key={sede.id}
+              className={styles.sedeBadge}
+            >
+              {sede.nombre}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================
+   FILA VERSUS
+========================================= */
 
 function VersusRow({
   versus,
 }: {
   versus: VisorVersus;
 }) {
-  const campaign1 =
-    versus.cerrador_1.campaigns[0];
-
-  const campaign2 =
-    versus.cerrador_2.campaigns[0];
-
-  const sede1 =
-    versus.cerrador_1.sedes[0];
-
-  const sede2 =
-    versus.cerrador_2.sedes[0];
-
   return (
     <article className={styles.row}>
-      {/* IZQUIERDA */}
+      {/* CERRADOR IZQUIERDO */}
       <div className={styles.side}>
-        <div className={styles.logoWrap}>
-          {campaign1?.logo_url ? (
-            <img
-              src={campaign1.logo_url}
-              alt={campaign1.nombre}
-              className={styles.logo}
-            />
-          ) : (
-            <div className={styles.fallback}>
-              {versus.cerrador_1.nombre
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-          )}
-        </div>
-
-        <div className={styles.personData}>
-          <div className={styles.personName}>
-            {versus.cerrador_1.nombre}
-          </div>
-
-          {sede1 && (
-            <div className={styles.sedeBadge}>
-              {sede1.nombre}
-            </div>
-          )}
-        </div>
+        <CerradorInfo
+          cerrador={versus.cerrador_1}
+        />
       </div>
 
-      {/* SCORE IZQUIERDA */}
+      {/* VENTAS IZQUIERDA */}
       <div
         className={`${styles.score} ${
           versus.cerrador_1.lider
@@ -84,7 +137,7 @@ function VersusRow({
         VS
       </div>
 
-      {/* SCORE DERECHA */}
+      {/* VENTAS DERECHA */}
       <div
         className={`${styles.score} ${
           versus.cerrador_2.lider
@@ -95,43 +148,21 @@ function VersusRow({
         {versus.cerrador_2.ventas}
       </div>
 
-      {/* DERECHA */}
+      {/* CERRADOR DERECHO */}
       <div
         className={`${styles.side} ${styles.sideRight}`}
       >
-        <div
-          className={`${styles.personData} ${styles.personDataRight}`}
-        >
-          <div className={styles.personName}>
-            {versus.cerrador_2.nombre}
-          </div>
-
-          {sede2 && (
-            <div className={styles.sedeBadge}>
-              {sede2.nombre}
-            </div>
-          )}
-        </div>
-
-        <div className={styles.logoWrap}>
-          {campaign2?.logo_url ? (
-            <img
-              src={campaign2.logo_url}
-              alt={campaign2.nombre}
-              className={styles.logo}
-            />
-          ) : (
-            <div className={styles.fallback}>
-              {versus.cerrador_2.nombre
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-          )}
-        </div>
+        <CerradorInfo
+          cerrador={versus.cerrador_2}
+        />
       </div>
     </article>
   );
 }
+
+/* =========================================
+   COMPONENTE PRINCIPAL
+========================================= */
 
 export default function VersusUI({
   data,
@@ -146,12 +177,20 @@ export default function VersusUI({
   versusRango: VersusRangoFecha;
   isActive: boolean;
 }) {
-  const [page, setPage] =
-    useState(0);
+  const [page, setPage] = useState(0);
+
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  /* =========================================
+     PAGINACIÓN
+  ========================================= */
 
   const pages = useMemo(() => {
-    const result: VisorVersus[][] =
-      [];
+    const result: VisorVersus[][] = [];
 
     for (
       let i = 0;
@@ -159,36 +198,46 @@ export default function VersusUI({
       i += ITEMS_PER_PAGE
     ) {
       result.push(
-        data.slice(
-          i,
-          i + ITEMS_PER_PAGE,
-        ),
+        data.slice(i, i + ITEMS_PER_PAGE),
       );
     }
 
     return result;
   }, [data]);
 
-  useEffect(() => {
-    if (!isActive) return;
+  /* =========================================
+     REINICIAR AL VOLVER A LA VISTA
+  ========================================= */
 
-    setPage(0)
+  useEffect(() => {
+    if (!isActive) {
+      setPage(0);
+      return;
+    }
+
+    setPage(0);
   }, [isActive]);
 
+  /* =========================================
+     CONTROL DE ROTACIÓN
+  ========================================= */
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      return;
+    }
 
     if (pages.length === 0) {
-      onComplete?.();
+      onCompleteRef.current?.();
       return;
     }
 
     const timer = window.setTimeout(() => {
-      const isLastPage = page >= pages.length - 1;
+      const isLastPage =
+        page >= pages.length - 1;
 
       if (isLastPage) {
-        onComplete?.();
+        onCompleteRef.current?.();
         return;
       }
 
@@ -197,18 +246,23 @@ export default function VersusUI({
 
     return () => {
       window.clearTimeout(timer);
-    }
-  }, [isActive, page, pages.length, durationMs, onComplete])
+    };
+  }, [
+    isActive,
+    page,
+    pages.length,
+    durationMs,
+  ]);
 
   if (!data.length) {
     return null;
   }
 
-  const currentPage =
-    pages[page] ?? [];
+  const currentPage = pages[page] ?? [];
 
   return (
     <main className={styles.container}>
+      {/* HEADER */}
       <header className={styles.header}>
         <div className={styles.titleContent}>
           <Image
@@ -218,9 +272,18 @@ export default function VersusUI({
             alt=""
             aria-hidden="true"
           />
+
           <div className={styles.titulo}>
-            <h1>VS. DE <span className={styles.tituloVentas}>VENTAS GLOBAL</span></h1>
-            <p>Disciplina hoy, grandes resultados mañana</p>
+            <h1>
+              VS. DE{" "}
+              <span className={styles.tituloVentas}>
+                VENTAS GLOBAL
+              </span>
+            </h1>
+
+            <p>
+              Disciplina hoy, grandes resultados mañana
+            </p>
           </div>
         </div>
 
@@ -229,35 +292,29 @@ export default function VersusUI({
         </div>
       </header>
 
+      {/* LISTA DE VERSUS */}
       <section className={styles.list}>
-        {currentPage.map(
-          (versus) => (
-            <VersusRow
-              key={versus.id}
-              versus={versus}
-            />
-          ),
-        )}
+        {currentPage.map((versus) => (
+          <VersusRow
+            key={versus.id}
+            versus={versus}
+          />
+        ))}
       </section>
 
+      {/* PAGINACIÓN */}
       {pages.length > 1 && (
-        <div
-          className={
-            styles.pagination
-          }
-        >
-          {pages.map(
-            (_, index) => (
-              <span
-                key={index}
-                className={`${styles.dot} ${
-                  index === page
-                    ? styles.dotActive
-                    : ""
-                }`}
-              />
-            ),
-          )}
+        <div className={styles.pagination}>
+          {pages.map((_, index) => (
+            <span
+              key={index}
+              className={`${styles.dot} ${
+                index === page
+                  ? styles.dotActive
+                  : ""
+              }`}
+            />
+          ))}
         </div>
       )}
     </main>

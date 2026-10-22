@@ -151,7 +151,22 @@ export default function SedeViews({
 
   return (
     <ViewRotator
-      views={[
+      views={[        
+        {
+          id: "ranking",
+          type: "timed",
+          durationMs: rankingDurationMs,
+          render: (
+            <RankingUI
+              sedeOrigin={sede}
+              rankingAgenteSede={rankingAgenteSede}
+              rankingGlobalAgente={rankingGlobalAgente}
+              rankingGlobalCerrador={rankingGlobalCerrador}
+              sedesStatsDiario={sedesStatsDiario}
+              rankingRango={rankingRango}
+            />
+          )
+        }, 
         ...(visorVersus.length > 0 ? [
           {
             id: "versus",
@@ -180,21 +195,6 @@ export default function SedeViews({
             />
           )
         },
-        {
-          id: "ranking",
-          type: "timed",
-          durationMs: rankingDurationMs,
-          render: (
-            <RankingUI
-              sedeOrigin={sede}
-              rankingAgenteSede={rankingAgenteSede}
-              rankingGlobalAgente={rankingGlobalAgente}
-              rankingGlobalCerrador={rankingGlobalCerrador}
-              sedesStatsDiario={sedesStatsDiario}
-              rankingRango={rankingRango}
-            />
-          )
-        },
         ...( sedeMedia?.medias?.length
           ? [
               {
@@ -217,7 +217,7 @@ export default function SedeViews({
           render: (
             <TimeUI time={time} />
           )
-        }, 
+        },  
       ]}
     />
   );
