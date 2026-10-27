@@ -65,6 +65,8 @@ model Cerrador {
   id                 Int     @id @default(autoincrement())
   nombre             String
   nombre_normalizado String  @unique
+  avatar_url         String?
+  storage_key        String? @unique
   activo             Boolean @default(true)
 
   grupo_id Int?

@@ -84,7 +84,7 @@ export class FilesService {
 
                     await fs.promises.unlink(file.path);
                     
-                } catch (error) {
+                } catch (error: any) {
 
                     // si el archivo no existe no pasa nada
                     if (error.code !== "ENOENT") {
@@ -104,7 +104,7 @@ export class FilesService {
                 force: true
             });
         
-        } catch (error) {
+        } catch (error: any) {
         
             if (error.code !== "ENOENT") {
                 throw error;

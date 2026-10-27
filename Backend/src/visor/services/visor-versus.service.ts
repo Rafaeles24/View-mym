@@ -61,6 +61,7 @@ export class VisorVersusService {
             select: {
               id: true,
               nombre: true,
+              avatar_url: true,
               activo: true,
 
               grupo: {
@@ -76,6 +77,7 @@ export class VisorVersusService {
             select: {
               id: true,
               nombre: true,
+              avatar_url: true,
               activo: true,
 
               grupo: {
@@ -652,7 +654,9 @@ export class VisorVersusService {
             nombre:
               item
                 .cerrador_1
-                .nombre,
+                .nombre,  
+              
+            avatar_url: item.cerrador_1.avatar_url ? normalizeUrl(`${process.env.BASE_URL}/${item.cerrador_1.avatar_url}`) : null,
 
             grupo:
               item
@@ -688,6 +692,8 @@ export class VisorVersusService {
               item
                 .cerrador_2
                 .nombre,
+
+            avatar_url: item.cerrador_2.avatar_url ? normalizeUrl(`${process.env.BASE_URL}/${item.cerrador_2.avatar_url}`) : null,
 
             grupo:
               item
