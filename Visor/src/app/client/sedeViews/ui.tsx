@@ -166,7 +166,7 @@ export default function SedeViews({
               rankingRango={rankingRango}
             />
           )
-        }, 
+        },
         ...(visorVersus.length > 0 ? [
           {
             id: "versus",
@@ -217,7 +217,7 @@ export default function SedeViews({
           render: (
             <TimeUI time={time} />
           )
-        },  
+        },
       ]}
     />
   );

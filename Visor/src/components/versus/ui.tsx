@@ -19,6 +19,7 @@ import type {
 import Image from "next/image";
 import LogoSvg from "@/icons/logo.svg";
 import VersusRango from "../versusRangoFecha/ui";
+import DefaultPerson from "@/images/default.png";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -114,14 +115,26 @@ function VersusRow({
 }) {
   return (
     <article className={styles.row}>
-      {/* CERRADOR IZQUIERDO */}
+      {/* INFORMACIÓN IZQUIERDA */}
       <div className={styles.side}>
         <CerradorInfo
           cerrador={versus.cerrador_1}
         />
       </div>
 
-      {/* VENTAS IZQUIERDA */}
+      {/* PERSONA IZQUIERDA */}
+      <div className={styles.personImageWrap}>
+        <Image
+          src={versus.cerrador_1.avatar_url?.trim() || DefaultPerson}
+          alt={versus.cerrador_1.nombre}
+          fill
+          unoptimized
+          sizes="(min-width: 1600px) 180px, (max-width: 1400px) 105px, 150px"
+          className={styles.personImage}
+        />
+      </div>
+
+      {/* SCORE IZQUIERDA */}
       <div
         className={`${styles.score} ${
           versus.cerrador_1.lider
@@ -137,7 +150,7 @@ function VersusRow({
         VS
       </div>
 
-      {/* VENTAS DERECHA */}
+      {/* SCORE DERECHA */}
       <div
         className={`${styles.score} ${
           versus.cerrador_2.lider
@@ -148,7 +161,19 @@ function VersusRow({
         {versus.cerrador_2.ventas}
       </div>
 
-      {/* CERRADOR DERECHO */}
+      {/* PERSONA DERECHA */}
+      <div className={styles.personImageWrap}>
+        <Image
+          src={versus.cerrador_2.avatar_url?.trim() || DefaultPerson}
+          alt={versus.cerrador_2.nombre}
+          fill
+          unoptimized
+          sizes="(min-width: 1600px) 180px, (max-width: 1400px) 105px, 150px"
+          className={styles.personImage}
+        />
+      </div>
+
+      {/* INFORMACIÓN DERECHA */}
       <div
         className={`${styles.side} ${styles.sideRight}`}
       >

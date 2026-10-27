@@ -20,6 +20,7 @@ export type VersusGrupo = {
 export type VersusCerrador = {
   id: number;
   nombre: string;
+  avatar_url: string | null;
 
   grupo: VersusGrupo | null;
 
