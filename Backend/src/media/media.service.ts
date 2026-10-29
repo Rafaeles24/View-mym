@@ -392,6 +392,8 @@ export class MediaService {
            */
           let durationActualizada = false;
 
+          const durationMs = dto.duration !== undefined ? Math.round(dto.duration * 1000) : undefined;
+
           if (
             dto.duration !== undefined &&
             dto.duration !== media.durationMs
@@ -402,7 +404,7 @@ export class MediaService {
               },
 
               data: {
-                durationMs: dto.duration,
+                durationMs: durationMs,
               },
             });
 

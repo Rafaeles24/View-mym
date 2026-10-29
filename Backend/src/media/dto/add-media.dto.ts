@@ -4,6 +4,7 @@ import {
   IsDateString,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Min,
@@ -17,8 +18,12 @@ export class AssignMediaToSedesDto {
   mediaId!: number;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
+  @Type(() => Number)
+  @IsNumber({
+    allowNaN: false,
+    allowInfinity: false,
+  })
+  @Min(0.001)
   duration?: number;
 
   @IsArray()

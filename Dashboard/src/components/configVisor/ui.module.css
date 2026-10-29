@@ -1,0 +1,664 @@
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
+.contenedor {
+  width: 100%;
+  min-height: 100%;
+  padding: 28px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  background: #101114;
+  color: #ffffff;
+
+  box-sizing: border-box;
+}
+
+/* =========================================
+   ENCABEZADO
+========================================= */
+
+.encabezado {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.encabezado h1 {
+  margin: 0;
+
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+
+  color: #ffffff;
+}
+
+.encabezado p {
+  margin: 8px 0 0;
+
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  color: #999ba5;
+}
+
+.encabezadoAcciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.botonRecargar {
+  min-height: 42px;
+  padding: 10px 18px;
+
+  border: 1px solid #45464e;
+  border-radius: 9px;
+
+  background: #202127;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.botonRecargar:hover:not(:disabled) {
+  background: #303139;
+  border-color: #686a75;
+}
+
+.botonRecargar:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   MENSAJES
+========================================= */
+
+.error {
+  width: 100%;
+  padding: 14px 16px;
+
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 10px;
+
+  background: rgba(239, 68, 68, 0.09);
+
+  color: #fca5a5;
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.exito {
+  margin: 0;
+  padding: 12px 15px;
+
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  border-radius: 9px;
+
+  background: rgba(74, 222, 128, 0.07);
+
+  color: #4ade80;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================================
+   GRID PRINCIPAL
+========================================= */
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  align-items: stretch;
+  gap: 20px;
+
+  width: 100%;
+}
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.tarjeta {
+  min-width: 0;
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  border: 1px solid #34353d;
+  border-radius: 14px;
+
+  background: #1b1c22;
+
+  box-sizing: border-box;
+
+  transition: border-color 0.2s ease;
+}
+
+.tarjeta:hover {
+  border-color: #4b4c55;
+}
+
+.tarjetaIntervalo {
+  grid-column: 1 / -1;
+}
+
+/* =========================================
+   ENCABEZADO DE TARJETAS
+========================================= */
+
+.tarjetaTitulo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  min-height: 50px;
+}
+
+.icono {
+  width: 50px;
+  height: 50px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(202, 0, 0, 0.3);
+  border-radius: 12px;
+
+  background: rgba(202, 0, 0, 0.12);
+
+  font-size: 24px;
+}
+
+.tarjetaTitulo h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.tarjetaTitulo p {
+  margin: 6px 0 0;
+
+  color: #9b9da8;
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* =========================================
+   CONTENEDOR DE CAMPOS
+========================================= */
+
+.campos {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+
+  width: 100%;
+}
+
+/* =========================================
+   CAMPOS DEL FORMULARIO
+========================================= */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+
+  min-width: 0;
+  width: 100%;
+}
+
+.campo label {
+  color: #e0e1e7;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.campo input {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+
+  padding: 11px 13px;
+
+  border: 1px solid #60616a;
+  border-radius: 9px;
+
+  background: #111217;
+  color: #ffffff;
+
+  color-scheme: dark;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  outline: none;
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.campo input:hover:not(:disabled) {
+  border-color: #91929b;
+}
+
+.campo input:focus {
+  border-color: #ca0000;
+
+  background: #15161c;
+
+  box-shadow:
+    0 0 0 3px rgba(202, 0, 0, 0.15);
+}
+
+.campo input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.campo input::placeholder {
+  color: #a7a8b0;
+}
+
+/* =========================================
+   INPUT DE FECHA
+========================================= */
+
+.campo input[type="datetime-local"] {
+  cursor: pointer;
+}
+
+.campo input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.85;
+  filter: invert(1);
+}
+
+.campo input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* =========================================
+   PIE DE TARJETAS
+========================================= */
+
+.pieTarjeta {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  margin-top: auto;
+  padding-top: 19px;
+
+  border-top: 1px solid #34353d;
+}
+
+.zona {
+  display: inline-flex;
+  align-items: center;
+
+  color: #999ba5;
+
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* =========================================
+   ACCIONES
+========================================= */
+
+.acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
+}
+
+/* =========================================
+   BOTÓN GUARDAR
+========================================= */
+
+.botonGuardar {
+  min-height: 42px;
+
+  padding: 10px 19px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #ca0000;
+  border-radius: 9px;
+
+  background: #ca0000;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.botonGuardar:hover:not(:disabled) {
+  background: #e31515;
+  border-color: #e31515;
+
+  transform: translateY(-1px);
+}
+
+.botonGuardar:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.botonGuardar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================
+   BOTÓN CANCELAR
+========================================= */
+
+.botonCancelar {
+  min-height: 42px;
+
+  padding: 10px 18px;
+
+  border: 1px solid #565862;
+  border-radius: 9px;
+
+  background: transparent;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.botonCancelar:hover:not(:disabled) {
+  background: #2b2c34;
+  border-color: #81838e;
+}
+
+.botonCancelar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   PROGRAMACIÓN / INTERVALO
+========================================= */
+
+.intervaloContenido {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 28px;
+}
+
+.intervaloContenido > .campo {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.inputIntervalo {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.inputIntervalo input {
+  width: 120px;
+  max-width: 120px;
+
+  text-align: center;
+
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.inputIntervalo span {
+  color: #a8a9b2;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================================
+   INFORMACIÓN DEL INTERVALO
+========================================= */
+
+.intervaloInfo {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  padding: 14px 18px;
+
+  border: 1px solid #35363e;
+  border-radius: 10px;
+
+  background: #14151a;
+}
+
+.intervaloInfo strong {
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.intervaloInfo p {
+  margin: 0;
+
+  color: #999ba5;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   ACCESIBILIDAD
+========================================= */
+
+.botonGuardar:focus-visible,
+.botonCancelar:focus-visible,
+.botonRecargar:focus-visible {
+  outline: 2px solid #ff4545;
+  outline-offset: 3px;
+}
+
+/* =========================================
+   PANTALLAS MEDIANAS
+========================================= */
+
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjetaIntervalo {
+    grid-column: auto;
+  }
+}
+
+/* =========================================
+   TABLETS
+========================================= */
+
+@media (max-width: 768px) {
+  .contenedor {
+    padding: 20px;
+  }
+
+  .encabezado {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 16px;
+  }
+
+  .encabezado h1 {
+    font-size: 24px;
+  }
+
+  .tarjeta {
+    padding: 20px;
+  }
+
+  .intervaloContenido {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 16px;
+  }
+
+  .intervaloContenido > .campo {
+    width: 100%;
+  }
+}
+
+/* =========================================
+   MÓVILES
+========================================= */
+
+@media (max-width: 520px) {
+  .contenedor {
+    padding: 14px;
+    gap: 18px;
+  }
+
+  .encabezado h1 {
+    font-size: 21px;
+  }
+
+  .encabezado p {
+    font-size: 12px;
+  }
+
+  .encabezadoAcciones {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .tarjeta {
+    padding: 17px;
+    gap: 20px;
+  }
+
+  .tarjetaTitulo {
+    align-items: flex-start;
+  }
+
+  .icono {
+    width: 43px;
+    height: 43px;
+    font-size: 20px;
+  }
+
+  .tarjetaTitulo h2 {
+    font-size: 16px;
+  }
+
+  .campos {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .pieTarjeta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .zona {
+    justify-content: center;
+  }
+
+  .acciones {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .botonGuardar,
+  .botonCancelar {
+    width: 100%;
+  }
+
+  .intervaloContenido > .campo {
+    width: 100%;
+  }
+
+  .intervaloInfo {
+    width: 100%;
+  }
+}

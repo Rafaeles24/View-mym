@@ -82,8 +82,7 @@ export default function AuthUI() {
             type="submit"
             disabled={loginOk}
           >
-            { onLogin ? "Verificando..." : "Ingresar" }
-            { loginOk ? "Ingresando..." : null }
+            { onLogin ? "Verificando..." : loginOk ? "Ingresando" : "Ingresar"}
           </Button>
         </form>
       </Modal>
