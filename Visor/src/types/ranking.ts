@@ -1,23 +1,25 @@
+
 export type RankingList = {
   puesto: number;
   nombre: string;
   variante: string;
   cantidad: number;
-  sede: Sede;
-  campaign: campaign;
-}
+  sede: Sede | null;
+  campaigns: CampaignRanking[];
+};
 
-type Sede = {
+export type Sede = {
   id: number;
   nombre: string;
-}
+};
 
-type campaign = {
+export type CampaignRanking = {
   id: number;
   hex: string | null;
   nombre: string;
   logo_url: string | null;
-}
+  cantidad: number;
+};
 
 export type RankingRangoFecha = {
   id: number;

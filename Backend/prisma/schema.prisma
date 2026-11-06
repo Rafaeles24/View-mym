@@ -65,6 +65,7 @@ model Cerrador {
   id                 Int     @id @default(autoincrement())
   nombre             String
   nombre_normalizado String  @unique
+  genero             String? @db.Char(1)
   avatar_url         String?
   storage_key        String? @unique
   activo             Boolean @default(true)
@@ -113,6 +114,7 @@ model Versus {
 
   nombre String
   activo Boolean @default(true)
+  fecha DateTime? @default(now())
 
   cerrador_1_id Int
   cerrador_2_id Int

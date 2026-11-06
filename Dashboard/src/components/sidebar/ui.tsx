@@ -34,13 +34,13 @@ export default function Sidebar({
           <span>Media</span>
         </Link>
 
-        <Link href={"/dashboard/ranking"} className={`${styles.navLinks} ${pathname === "/dashboard/ranking" && styles.active}`}>
+        <Link href={"/dashboard/config-visor"} className={`${styles.navLinks} ${pathname === "/dashboard/config-visor" && styles.active}`}>
           <StartIcon/>
-          <span>Ranking</span>
+          <span>Visor</span>
         </Link>
-        <Link href={"/dashboard/colaborador"} className={`${styles.navLinks} ${pathname === "/dashboard/colaborador" && styles.active}`}>
+        <Link href={"/dashboard/cerrador"} className={`${styles.navLinks} ${pathname === "/dashboard/cerrador" && styles.active}`}>
           <EstructuraIcon/>
-          <span>Colaboradores</span>
+          <span>Cerradores</span>
         </Link>
       </div>
 

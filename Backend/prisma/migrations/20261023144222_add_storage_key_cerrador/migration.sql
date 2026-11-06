@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `Cerrador` ADD COLUMN `storage_key` VARCHAR(191) NULL;
+ALTER TABLE `cerrador` ADD COLUMN `storage_key` VARCHAR(191) NULL;
 
 -- CreateIndex
 CREATE UNIQUE INDEX `Cerrador_storage_key_key` ON `Cerrador`(`storage_key`);

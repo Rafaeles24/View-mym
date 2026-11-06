@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `Cerrador` ADD COLUMN `avatar_url` VARCHAR(191) NULL;
+ALTER TABLE `cerrador` ADD COLUMN `avatar_url` VARCHAR(191) NULL;

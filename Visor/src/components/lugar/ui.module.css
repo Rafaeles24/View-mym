@@ -124,3 +124,24 @@
   background: #595a10;
   color: #fff5f5;
 }
+
+/* =========================================
+   LOGOS DE CAMPAÑAS
+========================================= */
+
+.campaignLogos {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+
+  flex-shrink: 0;
+}
+
+.campaignLogos img {
+  width: 35px;
+  height: 35px;
+
+  flex-shrink: 0;
+  object-fit: contain;
+}

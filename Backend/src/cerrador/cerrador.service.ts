@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCerradorDto } from './dto/create.dto';
 import { FilesService } from 'src/files/files.service';
 import { randomUUID } from 'crypto';
+import { UpdateCerradorDto } from './dto/update.dto';
 
 @Injectable()
 export class CerradorService {
@@ -10,6 +11,19 @@ export class CerradorService {
     private readonly prisma: PrismaService,
     private readonly fileService: FilesService
   ) {}
+
+  async getCerradores(activos: boolean) {
+    const cerradores = await this.prisma.cerrador.findMany({
+      where: {
+        activo: activos
+      }
+    });
+
+    return cerradores.map((cerrador) => ({
+      ...cerrador,
+      avatar_url: cerrador.avatar_url ? this.normalizeUrl(`${process.env.BASE_URL}/${cerrador.avatar_url}`) : null
+    }))
+  } 
 
   async getCerrador(id: number) {
     return await this.prisma.cerrador.findUnique({
@@ -58,6 +72,25 @@ export class CerradorService {
 
   private normalizeUrl(url: string) {
     return url.replace(/\\/g, "/");
+  }
+
+  async updateCerrador(id: number, dto: UpdateCerradorDto) {
+    const cerrador = await this.prisma.cerrador.findUnique({
+      where: { id }
+    });
+
+    if (!cerrador) {
+      throw new NotFoundException("No se encuentra el cerrador para actualizar.");
+    }
+
+    return await this.prisma.cerrador.update({
+      where: { id },
+      data: {
+        nombre: dto.nombre,
+        nombre_normalizado: dto.nombre_normalizado,
+        activo: dto.activo
+      }
+    });
   }
 
 

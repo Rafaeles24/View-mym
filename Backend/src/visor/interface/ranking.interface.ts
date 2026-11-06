@@ -1,18 +1,22 @@
-import { VarianteEmpleado } from "@prisma/client";
+import { Venta } from "@prisma/client";
+
+import {
+  CampaignRanking,
+  SedeRanking,
+} from "../types/ranking.type";
+
+export type CampaignRankingResponse =
+  Omit<CampaignRanking, "logo_url"> & {
+    logo_url: string | null;
+    cantidad: number;
+  };
 
 export interface FilaRanking {
   puesto: number;
   nombre: string;
-  variante: VarianteEmpleado;
+  variante: Venta["variante_empleado"];
   cantidad: number;
-  sede: {
-    id: number;
-    nombre: string;
-  } | null;
-  campaign: {
-    id: number;
-    nombre: string;
-    hex: string | null;
-    logo_url: string | null;
-  } | null;
+  sede: SedeRanking | null;
+
+  campaigns: CampaignRankingResponse[];
 }

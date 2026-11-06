@@ -330,4 +330,341 @@ export class VisorResumenVentasService {
   ): string {
     return `${String(hora).padStart(2, '0')}:00`;
   }
+
+  // ============================================================
+  // RESUMEN MENSUAL NO ACUMULATIVO
+  // ============================================================
+
+  async obtenerResumenMensual(
+    fecha?: string,
+  ) {
+    // ----------------------------------------------------------
+    // FECHA DE REFERENCIA
+    // ----------------------------------------------------------
+
+    const referencia = fecha
+      ? DateTime.fromISO(fecha, {
+          zone: ZONA_LIMA,
+        })
+      : DateTime.now().setZone(ZONA_LIMA);
+
+    if (!referencia.isValid) {
+      throw new InternalServerErrorException(
+        'Fecha de consulta inválida',
+      );
+    }
+
+    const inicioMes = referencia.startOf('month');
+
+    const finMes = inicioMes.plus({
+      months: 1,
+    });
+
+    const hoy = DateTime.now()
+      .setZone(ZONA_LIMA)
+      .startOf('day');
+
+    // ----------------------------------------------------------
+    // DETERMINAR HASTA QUÉ DÍA SE ANALIZA
+    // ----------------------------------------------------------
+
+    const esMesActual =
+      inicioMes.year === hoy.year &&
+      inicioMes.month === hoy.month;
+
+    const esMesFuturo =
+      inicioMes.toMillis() >
+      hoy.startOf('month').toMillis();
+
+    let ultimoDiaAnalizar: DateTime | null;
+
+    if (esMesFuturo) {
+      ultimoDiaAnalizar = null;
+    } else if (esMesActual) {
+      ultimoDiaAnalizar = hoy;
+    } else {
+      ultimoDiaAnalizar = finMes.minus({
+        days: 1,
+      });
+    }
+
+    // ----------------------------------------------------------
+    // CONSULTAR VENTAS DEL MES
+    // ----------------------------------------------------------
+
+    const ventas = await this.prisma.venta.findMany({
+      where: {
+        tipo_empleado: TipoEmpleado.AGENTE,
+
+        fecha_tramitacion: {
+          gte: fechaLimaParaBD(inicioMes),
+          lt: fechaLimaParaBD(finMes),
+        },
+      },
+
+      select: {
+        fecha_lima: true,
+      },
+    });
+
+    // ----------------------------------------------------------
+    // CREAR DÍAS HÁBILES DEL MES
+    // ----------------------------------------------------------
+
+    const ventasPorDia = new Map<string, number>();
+
+    const detalleBase: {
+      fecha: string;
+      dia: string;
+      cantidad: number;
+    }[] = [];
+
+    if (ultimoDiaAnalizar) {
+      let cursor = inicioMes.startOf('day');
+
+      while (
+        cursor.toMillis() <=
+        ultimoDiaAnalizar.toMillis()
+      ) {
+        // Luxon:
+        // 1 = lunes
+        // 2 = martes
+        // ...
+        // 6 = sábado
+        // 7 = domingo
+
+        const esDiaHabil =
+          cursor.weekday >= 1 &&
+          cursor.weekday <= 5;
+
+        if (esDiaHabil) {
+          const fechaDia = cursor.toISODate();
+
+          if (fechaDia) {
+            ventasPorDia.set(
+              fechaDia,
+              0,
+            );
+
+            detalleBase.push({
+              fecha: fechaDia,
+
+              dia: this.capitalizar(
+                cursor
+                  .setLocale('es')
+                  .toFormat('cccc'),
+              ),
+
+              cantidad: 0,
+            });
+          }
+        }
+
+        cursor = cursor.plus({
+          days: 1,
+        });
+      }
+    }
+
+    // ----------------------------------------------------------
+    // CLASIFICAR VENTAS POR DÍA
+    // ----------------------------------------------------------
+
+    for (const venta of ventas) {
+      if (!venta.fecha_lima) {
+        continue;
+      }
+
+      const fechaVenta =
+        fechaBDComoLima(
+          venta.fecha_lima,
+        );
+
+      if (!fechaVenta.isValid) {
+        continue;
+      }
+
+      // Ignorar sábado y domingo
+      if (
+        fechaVenta.weekday === 6 ||
+        fechaVenta.weekday === 7
+      ) {
+        continue;
+      }
+
+      const fechaDia =
+        fechaVenta.toISODate();
+
+      if (!fechaDia) {
+        continue;
+      }
+
+      // Evita contar fechas futuras
+      // cuando se consulta el mes actual.
+      if (!ventasPorDia.has(fechaDia)) {
+        continue;
+      }
+
+      ventasPorDia.set(
+        fechaDia,
+        (ventasPorDia.get(fechaDia) ?? 0) + 1,
+      );
+    }
+
+    // ----------------------------------------------------------
+    // ARMAR DETALLE
+    // ----------------------------------------------------------
+
+    const detalle = detalleBase.map(
+      (dia) => ({
+        ...dia,
+
+        cantidad:
+          ventasPorDia.get(
+            dia.fecha,
+          ) ?? 0,
+      }),
+    );
+
+    // ----------------------------------------------------------
+    // TOTAL DE VENTAS
+    // ----------------------------------------------------------
+
+    const totalVentas = detalle.reduce(
+      (total, dia) =>
+        total + dia.cantidad,
+      0,
+    );
+
+    // ----------------------------------------------------------
+    // DÍAS HÁBILES
+    // ----------------------------------------------------------
+
+    const totalDiasHabiles =
+      detalle.length;
+
+    const diasConVentas =
+      detalle.filter(
+        (dia) =>
+          dia.cantidad > 0,
+      ).length;
+
+    const diasSinVentas =
+      detalle.filter(
+        (dia) =>
+          dia.cantidad === 0,
+      ).length;
+
+    // ----------------------------------------------------------
+    // PROMEDIO
+    // ----------------------------------------------------------
+
+    const promedio =
+      totalDiasHabiles > 0
+        ? Number(
+            (
+              totalVentas /
+              totalDiasHabiles
+            ).toFixed(2),
+          )
+        : 0;
+
+    // ----------------------------------------------------------
+    // DÍA CON MÁS VENTAS
+    // ----------------------------------------------------------
+
+    let diaMasVentas:
+      | (typeof detalle)[number]
+      | null = null;
+
+    // ----------------------------------------------------------
+    // DÍA CON MENOS VENTAS
+    // ----------------------------------------------------------
+
+    let diaMenosVentas:
+      | (typeof detalle)[number]
+      | null = null;
+
+    for (const dia of detalle) {
+      if (
+        !diaMasVentas ||
+        dia.cantidad >
+          diaMasVentas.cantidad
+      ) {
+        diaMasVentas = dia;
+      }
+
+      if (
+        !diaMenosVentas ||
+        dia.cantidad <
+          diaMenosVentas.cantidad
+      ) {
+        diaMenosVentas = dia;
+      }
+    }
+
+    // ----------------------------------------------------------
+    // RESPUESTA
+    // ----------------------------------------------------------
+
+    return {
+      periodo: {
+        anio: inicioMes.year,
+        mes: inicioMes.month,
+
+        nombre_mes: this.capitalizar(
+          inicioMes
+            .setLocale('es')
+            .toFormat('LLLL'),
+        ),
+
+        fecha_inicio:
+          inicioMes.toISODate(),
+
+        fecha_fin:
+          ultimoDiaAnalizar?.toISODate() ??
+          null,
+
+        zona_horaria: ZONA_LIMA,
+      },
+
+      resumen: {
+        total_ventas:
+          totalVentas,
+
+        promedio_diario:
+          promedio,
+
+        dias_habiles:
+          totalDiasHabiles,
+
+        dias_con_ventas:
+          diasConVentas,
+
+        dias_sin_ventas:
+          diasSinVentas,
+
+        dia_mas_ventas:
+          diaMasVentas,
+
+        dia_menos_ventas:
+          diaMenosVentas,
+      },
+
+      detalle,
+    };
+  }
+
+  private capitalizar(
+    texto: string,
+  ): string {
+    if (!texto) {
+      return texto;
+    }
+  
+    return (
+      texto.charAt(0).toUpperCase() +
+      texto.slice(1)
+    );
+  }
 }

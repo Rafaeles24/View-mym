@@ -1,10 +1,13 @@
+
 "use client";
 
 import type { RankingList } from "@/types/ranking";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+
 import Lugar from "../lugar/ui";
 import styles from "./ui.module.css";
+
 import EdificioSvg from "@/icons/edificio.svg";
 import PersonasSvg from "@/icons/personas.svg";
 import HeadsetSvg from "@/icons/headset.svg";
@@ -33,7 +36,8 @@ export default function Leaderboard({
   const esSede = id === "agentes-sede";
 
   const mostrarSede =
-    id === "agentes-global" || id === "cerradores-global";
+    id === "agentes-global" ||
+    id === "cerradores-global";
 
   const icono =
     esSede
@@ -44,6 +48,24 @@ export default function Leaderboard({
           ? HeadsetSvg
           : null;
 
+  /* =========================================
+     CLAVE UNICA POR PARTICIPANTE
+
+     No depende de campaign_id,
+     porque ahora existen varias campañas.
+  ========================================= */
+
+  const obtenerClave = (persona: RankingList) =>
+    JSON.stringify([
+      persona.sede?.id ?? null,
+      persona.variante,
+      persona.nombre,
+    ]);
+
+  /* =========================================
+     SCROLL AUTOMATICO PING-PONG
+  ========================================= */
+
   useEffect(() => {
     const contenedor = scrollRef.current;
     if (!contenedor) return;
@@ -52,6 +74,7 @@ export default function Leaderboard({
     let direccion = 1;
     let posicion = 0;
     let anterior = 0;
+
     let pausaHasta = performance.now() + PAUSA;
 
     contenedor.scrollTop = 0;
@@ -67,7 +90,8 @@ export default function Leaderboard({
 
       const limite = Math.max(
         0,
-        contenedor.scrollHeight - contenedor.clientHeight
+        contenedor.scrollHeight -
+          contenedor.clientHeight
       );
 
       if (limite <= 1) {
@@ -121,7 +145,10 @@ export default function Leaderboard({
             {subtitulo}
           </p>
 
-          <h3 className={styles.tituloRanking} id={id}>
+          <h3
+            className={styles.tituloRanking}
+            id={id}
+          >
             {titulo}
           </h3>
         </div>
@@ -135,12 +162,7 @@ export default function Leaderboard({
           >
             {primeros.map((persona) => (
               <Lugar
-                key={JSON.stringify([
-                  persona.sede.id,
-                  persona.campaign.id,
-                  persona.variante,
-                  persona.nombre,
-                ])}
+                key={obtenerClave(persona)}
                 persona={persona}
                 mostrarSede={mostrarSede}
               />
@@ -159,12 +181,7 @@ export default function Leaderboard({
               >
                 {restantes.map((persona) => (
                   <Lugar
-                    key={JSON.stringify([
-                      persona.sede.id,
-                      persona.campaign.id,
-                      persona.variante,
-                      persona.nombre,
-                    ])}
+                    key={obtenerClave(persona)}
                     persona={persona}
                     mostrarSede={mostrarSede}
                   />

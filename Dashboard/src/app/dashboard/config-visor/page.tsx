@@ -29,7 +29,7 @@ async function getConfigVersus(): Promise<ConfiguracionVisor> {
   return data;
 }
 
-export default async function Ranking() {
+export default async function ConfigVisor() {
   const [ rankingConfig, versusConfig ] = await Promise.all([
     getConfigRanking(),
     getConfigVersus()

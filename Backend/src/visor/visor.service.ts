@@ -44,6 +44,7 @@ export class VisorService {
       flyerSede,
       visorResumenDiario,
       visorResumenAyer,
+      visorResumenMensual,
       visorVersus,
       versusRango,
     ] = await Promise.all([
@@ -56,6 +57,7 @@ export class VisorService {
       this.visorMedia.obtenerMediaPorSede(sedeId),
       this.visorResumenVentas.obtenerResumenDiario(sedeId),
       this.visorResumenVentas.obtenerResumenAyer(sedeId),
+      this.visorResumenVentas.obtenerResumenMensual('2026-10-01'),
       this.visorVersus.obtenerVersusActivosGlobales(),
       this.visorVersus.getRangoFechas(),
     ]);
@@ -70,6 +72,7 @@ export class VisorService {
       flyerSede,
       visorResumenDiario,
       visorResumenAyer,
+      visorResumenMensual,
       visorVersus,
       versusRango,
       time: this.visorTime.getCurrentTime(),
