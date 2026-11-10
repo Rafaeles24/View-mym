@@ -362,8 +362,8 @@ export class VersusConfigService {
               zona_horaria:
                 config.zona_horaria,
 
-              updateAt:
-                config.updateAt,
+              updatedAt:
+                config.updatedAt,
             },
 
             data: {
@@ -692,7 +692,7 @@ export class VersusConfigService {
         null,
 
       updateAt:
-        config.updateAt,
+        config.updatedAt,
     };
   }
 

@@ -2,15 +2,14 @@ import {
   Injectable,
 } from '@nestjs/common';
 
-import { ConfigRankingService } from 'src/config-ranking/config-ranking.service';
 import { VisorSedeService } from './services/visor-sede.service';
 import { VisorMediaService } from './services/visor-media.service';
 import { VisorRankingService } from './services/visor-ranking.service';
 import { VisorSedeStatsDiarioService } from './services/visor-sede-stats-diario.service';
 import { VisorTimeService } from './services/visor-time.service';
 import { VisorResumenVentasService } from './services/visor-resumen-ventas.service';
-import { DateTime } from 'luxon';
 import { VisorVersusService } from './services/visor-versus.service';
+import { VisorSedeVersusService } from './services/visor-sede-versus.service';
 
 
 @Injectable()
@@ -23,7 +22,8 @@ export class VisorService {
     private readonly visorMedia: VisorMediaService,
     private readonly visorTime: VisorTimeService,
     private readonly visorResumenVentas: VisorResumenVentasService,
-    private readonly visorVersus: VisorVersusService
+    private readonly visorVersus: VisorVersusService,
+    private readonly visorSedeVersus: VisorSedeVersusService,
   ) {}
 
 
@@ -46,6 +46,7 @@ export class VisorService {
       visorResumenAyer,
       visorResumenMensual,
       visorVersus,
+      visorSedeVersus,
       versusRango,
     ] = await Promise.all([
       this.visorSede.obtenerSede(sedeId),
@@ -59,6 +60,7 @@ export class VisorService {
       this.visorResumenVentas.obtenerResumenAyer(sedeId),
       this.visorResumenVentas.obtenerResumenMensual('2026-10-01'),
       this.visorVersus.obtenerVersusActivosGlobales(),
+      this.visorSedeVersus.obtenerVersusSedes(),
       this.visorVersus.getRangoFechas(),
     ]);
 
@@ -74,9 +76,14 @@ export class VisorService {
       visorResumenAyer,
       visorResumenMensual,
       visorVersus,
+      visorSedeVersus,
       versusRango,
       time: this.visorTime.getCurrentTime(),
     };
+  }
+
+  getSedeVersus() {
+    return this.visorSedeVersus.obtenerVersusSedes();
   }
 
 }

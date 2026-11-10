@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 model Usuario {
@@ -27,16 +26,22 @@ model Campaign {
   sedes CampaignSede[]
 
   ventas Venta[]
+
+  @@index([nombre])
 }
 
 model Sede {
-  id     Int    @id @default(autoincrement())
-  nombre String
+  id                   Int    @id @default(autoincrement())
+  nombre               String
+  jefe_operaciones_id  Int?   @unique
+  jefe_operaciones     Cerrador? @relation("SedeJefeOperaciones", fields: [jefe_operaciones_id], references: [id], onDelete: SetNull)
 
   campaigns CampaignSede[]
   ventas    Venta[]
 
   medias AsignacionMedia[]
+
+  @@index([nombre])
 }
 
 model Media {
@@ -71,12 +76,13 @@ model Cerrador {
   activo             Boolean @default(true)
 
   grupo_id Int?
-  grupo    Grupo? @relation(fields: [grupo_id], references: [id])
+  grupo    Grupo? @relation(fields: [grupo_id], references: [id], onDelete: SetNull)
 
   ventas Venta[]
 
   versus_1 Versus[] @relation("VersusCerrador1")
   versus_2 Versus[] @relation("VersusCerrador2")
+  sede_jefatura Sede? @relation("SedeJefeOperaciones")
 
   @@index([grupo_id])
 }
@@ -93,20 +99,19 @@ model Venta {
   fecha_lima        DateTime?
   fecha_tramitacion DateTime?
 
-  campaign Campaign? @relation(fields: [campaign_id], references: [id])
-  sede     Sede?     @relation(fields: [sede_id], references: [id])
+  campaign Campaign? @relation(fields: [campaign_id], references: [id], onDelete: SetNull)
+  sede     Sede?     @relation(fields: [sede_id], references: [id], onDelete: SetNull)
 
   cerrador_id Int?
-  cerrador    Cerrador? @relation(fields: [cerrador_id], references: [id])
+  cerrador    Cerrador? @relation(fields: [cerrador_id], references: [id], onDelete: SetNull)
 
   @@unique([sica_id, campaign_id, tipo_empleado], name: "venta_sica_participante")
   @@index([campaign_id])
   @@index([sede_id])
-  @@index([fecha])
-  @@index([fecha_lima])
-  @@index([variante_empleado])
-  @@index([nombre_empleado])
-  @@index([campaign_id, sede_id, nombre_empleado, variante_empleado, fecha, fecha_lima])
+  @@index([tipo_empleado, fecha])
+  @@index([sede_id, tipo_empleado, fecha])
+  @@index([tipo_empleado, fecha_tramitacion])
+  @@index([cerrador_id, tipo_empleado, fecha_lima])
 }
 
 model Versus {
@@ -143,11 +148,10 @@ model CampaignSede {
   campaign_id Int
   sede_id     Int
 
-  campaign Campaign @relation(fields: [campaign_id], references: [id])
-  sede     Sede     @relation(fields: [sede_id], references: [id])
+  campaign Campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  sede     Sede     @relation(fields: [sede_id], references: [id], onDelete: Cascade)
 
   @@id([campaign_id, sede_id])
-  @@index([campaign_id])
   @@index([sede_id])
 }
 
@@ -163,7 +167,6 @@ model AsignacionMedia {
   media Media @relation(fields: [media_id], references: [id], onDelete: Cascade)
 
   @@id([sede_id, media_id])
-  @@index([sede_id])
   @@index([started_at, ended_at])
   @@index([sede_id, prioridad])
 }
@@ -184,7 +187,7 @@ model ConfigRanking {
   hora_fin_actualizacion    String @default("16:00") @db.VarChar(5)
 
   zona_horaria String   @default("America/Lima")
-  updateAt     DateTime @updatedAt
+  updatedAt    DateTime @updatedAt @map("updateAt")
 }
 
 model ConfigVersus {
@@ -202,7 +205,7 @@ model ConfigVersus {
   hora_fin_actualizacion    String @default("16:00") @db.VarChar(5)
 
   zona_horaria String   @default("America/Lima")
-  updateAt     DateTime @updatedAt
+  updatedAt    DateTime @updatedAt @map("updateAt")
 }
 
 enum ModoRanking {

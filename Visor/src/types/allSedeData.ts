@@ -3,6 +3,7 @@ import { RankingList, RankingRangoFecha } from "./ranking";
 import { ResumenVentas } from "./resumenVenta";
 import { Sede } from "./sede"
 import { SedeStats } from "./stats";
+import { VisorSedeVersus } from "./sedeVersus";
 import { Time } from "./time";
 import { VersusRangoFecha, VisorVersus } from "./versus";
 
@@ -18,5 +19,6 @@ export type AllSedeData = {
   visorResumenDiario: ResumenVentas;
   visorResumenAyer: ResumenVentas;
   visorVersus: VisorVersus[];
+  visorSedeVersus: VisorSedeVersus;
   time: Time;
 }

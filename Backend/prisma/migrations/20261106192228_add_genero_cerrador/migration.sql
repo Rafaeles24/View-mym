@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `Cerrador` ADD COLUMN `genero` CHAR(1) NULL;
+ALTER TABLE `cerrador` ADD COLUMN `genero` CHAR(1) NULL;

@@ -1,6 +1,16 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
 
-const prisma = new PrismaClient();
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL no está configurada.');
+}
+
+const prisma = new PrismaClient({
+  adapter: new PrismaMariaDb(databaseUrl),
+});
 
 async function main() {
     console.log("Seeding database...");

@@ -222,7 +222,7 @@ export class ConfigRankingService {
             fecha_inicio: config.fecha_inicio,
             fecha_fin: config.fecha_fin,
             zona_horaria: config.zona_horaria,
-            updateAt: config.updateAt,
+            updatedAt: config.updatedAt,
           },
         
           data: {
@@ -449,7 +449,7 @@ export class ConfigRankingService {
         config.proxima_actualizacion?.toISOString() ??
         null,
 
-      updateAt: config.updateAt,
+      updateAt: config.updatedAt,
     };
   }
 
