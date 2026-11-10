@@ -74,9 +74,9 @@ export class VisorSedeVersusService {
         sede_id: {
           in: sedes.map((sede) => sede.id),
         },
-        fecha_lima: {
+        fecha_tramitacion: {
           gte: config.fecha_inicio,
-          lte: config.fecha_fin,
+          lt: config.fecha_fin,
         },
       },
       _count: {
