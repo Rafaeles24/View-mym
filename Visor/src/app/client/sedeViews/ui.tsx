@@ -16,6 +16,8 @@ import VentasResumenUI from "../resumenVentasGlobal/ui";
 import { ResumenVentas } from "@/types/resumenVenta";
 import VersusUI from "@/components/versus/ui";
 import { VersusRangoFecha, VisorVersus } from "@/types/versus";
+import SedeVersusUI from "@/components/sedeVersus/ui";
+import { VisorSedeVersus } from "@/types/sedeVersus";
 
 
 const DEFAULT_RANKING_DURATION = 5 * 60 * 1000;
@@ -37,6 +39,7 @@ export default function SedeViews({
   rankingDurationMs = DEFAULT_RANKING_DURATION,
 
   visorVersus,
+  visorSedeVersus,
   time,
 } : {
   sede: Sede;
@@ -55,6 +58,7 @@ export default function SedeViews({
 
   rankingDurationMs?: number;
   visorVersus: VisorVersus[];
+  visorSedeVersus: VisorSedeVersus;
   time: Time;
 }) {
 
@@ -167,6 +171,19 @@ export default function SedeViews({
             />
           )
         },
+        ...(visorSedeVersus.participantes.length > 0 ? [
+          {
+            id: "sede-versus",
+            type: "timed" as const,
+            durationMs: 60_000,
+            render: (
+              <SedeVersusUI
+                data={visorSedeVersus}
+                versusRango={versusRango}
+              />
+            )
+          }
+        ] : []),
         ...(visorVersus.length > 0 ? [
           {
             id: "versus",

@@ -1,0 +1,31 @@
+# Dependencies
+**/node_modules/
+
+# Build outputs
+**/dist/
+**/.next/
+**/out/
+**/build/
+**/coverage/
+
+# Environment files and secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs and temporary files
+**/*.log
+**/.temp/
+**/.tmp/
+**/*.tsbuildinfo
+
+# Editor and operating system files
+.idea/
+.vscode/
+**/.DS_Store
+**/Thumbs.db
+
+# Local runtime data
+Backend/uploads/*
+!Backend/uploads/icon/
+!Backend/uploads/logo/

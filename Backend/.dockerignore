@@ -1,4 +1,10 @@
 node_modules
 dist
+coverage
 .git
+.env
+.env.*
+!.env.example
 uploads
+npm-debug.log*
+Dockerfile*

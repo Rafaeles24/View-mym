@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { VentaImportService } from './venta/import.service';
 import { SicaAuditService } from './services/sica-audit.service';
 import { SicaScraperService } from './services/sica-scraper.service';
@@ -32,6 +32,12 @@ export class SicaService {
 
         ventas.push(venta);
       }
+    }
+
+    if (ventas.length === 0) {
+      throw new ServiceUnavailableException(
+        'SICA no devolvió ventas. La sincronización se canceló para evitar registrar una actualización vacía.',
+      );
     }
 
     await this.auditService.guardarExcel(ventas);

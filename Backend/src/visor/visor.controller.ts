@@ -12,4 +12,9 @@ export class VisorController {
     return this.visorService.getAllData(id);
   }
 
+  @Get('sede-versus')
+  getSedeVersus() {
+    return this.visorService.getSedeVersus();
+  }
+
 }

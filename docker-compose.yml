@@ -1,85 +1,77 @@
 services:
-
   db:
-    image: mysql:8.0
-    container_name: flyer_mym_db
-    restart: always
-
+    image: mysql:8.4
+    container_name: mymdecks_db
+    profiles:
+      - container-db
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: 240901
-      MYSQL_DATABASE: flyermym
-      MYSQL_USER: dieguitoYlasBasecitas
-      MYSQL_PASSWORD: AaS9LDtGr30y73fIFXAs
-
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD in the root .env file}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-flyermym}
     ports:
-      - "3307:3306"
-
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p240901"]
-      interval: 5s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
       timeout: 5s
-      retries: 20
-  
+      retries: 10
+      start_period: 30s
+
   backend:
     build:
       context: ./Backend
-
-    container_name: flyer_mym_backend
-    restart: always
-
-    ports:
-      - "6005:3001"
-
+      dockerfile: Dockerfile
+    container_name: mymdecks_backend
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
     environment:
-      DATABASE_URL: mysql://root:240901@db:3306/flyermym
-      BASE_URL: http://192.168.10.16:6005
-      PORT: 3001
-      JWT_SECRET: CQzcP8cZlcYulBMEJAUkh8My680YWocj6glt6fuLQSJ
-
+      PORT: 6005
+      DATABASE_URL: ${DOCKER_DATABASE_URL:?Define DOCKER_DATABASE_URL in the root .env file}
+      BASE_URL: http://localhost:6005
+      VISOR_ORIGIN: http://localhost:6003
+      DASHBOARD_ORIGIN: http://localhost:6002
+    ports:
+      - "6005:6005"
     volumes:
       - ./Backend/uploads:/app/uploads
-
-    depends_on:
-      - db
 
   dashboard:
     build:
       context: ./Dashboard
-
-    container_name: mym_dashboard
-    restart: always
-
-    ports:
-      - "6002:3000"
-
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_API_URL: http://localhost:6005
+        NEXT_PUBLIC_SOCKET_URL: http://localhost:6005
+        NEXT_PUBLIC_STATIC_URL: http://localhost:6005
+    container_name: mymdecks_dashboard
+    restart: unless-stopped
     environment:
-      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.16:6005
-      NEXT_PUBLIC_STATIC_URL: http://192.168.10.16:6005
-      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.16:6005
-      BACKEND_INTERNAL_URL: http://backend:3001
-
+      PORT: 6002
+      HOSTNAME: 0.0.0.0
+      BACKEND_INTERNAL_URL: http://backend:6005
+    ports:
+      - "6002:6002"
     depends_on:
       - backend
 
   visor:
     build:
       context: ./Visor
-
-    container_name: mym_visor
-    restart: always
-
-    ports:
-      - "6003:3000"
-
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SOCKET_URL: http://localhost:6005
+        NEXT_PUBLIC_SOCKET_PATH: /socket.io
+    container_name: mymdecks_visor
+    restart: unless-stopped
     environment:
-      NEXT_PUBLIC_SOCKET_URL: http://192.168.10.16:6005
-      NEXT_PUBLIC_STATIC_URL: http://192.168.10.16:6005
-      NEXT_PUBLIC_BACKEND_API_URL: http://192.168.10.16:6005
-      BACKEND_INTERNAL_URL: http://backend:3001
-
+      PORT: 6003
+      HOSTNAME: 0.0.0.0
+      BACKEND_INTERNAL_URL: http://backend:6005
+    ports:
+      - "6003:6003"
     depends_on:
       - backend
 

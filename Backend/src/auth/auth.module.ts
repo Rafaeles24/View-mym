@@ -4,6 +4,7 @@ import { AuthController } from './auth.controller';
 import { UsuarioModule } from 'src/usuario/usuario.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { JWT_SECRET } from './jwt.config';
 
 @Module({
   controllers: [AuthController],
@@ -11,7 +12,7 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [
     forwardRef(() => UsuarioModule),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || "la_clave_ultra_mega_archi_secreta",
+      secret: JWT_SECRET,
       signOptions: { expiresIn: '60m' }
     })
   ],

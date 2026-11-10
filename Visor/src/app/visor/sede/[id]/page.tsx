@@ -64,6 +64,7 @@ export default async function SedePage({
       visorResumenDiario={data.visorResumenDiario}
       visorResumenAyer={data.visorResumenAyer}
       visorVersus={data.visorVersus ?? []}
+      visorSedeVersus={data.visorSedeVersus ?? { participantes: [], resultado: { estado: "SIN_PARTICIPANTES", lideres_sede_ids: [], ventas_lider: 0, diferencia_primero_segundo: 0 } }}
       versusRango={data.versusRango}
       time={data.time}
     />

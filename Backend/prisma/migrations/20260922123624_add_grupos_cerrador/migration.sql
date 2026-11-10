@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `venta` ADD COLUMN `cerrador_id` INTEGER NULL;
+ALTER TABLE `Venta` ADD COLUMN `cerrador_id` INTEGER NULL;
 
 -- CreateTable
 CREATE TABLE `Grupo` (
