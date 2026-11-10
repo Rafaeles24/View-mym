@@ -29,11 +29,25 @@ async function getConfigVersus(): Promise<ConfiguracionVisor> {
   return data;
 }
 
+async function getConfigSedeVersus(): Promise<ConfiguracionVisor> {
+  const response = await fetch(`${process.env.BACKEND_INTERNAL_URL}/system/api/sede-versus-config/obtener`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    console.error("Failed to fetch config sede versus: ", response.status, response.statusText);
+    throw new Error("Failed to fetch data");
+  }
+
+  return await response.json();
+}
+
 export default async function ConfigVisor() {
-  const [ rankingConfig, versusConfig ] = await Promise.all([
+  const [ rankingConfig, versusConfig, sedeVersusConfig ] = await Promise.all([
     getConfigRanking(),
-    getConfigVersus()
+    getConfigVersus(),
+    getConfigSedeVersus()
   ]);
 
-  return <ConfiguracionVisoresUI rankingConfig={rankingConfig} versusConfig={versusConfig}/>
+  return <ConfiguracionVisoresUI rankingConfig={rankingConfig} versusConfig={versusConfig} sedeVersusConfig={sedeVersusConfig}/>
 }

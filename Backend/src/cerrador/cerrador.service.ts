@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCerradorDto } from './dto/create.dto';
 import { FilesService } from 'src/files/files.service';
@@ -81,6 +81,23 @@ export class CerradorService {
 
     if (!cerrador) {
       throw new NotFoundException("No se encuentra el cerrador para actualizar.");
+    }
+
+    if (dto.activo === false) {
+      const sedeAsignada = await this.prisma.sede.findFirst({
+        where: {
+          jefe_operaciones_id: id,
+        },
+        select: {
+          nombre: true,
+        },
+      });
+
+      if (sedeAsignada) {
+        throw new ConflictException(
+          `No puedes desactivar al jefe de operaciones de la sede ${sedeAsignada.nombre}.`,
+        );
+      }
     }
 
     return await this.prisma.cerrador.update({

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { TipoEmpleado } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { VersusConfigService } from 'src/versus-config/versus-config.service';
+import { SedeVersusConfigService } from 'src/sede-versus-config/sede-versus-config.service';
 import { normalizeUrl } from '../helpers/normalizeUrl';
 
 type ResultadoSede = {
@@ -21,15 +21,15 @@ type ResultadoSede = {
 export class VisorSedeVersusService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly configVersus: VersusConfigService,
+    private readonly configSedeVersus: SedeVersusConfigService,
   ) {}
 
   async obtenerVersusSedes() {
-    const { config } = await this.configVersus.obtenerRangoVigente();
+    const { config } = await this.configSedeVersus.obtenerRangoVigente();
 
     if (!config) {
       throw new NotFoundException(
-        'No existe configuración vigente para el versus.',
+        'No existe configuración vigente para el versus de sedes.',
       );
     }
 

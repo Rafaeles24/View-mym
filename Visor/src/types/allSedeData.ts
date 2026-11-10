@@ -15,6 +15,7 @@ export type AllSedeData = {
   sedesStatsDiario: SedeStats;
   rankingRango: RankingRangoFecha;
   versusRango: VersusRangoFecha;
+  sedeVersusRango: VersusRangoFecha;
   flyerSede: SedeMedia;
   visorResumenDiario: ResumenVentas;
   visorResumenAyer: ResumenVentas;

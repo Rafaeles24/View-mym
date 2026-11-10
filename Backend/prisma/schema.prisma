@@ -31,10 +31,10 @@ model Campaign {
 }
 
 model Sede {
-  id                   Int    @id @default(autoincrement())
-  nombre               String
-  jefe_operaciones_id  Int?   @unique
-  jefe_operaciones     Cerrador? @relation("SedeJefeOperaciones", fields: [jefe_operaciones_id], references: [id], onDelete: SetNull)
+  id                  Int       @id @default(autoincrement())
+  nombre              String
+  jefe_operaciones_id Int?      @unique
+  jefe_operaciones    Cerrador? @relation("SedeJefeOperaciones", fields: [jefe_operaciones_id], references: [id], onDelete: SetNull)
 
   campaigns CampaignSede[]
   ventas    Venta[]
@@ -80,9 +80,9 @@ model Cerrador {
 
   ventas Venta[]
 
-  versus_1 Versus[] @relation("VersusCerrador1")
-  versus_2 Versus[] @relation("VersusCerrador2")
-  sede_jefatura Sede? @relation("SedeJefeOperaciones")
+  versus_1      Versus[] @relation("VersusCerrador1")
+  versus_2      Versus[] @relation("VersusCerrador2")
+  sede_jefatura Sede?    @relation("SedeJefeOperaciones")
 
   @@index([grupo_id])
 }
@@ -118,8 +118,8 @@ model Versus {
   id Int @id @default(autoincrement())
 
   nombre String
-  activo Boolean @default(true)
-  fecha DateTime? @default(now())
+  activo Boolean   @default(true)
+  fecha  DateTime? @default(now())
 
   cerrador_1_id Int
   cerrador_2_id Int
@@ -203,6 +203,17 @@ model ConfigVersus {
 
   hora_inicio_actualizacion String @default("07:00") @db.VarChar(5)
   hora_fin_actualizacion    String @default("16:00") @db.VarChar(5)
+
+  zona_horaria String   @default("America/Lima")
+  updatedAt    DateTime @updatedAt @map("updateAt")
+}
+
+model ConfigSedeVersus {
+  id   Int         @id @default(1)
+  modo ModoRanking @default(DEFAULT)
+
+  fecha_inicio DateTime
+  fecha_fin    DateTime
 
   zona_horaria String   @default("America/Lima")
   updatedAt    DateTime @updatedAt @map("updateAt")

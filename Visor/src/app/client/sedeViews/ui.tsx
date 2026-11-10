@@ -33,6 +33,7 @@ export default function SedeViews({
   sedesStatsDiario,
   rankingRango,
   versusRango,
+  sedeVersusRango,
   visorResumenDiario,
   visorResumenAyer,
 
@@ -52,6 +53,7 @@ export default function SedeViews({
   sedesStatsDiario: SedeStats;
   rankingRango: RankingRangoFecha;
   versusRango: VersusRangoFecha;
+  sedeVersusRango: VersusRangoFecha;
   
   visorResumenDiario: ResumenVentas;
   visorResumenAyer: ResumenVentas;
@@ -179,7 +181,7 @@ export default function SedeViews({
             render: (
               <SedeVersusUI
                 data={visorSedeVersus}
-                versusRango={versusRango}
+                versusRango={sedeVersusRango}
               />
             )
           }

@@ -40,9 +40,9 @@ export default function SedeVersusUI({
 
           <div className={styles.title}>
             <h1>
-              VS. DE <span>SEDES</span>
+              VS. DE <span>JEFATURA</span>
             </h1>
-            <p>Una sola meta, cuatro equipos compitiendo</p>
+            <p>Una sola meta, cuatro sedes compitiendo</p>
           </div>
         </div>
 
@@ -67,26 +67,22 @@ export default function SedeVersusUI({
             className={`${styles.card} ${participante.lider ? styles.leaderCard : ""}`}
             key={participante.id}
           >
-            <div className={styles.cardTop}>
+            <div className={styles.hero}>
+              <Image
+                src={participante.jefe_operaciones?.avatar_url?.trim() || DefaultPerson}
+                alt={participante.jefe_operaciones?.nombre ?? "Jefe de operaciones por asignar"}
+                fill
+                unoptimized
+                sizes="(max-width: 900px) 50vw, 25vw"
+                className={styles.heroImage}
+              />
+
+              <div className={styles.heroShade} />
+
               <span className={styles.position}>#{participante.posicion}</span>
               {participante.lider && (
                 <span className={styles.leaderBadge}>LÍDER</span>
               )}
-            </div>
-
-            <h2 title={participante.nombre}>{participante.nombre}</h2>
-
-            <div className={styles.manager}>
-              <div className={styles.avatar}>
-                <Image
-                  src={participante.jefe_operaciones?.avatar_url?.trim() || DefaultPerson}
-                  alt={participante.jefe_operaciones?.nombre ?? "Jefe de operaciones por asignar"}
-                  fill
-                  unoptimized
-                  sizes="96px"
-                  className={styles.avatarImage}
-                />
-              </div>
 
               <div className={styles.managerInfo}>
                 <span>Jefe de operaciones</span>
@@ -96,15 +92,19 @@ export default function SedeVersusUI({
               </div>
             </div>
 
-            <div className={styles.scoreBlock}>
-              <strong className={styles.score}>{participante.ventas}</strong>
-              <span>{participante.ventas === 1 ? "venta" : "ventas"}</span>
-            </div>
+            <div className={styles.cardInfo}>
+              <h2 title={participante.nombre}>{participante.nombre}</h2>
 
-            <div className={styles.gap}>
-              {participante.lider
-                ? "Marcando el ritmo"
-                : `A ${participante.diferencia_lider} ${participante.diferencia_lider === 1 ? "venta" : "ventas"} del líder`}
+              <div className={styles.scoreBlock}>
+                <strong className={styles.score}>{participante.ventas}</strong>
+                <span>{participante.ventas === 1 ? "venta" : "ventas"}</span>
+              </div>
+
+              <div className={styles.gap}>
+                {participante.lider
+                  ? "Marcando el ritmo"
+                  : `A ${participante.diferencia_lider} ${participante.diferencia_lider === 1 ? "venta" : "ventas"} del líder`}
+              </div>
             </div>
           </article>
         ))}

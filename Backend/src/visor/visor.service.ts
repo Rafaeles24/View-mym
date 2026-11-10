@@ -10,6 +10,7 @@ import { VisorTimeService } from './services/visor-time.service';
 import { VisorResumenVentasService } from './services/visor-resumen-ventas.service';
 import { VisorVersusService } from './services/visor-versus.service';
 import { VisorSedeVersusService } from './services/visor-sede-versus.service';
+import { SedeVersusConfigService } from 'src/sede-versus-config/sede-versus-config.service';
 
 
 @Injectable()
@@ -24,6 +25,7 @@ export class VisorService {
     private readonly visorResumenVentas: VisorResumenVentasService,
     private readonly visorVersus: VisorVersusService,
     private readonly visorSedeVersus: VisorSedeVersusService,
+    private readonly sedeVersusConfig: SedeVersusConfigService,
   ) {}
 
 
@@ -48,6 +50,7 @@ export class VisorService {
       visorVersus,
       visorSedeVersus,
       versusRango,
+      sedeVersusRango,
     ] = await Promise.all([
       this.visorSede.obtenerSede(sedeId),
       this.visorRanking.leaderboardAgentesPorSede(sedeId),
@@ -62,6 +65,7 @@ export class VisorService {
       this.visorVersus.obtenerVersusActivosGlobales(),
       this.visorSedeVersus.obtenerVersusSedes(),
       this.visorVersus.getRangoFechas(),
+      this.sedeVersusConfig.obtener(),
     ]);
 
     return {
@@ -78,6 +82,7 @@ export class VisorService {
       visorVersus,
       visorSedeVersus,
       versusRango,
+      sedeVersusRango,
       time: this.visorTime.getCurrentTime(),
     };
   }

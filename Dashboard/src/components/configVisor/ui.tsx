@@ -17,7 +17,7 @@ import {
 } from "@/libs/fechaParaInput";
 
 import styles from "./ui.module.css";
-import { actualizarIntervalo, actualizarRanking, actualizarVersus } from "@/services/media/configVisor";
+import { actualizarIntervalo, actualizarRanking, actualizarSedeVersus, actualizarVersus } from "@/services/media/configVisor";
 
 /* =========================================
    TIPOS
@@ -31,11 +31,13 @@ type RangoEditable = {
 type TipoGuardado =
   | "ranking"
   | "versus"
+  | "sedeVersus"
   | "intervalo";
 
 type Props = {
   rankingConfig: ConfiguracionVisor;
   versusConfig: ConfiguracionVisor;
+  sedeVersusConfig: ConfiguracionVisor;
 };
 
 /* =========================================
@@ -126,6 +128,7 @@ function rangoValido(
 export default function ConfiguracionVisoresUI({
   rankingConfig,
   versusConfig,
+  sedeVersusConfig,
 }: Props) {
   const router = useRouter();
 
@@ -141,6 +144,11 @@ export default function ConfiguracionVisoresUI({
   const [versus, setVersus] =
     useState<RangoEditable>(
       () => obtenerRango(versusConfig)
+    );
+
+  const [sedeVersus, setSedeVersus] =
+    useState<RangoEditable>(
+      () => obtenerRango(sedeVersusConfig)
     );
 
   const [intervalo, setIntervalo] =
@@ -165,6 +173,11 @@ export default function ConfiguracionVisoresUI({
       () => obtenerRango(versusConfig)
     );
 
+  const [sedeVersusOriginal, setSedeVersusOriginal] =
+    useState<RangoEditable>(
+      () => obtenerRango(sedeVersusConfig)
+    );
+
   const [intervaloOriginal, setIntervaloOriginal] =
     useState<string>(
       () =>
@@ -184,6 +197,10 @@ export default function ConfiguracionVisoresUI({
 
   const versusServidor = useRef(
     obtenerRango(versusConfig)
+  );
+
+  const sedeVersusServidor = useRef(
+    obtenerRango(sedeVersusConfig)
   );
 
   const intervaloServidor = useRef(
@@ -283,6 +300,20 @@ export default function ConfiguracionVisoresUI({
       nuevoRango;
   }, [versusConfig]);
 
+  useEffect(() => {
+    const nuevoRango = obtenerRango(sedeVersusConfig);
+    const anterior = sedeVersusServidor.current;
+
+    setSedeVersus((actual) =>
+      rangosIguales(actual, anterior)
+        ? nuevoRango
+        : actual
+    );
+
+    setSedeVersusOriginal(nuevoRango);
+    sedeVersusServidor.current = nuevoRango;
+  }, [sedeVersusConfig]);
+
   /* =======================================
      DETECTAR MODIFICACIONES
   ======================================= */
@@ -299,6 +330,12 @@ export default function ConfiguracionVisoresUI({
       versusOriginal
     );
 
+  const sedeVersusModificado =
+    !rangosIguales(
+      sedeVersus,
+      sedeVersusOriginal
+    );
+
   const intervaloModificado =
     intervalo !== intervaloOriginal;
 
@@ -313,6 +350,7 @@ export default function ConfiguracionVisoresUI({
   const hayCambios =
     rankingModificado ||
     versusModificado ||
+    sedeVersusModificado ||
     intervaloModificado;
 
   /* =======================================
@@ -438,6 +476,53 @@ export default function ConfiguracionVisoresUI({
     }
   }
 
+  async function guardarSedeVersus() {
+    if (
+      guardando !== null ||
+      !sedeVersusModificado
+    ) {
+      return;
+    }
+
+    if (!rangoValido(sedeVersus)) {
+      setError(
+        "La fecha de fin del Versus de sedes debe ser posterior a la fecha de inicio."
+      );
+      return;
+    }
+
+    limpiarMensajes();
+    setGuardando("sedeVersus");
+
+    const datos = {
+      ...sedeVersus,
+    };
+
+    try {
+      await actualizarSedeVersus({
+        fecha_inicio: datos.inicio,
+        fecha_fin: datos.fin,
+      });
+
+      setSedeVersusOriginal(datos);
+      sedeVersusServidor.current = datos;
+
+      setMensaje(
+        "Rango del Versus de sedes actualizado correctamente."
+      );
+
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo actualizar el Versus de sedes."
+      );
+    } finally {
+      setGuardando(null);
+    }
+  }
+
   /* =======================================
      GUARDAR INTERVALO
   ======================================= */
@@ -515,6 +600,14 @@ export default function ConfiguracionVisoresUI({
     limpiarMensajes();
   }
 
+  function cancelarSedeVersus() {
+    setSedeVersus({
+      ...sedeVersusOriginal,
+    });
+
+    limpiarMensajes();
+  }
+
   function cancelarIntervalo() {
     setIntervalo(
       intervaloOriginal
@@ -541,7 +634,7 @@ export default function ConfiguracionVisoresUI({
 
           <p>
             Administra los períodos de Ranking,
-            Versus y la frecuencia de actualización.
+            Versus y Versus de sedes, junto con la frecuencia de actualización.
           </p>
         </div>
 
@@ -786,6 +879,110 @@ export default function ConfiguracionVisoresUI({
                 {guardando === "versus"
                   ? "Guardando..."
                   : "Guardar Versus"}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* =================================
+            VERSUS DE SEDES
+        ================================= */}
+
+        <section className={styles.tarjeta}>
+          <div className={styles.tarjetaTitulo}>
+            <div className={styles.icono}>
+              🏢
+            </div>
+
+            <div>
+              <h2>
+                Rango de Versus de sedes
+              </h2>
+
+              <p>
+                Período independiente para comparar
+                las ventas de todas las sedes.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.campos}>
+            <div className={styles.campo}>
+              <label htmlFor="sede-versus-inicio">
+                Fecha de inicio
+              </label>
+
+              <input
+                id="sede-versus-inicio"
+                type="datetime-local"
+                value={sedeVersus.inicio}
+                disabled={guardando !== null}
+                onChange={(e) => {
+                  setSedeVersus((prev) => ({
+                    ...prev,
+                    inicio: e.target.value,
+                  }));
+
+                  limpiarMensajes();
+                }}
+              />
+            </div>
+
+            <div className={styles.campo}>
+              <label htmlFor="sede-versus-fin">
+                Fecha de fin
+              </label>
+
+              <input
+                id="sede-versus-fin"
+                type="datetime-local"
+                value={sedeVersus.fin}
+                disabled={guardando !== null}
+                onChange={(e) => {
+                  setSedeVersus((prev) => ({
+                    ...prev,
+                    fin: e.target.value,
+                  }));
+
+                  limpiarMensajes();
+                }}
+              />
+            </div>
+          </div>
+
+          <div className={styles.pieTarjeta}>
+            <span className={styles.zona}>
+              {sedeVersusConfig.zona_horaria ||
+                "America/Lima"} · intervalo de Ranking
+            </span>
+
+            <div className={styles.acciones}>
+              {sedeVersusModificado && (
+                <button
+                  type="button"
+                  className={styles.botonCancelar}
+                  onClick={cancelarSedeVersus}
+                  disabled={guardando !== null}
+                >
+                  Cancelar
+                </button>
+              )}
+
+              <button
+                type="button"
+                className={styles.botonGuardar}
+                onClick={() =>
+                  void guardarSedeVersus()
+                }
+                disabled={
+                  guardando !== null ||
+                  !sedeVersusModificado ||
+                  !rangoValido(sedeVersus)
+                }
+              >
+                {guardando === "sedeVersus"
+                  ? "Guardando..."
+                  : "Guardar Versus de sedes"}
               </button>
             </div>
           </div>

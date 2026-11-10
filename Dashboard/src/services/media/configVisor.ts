@@ -8,6 +8,7 @@ const API_URL =
 const ENDPOINTS = {
   ranking: "/system/api/config-ranking/update",
   versus: "/system/api/versus-config/update",
+  sedeVersus: "/system/api/sede-versus-config/update",
   intervalo: "/system/api/config-ranking/programacion",
 };
 
@@ -107,6 +108,18 @@ export async function actualizarIntervalo(
 ): Promise<void> {
   return patchConfig(
     ENDPOINTS.intervalo,
+    payload
+  );
+}
+
+export async function actualizarSedeVersus(
+  payload: {
+    fecha_inicio: string;
+    fecha_fin: string;
+  }
+): Promise<void> {
+  return patchConfig(
+    ENDPOINTS.sedeVersus,
     payload
   );
 }
