@@ -80,9 +80,8 @@ model Cerrador {
 
   ventas Venta[]
 
-  versus_1      Versus[] @relation("VersusCerrador1")
-  versus_2      Versus[] @relation("VersusCerrador2")
-  sede_jefatura Sede?    @relation("SedeJefeOperaciones")
+  versus_participaciones VersusParticipante[]
+  sede_jefatura          Sede?                @relation("SedeJefeOperaciones")
 
   @@index([grupo_id])
 }
@@ -112,6 +111,7 @@ model Venta {
   @@index([sede_id, tipo_empleado, fecha])
   @@index([tipo_empleado, fecha_tramitacion])
   @@index([cerrador_id, tipo_empleado, fecha_lima])
+  @@index([cerrador_id, tipo_empleado, fecha_tramitacion])
 }
 
 model Versus {
@@ -121,15 +121,24 @@ model Versus {
   activo Boolean   @default(true)
   fecha  DateTime? @default(now())
 
-  cerrador_1_id Int
-  cerrador_2_id Int
-
-  cerrador_1 Cerrador @relation("VersusCerrador1", fields: [cerrador_1_id], references: [id], onDelete: Restrict)
-  cerrador_2 Cerrador @relation("VersusCerrador2", fields: [cerrador_2_id], references: [id], onDelete: Restrict)
+  participantes VersusParticipante[]
 
   @@index([activo])
-  @@index([cerrador_1_id])
-  @@index([cerrador_2_id])
+}
+
+model VersusParticipante {
+  versus_id   Int
+  cerrador_id Int
+  equipo      Int
+  orden       Int
+
+  versus   Versus   @relation(fields: [versus_id], references: [id], onDelete: Cascade)
+  cerrador Cerrador @relation(fields: [cerrador_id], references: [id], onDelete: Restrict)
+
+  @@id([versus_id, cerrador_id])
+  @@unique([versus_id, equipo, orden])
+  @@index([versus_id, equipo])
+  @@index([cerrador_id])
 }
 
 enum VarianteEmpleado {

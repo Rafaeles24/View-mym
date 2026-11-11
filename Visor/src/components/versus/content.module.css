@@ -1,0 +1,276 @@
+.row {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex: none;
+}
+.caption h2 {
+  margin: 0;
+  font-size: clamp(17px, 1.1vw, 23px);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.caption > span {
+  font-size: clamp(13px, 0.94vw, 19px);
+  color: #a5a5b0;
+  flex: none;
+}
+.teams {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 20px;
+}
+.team {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #36363e;
+  border-radius: 10px;
+  background: #15151a;
+}
+.teamHeader {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 8px 18px;
+  border-bottom: 1px solid #353039;
+  border-radius: 9px 9px 0 0;
+  background: #19191f;
+}
+.teamHeader > strong {
+  font-size: 17px;
+  letter-spacing: 1px;
+}
+.teamLeader .teamHeader {
+  background: linear-gradient(100deg, #391522, #1b181e);
+}
+.headerLeader {
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #d91d46;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.teamTotal {
+  margin-left: auto;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.teamHeader ~ .rosterPage {
+  top: 62px;
+}
+.teamLeader {
+  border-color: #ed244b;
+}
+.leaderBadge,
+.rosterPage {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.leaderBadge {
+  left: 14px;
+  background: #d91d46;
+  color: #fff;
+  border: 1px solid #ff5073;
+  letter-spacing: 1px;
+}
+.rosterPage {
+  right: 12px;
+  background: #090a0ddd;
+  color: #ddd;
+}
+.teamRoster {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
+  min-width: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+.member {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 50% 35%, #343039, #17181f 78%);
+  container-type: inline-size;
+}
+.personImageWrap {
+  position: absolute;
+  inset: 0;
+}
+.personImage {
+  object-fit: contain;
+  object-position: center;
+  transform: scale(1.2);
+  transform-origin: center 25%;
+}
+.member::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, #08090dfa, #08090da8 28%, #08090d08 78%);
+}
+.personData {
+  position: absolute;
+  bottom: 20px;
+  left: 22px;
+  right: 28px;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+.identity {
+  min-width: 0;
+}
+.personName {
+  font-size: clamp(20px, 1.5vw, 30px);
+  font-weight: 800;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  margin-bottom: 9px;
+  text-shadow: 0 2px 6px #000;
+}
+.metadata {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.sedeBadge {
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: #fff;
+  color: #17181c;
+  font-size: 14px;
+  font-weight: 800;
+}
+.campaignLogos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.logoWrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
+.logo {
+  object-fit: contain;
+}
+.fallback {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+.memberScore {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.memberScore strong {
+  display: block;
+  font-size: clamp(42px, 3.6vw, 76px);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.duelSeparator {
+  flex: 0 0 64px;
+  align-self: center;
+  text-align: center;
+  color: #d4d4dd;
+  font-size: 28px;
+  font-weight: 900;
+}
+.duel .personData {
+  inset: 0;
+  display: block;
+}
+.duel .identity {
+  position: absolute;
+  bottom: 28px;
+  left: 28px;
+  max-width: calc(100% - 160px);
+}
+.duel .memberScore {
+  position: absolute;
+  top: 50%;
+  right: 32px;
+  transform: translateY(-50%);
+  text-align: center;
+}
+.duel .team:last-child .identity {
+  left: auto;
+  right: 28px;
+  text-align: right;
+}
+.duel .team:last-child .metadata {
+  justify-content: flex-end;
+}
+.duel .team:last-child .memberScore {
+  right: auto;
+  left: 32px;
+}
+@container (max-width: 300px) {
+  .personData {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    gap: 12px;
+  }
+  .personName {
+    font-size: 18px;
+  }
+  .memberScore strong {
+    font-size: 36px;
+  }
+  .sedeBadge {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  .logoWrap {
+    width: 23px;
+    height: 23px;
+    flex-basis: 23px;
+  }
+}
+@media (max-width: 1400px) {
+  .duelSeparator {
+    flex-basis: 40px;
+    font-size: 24px;
+  }
+}

@@ -27,8 +27,8 @@ export type VersusCerrador = {
   ventas: number;
 
   primera_venta: string | null;
-
-  lider: boolean;
+  equipo: number;
+  orden: number;
 
   campaigns: VersusCampaign[];
 
@@ -41,16 +41,23 @@ export type EstadoVersus =
 
 export type VersusResultado = {
   estado: EstadoVersus;
-  lider_id: number | null;
+  equipo_lider: number | null;
   diferencia: number;
+};
+
+export type VersusEquipo = {
+  numero: number;
+  ventas: number;
+  primera_venta: string | null;
+  lider: boolean;
+  participantes: VersusCerrador[];
 };
 
 export type VisorVersus = {
   id: number;
   nombre: string;
 
-  cerrador_1: VersusCerrador;
-  cerrador_2: VersusCerrador;
+  equipos: VersusEquipo[];
 
   resultado: VersusResultado;
 };
@@ -88,4 +95,4 @@ export type VersusRangoFecha = {
   updateAt: string;
 };
 
-export type VersusCampaignIcon = VisorVersus["cerrador_1"]["campaigns"][number];
+export type VersusCampaignIcon = VersusCerrador["campaigns"][number];

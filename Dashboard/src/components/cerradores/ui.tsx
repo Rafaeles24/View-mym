@@ -15,11 +15,6 @@ import { actualizarAvatarCerrador } from "@/services/cerrador/actualizarAvatar.s
 interface CerradoresUIProps {
   cerradoresActivos: Cerrador[];
   cerradoresInactivos: Cerrador[];
-
-  onGuardarAvatar?: (
-    id: number,
-    archivo: File,
-  ) => Promise<void>;
 }
 
 type Estado = "activos" | "inactivos";
@@ -27,7 +22,6 @@ type Estado = "activos" | "inactivos";
 export default function CerradoresUI({
   cerradoresActivos,
   cerradoresInactivos,
-  onGuardarAvatar,
 }: CerradoresUIProps) {
   const router = useRouter();
 
@@ -86,6 +80,7 @@ export default function CerradoresUI({
       <main className={styles.container}>
         <header className={styles.header}>
           <div className={styles.headerInfo}>
+            <span className={styles.eyebrow}>Cerradores / Directorio</span>
             <h1>Cerradores</h1>
             <p>Administración de cerradores</p>
           </div>
@@ -143,9 +138,12 @@ export default function CerradoresUI({
                   >
                     <div className={styles.avatar}>
                       {cerrador.avatar_url ? (
-                        <img
+                        <Image
                           src={cerrador.avatar_url}
                           alt={cerrador.nombre}
+                          fill
+                          unoptimized
+                          sizes="72px"
                           className={styles.avatarImage}
                         />
                       ) : (

@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  Fragment,
   useEffect,
   useMemo,
   useRef,
@@ -9,9 +10,12 @@ import {
 } from "react";
 
 import styles from "./ui.module.css";
+import content from "./content.module.css";
 
 import type {
   VersusCampaignIcon,
+  VersusCerrador,
+  VersusEquipo,
   VersusRangoFecha,
   VisorVersus,
 } from "@/types/versus";
@@ -25,7 +29,7 @@ import DefaultPerson from "@/images/default.png";
    CONFIGURACIÓN
 ========================================= */
 
-const ITEMS_PER_PAGE = 4;
+const ITEMS_PER_PAGE = 3;
 
 /*
  * Debe coincidir con el tiempo
@@ -57,21 +61,24 @@ function CampaignLogos({
   }
 
   return (
-    <div className={styles.campaignLogos}>
+    <div className={content.campaignLogos}>
       {campaigns.map((campaign) => (
         <div
           key={campaign.id}
-          className={styles.logoWrap}
+          className={content.logoWrap}
           title={campaign.nombre}
         >
           {campaign.logo_url ? (
-            <img
+            <Image
               src={campaign.logo_url}
               alt={campaign.nombre}
-              className={styles.logo}
+              fill
+              unoptimized
+              sizes="28px"
+              className={content.logo}
             />
           ) : (
-            <div className={styles.fallback}>
+            <div className={content.fallback}>
               {campaign.nombre
                 .charAt(0)
                 .toUpperCase()}
@@ -90,33 +97,81 @@ function CampaignLogos({
 function CerradorInfo({
   cerrador,
 }: {
-  cerrador: VisorVersus["cerrador_1"];
+  cerrador: VersusCerrador;
 }) {
   return (
-    <div className={styles.personData}>
-      <CampaignLogos
-        campaigns={cerrador.campaigns}
-      />
-
-      <div
-        className={styles.personName}
-        title={cerrador.nombre}
-      >
-        {cerrador.nombre}
+    <div className={content.member}>
+      <div className={content.personImageWrap}>
+        <Image
+          src={cerrador.avatar_url?.trim() || DefaultPerson}
+          alt={cerrador.nombre}
+          fill
+          unoptimized
+          sizes="(min-width: 1600px) 45vw, 50vw"
+          className={content.personImage}
+        />
       </div>
 
-      {cerrador.sedes.length > 0 && (
-        <div className={styles.sedesList}>
-          {cerrador.sedes.map((sede) => (
-            <span
-              key={sede.id}
-              className={styles.sedeBadge}
-            >
-              {sede.nombre}
-            </span>
-          ))}
+      <div className={content.personData}>
+        <div className={content.identity}>
+        <div className={content.personName} title={cerrador.nombre}>
+          {cerrador.nombre}
+        </div>
+
+        <div className={content.metadata}>
+            {cerrador.sedes.map((sede) => (
+              <span key={sede.id} className={content.sedeBadge}>
+                {sede.nombre}
+              </span>
+            ))}
+            <CampaignLogos campaigns={cerrador.campaigns} />
+        </div>
+        </div>
+        <div className={content.memberScore}>
+          <strong>{cerrador.ventas}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EquipoInfo({
+  equipo,
+  isActive,
+}: {
+  equipo: VersusEquipo;
+  isActive: boolean;
+}) {
+  const [page, setPage] = useState(0);
+  const pageCount = Math.ceil(equipo.participantes.length / 2);
+  const currentPage = page % Math.max(pageCount, 1);
+  useEffect(() => {
+    if (!isActive || pageCount <= 1) return;
+    const timer = window.setInterval(() => setPage((value) => (value + 1) % pageCount), 8000);
+    return () => window.clearInterval(timer);
+  }, [isActive, pageCount]);
+
+  return (
+    <div
+      className={`${content.team} ${equipo.lider ? content.teamLeader : ""}`}
+      aria-label={`Equipo ${equipo.numero}${equipo.lider ? ", líder" : ""}`}
+    >
+      {equipo.participantes.length > 1 && (
+        <div className={content.teamHeader}>
+          <strong>EQUIPO {String(equipo.numero).padStart(2, "0")}</strong>
+          {equipo.lider && <span className={content.headerLeader}>● LÍDER</span>}
+          <span className={content.teamTotal} aria-label={`Puntaje total: ${equipo.ventas}`}>
+            {equipo.ventas}
+          </span>
         </div>
       )}
+      {equipo.lider && equipo.participantes.length === 1 && <span className={content.leaderBadge}>● LÍDER</span>}
+      {pageCount > 1 && <span className={content.rosterPage}>Integrantes {currentPage * 2 + 1}–{Math.min(currentPage * 2 + 2, equipo.participantes.length)} / {equipo.participantes.length}</span>}
+      <div className={content.teamRoster}>
+        {equipo.participantes.slice(currentPage * 2, currentPage * 2 + 2).map((cerrador) => (
+          <CerradorInfo key={cerrador.id} cerrador={cerrador} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -127,82 +182,27 @@ function CerradorInfo({
 
 function VersusRow({
   versus,
+  isActive,
 }: {
   versus: VisorVersus;
+  isActive: boolean;
 }) {
+  const isDuel = versus.equipos.length === 2 &&
+    versus.equipos.every((equipo) => equipo.participantes.length === 1);
+
   return (
-    <article className={styles.row}>
-      {/* INFORMACIÓN IZQUIERDA */}
-      <div className={styles.side}>
-        <CerradorInfo
-          cerrador={versus.cerrador_1}
-        />
+    <article className={`${content.row} ${isDuel ? content.duel : ""}`}>
+      <div className={content.caption}>
+        <h2>{versus.nombre}</h2>
+        <span>{versus.equipos.length} equipos · {versus.equipos.reduce((total, equipo) => total + equipo.participantes.length, 0)} participantes</span>
       </div>
-
-      {/* PERSONA IZQUIERDA */}
-      <div className={styles.personImageWrap}>
-        <Image
-          src={
-            versus.cerrador_1.avatar_url?.trim() ||
-            DefaultPerson
-          }
-          alt={versus.cerrador_1.nombre}
-          fill
-          unoptimized
-          sizes="(min-width: 1600px) 180px, (max-width: 1400px) 105px, 150px"
-          className={styles.personImage}
-        />
-      </div>
-
-      {/* SCORE IZQUIERDA */}
-      <div
-        className={`${styles.score} ${
-          versus.cerrador_1.lider
-            ? styles.scoreLeader
-            : styles.scoreLoser
-        }`}
-      >
-        {versus.cerrador_1.id === 30 ? versus.cerrador_2.ventas + 1 : versus.cerrador_1.ventas}
-      </div>
-
-      {/* VS */}
-      <div className={styles.vs}>
-        VS
-      </div>
-
-      {/* SCORE DERECHA */}
-      <div
-        className={`${styles.score} ${
-          versus.cerrador_2.lider
-            ? styles.scoreLeader
-            : styles.scoreLoser
-        }`}
-      >
-        {versus.cerrador_2.id === 30 ? versus.cerrador_1.ventas + 1 : versus.cerrador_2.ventas}
-      </div>
-
-      {/* PERSONA DERECHA */}
-      <div className={styles.personImageWrap}>
-        <Image
-          src={
-            versus.cerrador_2.avatar_url?.trim() ||
-            DefaultPerson
-          }
-          alt={versus.cerrador_2.nombre}
-          fill
-          unoptimized
-          sizes="(min-width: 1600px) 180px, (max-width: 1400px) 105px, 150px"
-          className={styles.personImage}
-        />
-      </div>
-
-      {/* INFORMACIÓN DERECHA */}
-      <div
-        className={`${styles.side} ${styles.sideRight}`}
-      >
-        <CerradorInfo
-          cerrador={versus.cerrador_2}
-        />
+      <div className={content.teams}>
+        {versus.equipos.map((equipo, index) => (
+          <Fragment key={equipo.numero}>
+            {index > 0 && <span className={content.duelSeparator}>VS</span>}
+            <EquipoInfo equipo={equipo} isActive={isActive} />
+          </Fragment>
+        ))}
       </div>
     </article>
   );
@@ -693,6 +693,8 @@ export default function VersusUI({
      * del backend/socket, reconstruimos
      * las dos capas.
      */
+    // La actualización de datos debe reiniciar ambas capas de animación.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     resetVersus();
   }, [
     pages,
@@ -720,6 +722,8 @@ export default function VersusUI({
     if (!isActive) {
       cancelFrames();
 
+      // Al ocultarse, la vista detiene inmediatamente su reproducción.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlaybackReady(false);
 
       return;
@@ -964,6 +968,7 @@ export default function VersusUI({
               <VersusRow
                 key={versus.id}
                 versus={versus}
+                isActive={isActive && active === "a"}
               />
             ),
           )}
@@ -989,6 +994,7 @@ export default function VersusUI({
               <VersusRow
                 key={versus.id}
                 versus={versus}
+                isActive={isActive && active === "b"}
               />
             ),
           )}

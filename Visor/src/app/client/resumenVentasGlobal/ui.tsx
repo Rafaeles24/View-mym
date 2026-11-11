@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   CartesianGrid,
-  Legend,
+  Area,
   Line,
-  LineChart,
+  ComposedChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -15,6 +15,7 @@ import {
 import Image from "next/image";
 
 import styles from "./ui.module.css";
+import content from "./content.module.css";
 import { ResumenVentas } from "@/types/resumenVenta";
 import { obtenerMinutos } from "@/lib/formatTime";
 import { Sede } from "@/types/sede";
@@ -24,10 +25,7 @@ import LogoSvg from "@/icons/logo.svg";
 
 type Tramo = ResumenVentas["global"]["tramos"][number];
 
-type EstadoTramo =
-  | "FINALIZADO"
-  | "EN CURSO"
-  | "SIN DEFINIR";
+type EstadoTramo = "FINALIZADO" | "EN CURSO" | "SIN DEFINIR";
 
 type PuntoGrafico = {
   minuto: number;
@@ -43,12 +41,8 @@ function obtenerHoraLima(): number {
     hourCycle: "h23",
   }).formatToParts(new Date());
 
-  const hora = Number(
-    partes.find((p) => p.type === "hour")?.value ?? 0
-  );
-  const minuto = Number(
-    partes.find((p) => p.type === "minute")?.value ?? 0
-  );
+  const hora = Number(partes.find((p) => p.type === "hour")?.value ?? 0);
+  const minuto = Number(partes.find((p) => p.type === "minute")?.value ?? 0);
 
   return hora * 60 + minuto;
 }
@@ -56,7 +50,7 @@ function obtenerHoraLima(): number {
 function obtenerEstadoTramo(
   actual: number,
   inicio: string,
-  fin: string
+  fin: string,
 ): EstadoTramo {
   if (actual >= obtenerMinutos(fin)) return "FINALIZADO";
   if (actual >= obtenerMinutos(inicio)) return "EN CURSO";
@@ -83,14 +77,12 @@ function formatearHora(hora: string) {
 function construirDatosGrafico(
   tramosHoy: Tramo[],
   tramosAyer: Tramo[],
-  horaActual: number
+  horaActual: number,
 ): PuntoGrafico[] {
   if (!tramosHoy.length) return [];
 
   const tramosOrdenados = [...tramosHoy].sort(
-    (a, b) =>
-      obtenerMinutos(a.hora_inicio) -
-      obtenerMinutos(b.hora_inicio)
+    (a, b) => obtenerMinutos(a.hora_inicio) - obtenerMinutos(b.hora_inicio),
   );
 
   const inicio = obtenerMinutos(tramosOrdenados[0].hora_inicio);
@@ -98,12 +90,10 @@ function construirDatosGrafico(
   if (horaActual < inicio) return [];
 
   const ayerPorClave = new Map(
-    tramosAyer.map((tramo) => [tramo.clave, tramo.cantidad])
+    tramosAyer.map((tramo) => [tramo.clave, tramo.cantidad]),
   );
 
-  const puntos: PuntoGrafico[] = [
-    { minuto: inicio, hoy: 0, ayer: 0 },
-  ];
+  const puntos: PuntoGrafico[] = [{ minuto: inicio, hoy: 0, ayer: 0 }];
 
   let acumuladoHoy = 0;
   let acumuladoAyer = 0;
@@ -112,7 +102,7 @@ function construirDatosGrafico(
     const estado = obtenerEstadoTramo(
       horaActual,
       tramo.hora_inicio,
-      tramo.hora_fin
+      tramo.hora_fin,
     );
 
     if (estado === "SIN DEFINIR") break;
@@ -153,46 +143,46 @@ function GraficoVentas({
   tramosAyer: Tramo[];
   horaActual: number | null;
 }) {
+  const gradientId = `ventas-${useId().replace(/:/g, "")}`;
   const datos = useMemo(() => {
     if (horaActual === null) return [];
 
-    return construirDatosGrafico(
-      tramosHoy,
-      tramosAyer,
-      horaActual
-    );
+    return construirDatosGrafico(tramosHoy, tramosAyer, horaActual);
   }, [tramosHoy, tramosAyer, horaActual]);
 
   const ticks = useMemo(
     () => [...new Set(datos.map((d) => d.minuto))],
-    [datos]
+    [datos],
   );
 
   const minutosInicio = datos[0]?.minuto ?? 0;
   const minutosFin =
-    datos.length > 1
-      ? datos[datos.length - 1].minuto
-      : minutosInicio + 1;
+    datos.length > 1 ? datos[datos.length - 1].minuto : minutosInicio + 1;
 
   return (
-    <article className={styles.chartCard}>
-      <h3>{titulo}</h3>
-
-      <div className={styles.chartContainer}>
+    <article className={content.chartPanel}>
+      <div className={content.chartContainer}>
         {datos.length > 1 ? (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
+            <ComposedChart
               data={datos}
               margin={{
                 top: 15,
-                right: 20,
+                right: 45,
                 left: 0,
                 bottom: 5,
               }}
             >
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#e52246" stopOpacity={0.42} />
+                  <stop offset="100%" stopColor="#e52246" stopOpacity={0.015} />
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 stroke="#303030"
                 strokeOpacity={0.8}
+                vertical={false}
               />
 
               <XAxis
@@ -203,7 +193,7 @@ function GraficoVentas({
                 tickFormatter={formatearMinutos}
                 tick={{
                   fill: "#c8c8c8",
-                  fontSize: 13,
+                  fontSize: 18,
                 }}
                 tickLine={false}
                 axisLine={{ stroke: "#555" }}
@@ -216,20 +206,15 @@ function GraficoVentas({
                 domain={[0, "auto"]}
                 tick={{
                   fill: "#c8c8c8",
-                  fontSize: 13,
+                  fontSize: 18,
                 }}
                 tickLine={false}
                 axisLine={false}
               />
 
               <Tooltip
-                labelFormatter={(valor) =>
-                  formatearMinutos(Number(valor))
-                }
-                formatter={(value, name) => [
-                  `${value} ventas`,
-                  name,
-                ]}
+                labelFormatter={(valor) => formatearMinutos(Number(valor))}
+                formatter={(value, name) => [`${value} ventas`, name]}
                 contentStyle={{
                   background: "#171717",
                   border: "1px solid #454545",
@@ -239,24 +224,17 @@ function GraficoVentas({
                 labelStyle={{ color: "#fff" }}
               />
 
-              <Legend
-                verticalAlign="bottom"
-                height={36}
-                wrapperStyle={{
-                  fontSize: 25,
-                  paddingTop: 10,
-                }}
-              />
-
-              <Line
-                type="linear"
+              <Area
+                type="monotoneX"
                 dataKey="hoy"
                 name="Hoy"
-                stroke="#ca0000"
+                fill={`url(#${gradientId})`}
+                fillOpacity={1}
+                stroke="#e52246"
                 strokeWidth={5}
                 dot={{
                   r: 5,
-                  fill: "#ca0000",
+                  fill: "#e52246",
                   strokeWidth: 0,
                 }}
                 activeDot={{ r: 7 }}
@@ -265,7 +243,7 @@ function GraficoVentas({
               />
 
               <Line
-                type="linear"
+                type="monotoneX"
                 dataKey="ayer"
                 name="Ayer"
                 stroke="#969696"
@@ -280,13 +258,37 @@ function GraficoVentas({
                 isAnimationActive={false}
                 connectNulls={false}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         ) : (
-          <div className={styles.sinDatos}>
+          <div className={content.sinDatos}>
             Esperando el inicio de las ventas
           </div>
         )}
+      </div>
+      <div className={content.sidePanel}>
+        <div className={content.panelHeader}>
+          <div>
+            <span className={content.eyebrow}>EVOLUCIÓN DE VENTAS</span>
+            <h3>{titulo}</h3>
+          </div>
+          <div className={content.legend} aria-label="Leyenda del gráfico">
+            <span>
+              <i />
+              Hoy
+            </span>
+            <span>
+              <i className={content.yesterday} />
+              Ayer
+            </span>
+          </div>
+        </div>
+        <TramosVentas
+          titulo={`Ventas por tramos - ${titulo}`}
+          tramosHoy={tramosHoy}
+          tramosAyer={tramosAyer}
+          horaActual={horaActual}
+        />
       </div>
     </article>
   );
@@ -306,105 +308,101 @@ function TramosVentas({
   horaActual: number | null;
 }) {
   const tramosVisibles = useMemo(() => {
-    if (horaActual === null) return [];
-
     return [...tramosHoy]
       .sort(
-        (a, b) =>
-          obtenerMinutos(a.hora_inicio) -
-          obtenerMinutos(b.hora_inicio)
+        (a, b) => obtenerMinutos(a.hora_inicio) - obtenerMinutos(b.hora_inicio),
       )
       .map((tramo) => ({
         ...tramo,
-        estado: obtenerEstadoTramo(
-          horaActual,
-          tramo.hora_inicio,
-          tramo.hora_fin
-        ),
-      }))
-      .filter((tramo) => tramo.estado !== "SIN DEFINIR");
+        estado:
+          horaActual === null
+            ? "SIN DEFINIR"
+            : obtenerEstadoTramo(horaActual, tramo.hora_inicio, tramo.hora_fin),
+      }));
   }, [tramosHoy, horaActual]);
 
   const ayerPorClave = useMemo(
-    () =>
-      new Map(
-        tramosAyer.map((tramo) => [
-          tramo.clave,
-          tramo.cantidad,
-        ])
-      ),
-    [tramosAyer]
+    () => new Map(tramosAyer.map((tramo) => [tramo.clave, tramo.cantidad])),
+    [tramosAyer],
   );
 
   return (
-    <section className={styles.tramosContent}>
-      <h3>{titulo}</h3>
+    <section className={content.tramosGrid} aria-label={titulo}>
+      {tramosVisibles.map((tramo) => {
+        const cantidadAyer = ayerPorClave.get(tramo.clave) ?? 0;
 
-      <div className={styles.tramosGrid}>
-        {tramosVisibles.map((tramo) => {
-          const cantidadAyer =
-            ayerPorClave.get(tramo.clave) ?? 0;
+        const balance = tramo.cantidad - cantidadAyer;
 
-          const balance = tramo.cantidad - cantidadAyer;
+        const balanceClass =
+          balance > 0
+            ? content.positivo
+            : balance < 0
+              ? content.negativo
+              : content.neutro;
 
-          const balanceClass =
-            balance > 0
-              ? styles.positivo
-              : balance < 0
-                ? styles.negativo
-                : styles.neutro;
-
-          return (
-            <article
-              key={tramo.clave}
-              className={`${styles.tramoCard} ${
-                tramo.estado === "EN CURSO"
-                  ? styles.tramoActivo
+        return (
+          <article
+            key={tramo.clave}
+            className={`${content.tramoCard} ${
+              tramo.estado === "EN CURSO"
+                ? content.tramoActivo
+                : tramo.estado === "SIN DEFINIR"
+                  ? content.tramoPendiente
                   : ""
-              }`}
-            >
-              <div className={styles.tramoHorario}>
-                <span>
-                  {formatearHora(tramo.hora_inicio)}
-                  {" - "}
-                  {formatearHora(tramo.hora_fin)}
+            }`}
+          >
+            <div className={content.tramoHorario}>
+              <span>
+                {formatearHora(tramo.hora_inicio)}
+                {" - "}
+                {formatearHora(tramo.hora_fin)}
+              </span>
+
+              {tramo.estado === "EN CURSO" && (
+                <span className={content.estadoActivo}>EN CURSO</span>
+              )}
+              {tramo.estado === "SIN DEFINIR" && (
+                <span className={content.estadoPendiente}>PENDIENTE</span>
+              )}
+            </div>
+
+            <div className={content.comparativaCard}>
+              {/* IZQUIERDA: AYER Y BALANCE */}
+              <div className={content.ventasAyer}>
+                <span className={content.cardLabel}>
+                  Ayer: {cantidadAyer.toLocaleString("es-PE")}
                 </span>
 
-                {tramo.estado === "EN CURSO" && (
-                  <span className={styles.estadoActivo}>
-                    EN CURSO
-                  </span>
-                )}
-              </div>
-
-              <div className={styles.comparativaCard}>
-                {/* IZQUIERDA: AYER Y BALANCE */}
-                <div className={styles.ventasAyer}>
-                  <span className={styles.cardLabel}>
-                    Ayer: {cantidadAyer.toLocaleString("es-PE")}
-                  </span>
-
-                  <strong className={balanceClass}>
-                    {balance > 0 ? "+" : ""}
-                    {balance.toLocaleString("es-PE")} ventas
-                  </strong>
-                </div>
-
-                {/* DERECHA: VENTAS DE HOY */}
-                <strong className={styles.tramoCantidad}>
-                  {tramo.cantidad.toLocaleString("es-PE")}
+                <strong
+                  className={
+                    tramo.estado === "SIN DEFINIR"
+                      ? content.sinIniciar
+                      : balanceClass
+                  }
+                >
+                  {tramo.estado === "SIN DEFINIR"
+                    ? "Sin iniciar"
+                    : `${balance > 0 ? "+" : ""}${balance.toLocaleString("es-PE")} ${Math.abs(balance) === 1 ? "venta" : "ventas"}`}
                 </strong>
               </div>
-            </article>
-          );
-        })}
 
-        {tramosVisibles.length === 0 && (
-          <div className={styles.sinDatos}>
-            No hay tramos iniciados
-          </div>
-        )}
-      </div>
+              {/* DERECHA: VENTAS DE HOY */}
+              <div className={content.ventasHoy}>
+                <strong className={content.tramoCantidad}>
+                  {tramo.estado === "SIN DEFINIR"
+                    ? "—"
+                    : tramo.cantidad.toLocaleString("es-PE")}
+                </strong>
+                <span>HOY</span>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+
+      {tramosVisibles.length === 0 && (
+        <div className={content.sinDatos}>No hay tramos configurados</div>
+      )}
     </section>
   );
 }
@@ -466,42 +464,20 @@ export default function VentasResumenUI({
         </div>
       </header>
 
-      <section className={styles.resumenContainer}>
-        {/* FILA SUPERIOR: DOS GRÁFICOS */}
-
-        <div className={styles.graficosGrid}>
+      <section className={content.resumenContainer}>
           <GraficoVentas
-            titulo="Evolución de ventas - Global"
+            titulo="Global"
             tramosHoy={hoy.global.tramos}
             tramosAyer={ayer.global.tramos}
             horaActual={horaActual}
           />
 
           <GraficoVentas
-            titulo={`Evolución de ventas - ${hoy.sede.nombre}`}
+            titulo={hoy.sede.nombre}
             tramosHoy={hoy.sede.tramos}
             tramosAyer={ayer.sede.tramos}
             horaActual={horaActual}
           />
-        </div>
-
-        {/* FILA INFERIOR: TRAMOS */}
-
-        <div className={styles.tramosRow}>
-          <TramosVentas
-            titulo="Ventas por tramos - Global"
-            tramosHoy={hoy.global.tramos}
-            tramosAyer={ayer.global.tramos}
-            horaActual={horaActual}
-          />
-
-          <TramosVentas
-            titulo={`Ventas por tramos - ${hoy.sede.nombre}`}
-            tramosHoy={hoy.sede.tramos}
-            tramosAyer={ayer.sede.tramos}
-            horaActual={horaActual}
-          />
-        </div>
       </section>
     </main>
   );

@@ -7,7 +7,7 @@
   height: 100%;
   min-height: 0;
 
-  padding: 60px;
+  padding: 50px;
   box-sizing: border-box;
 
   display: flex;
@@ -101,16 +101,15 @@
 ========================================= */
 
 .list {
+  --row-gap: 28px;
   flex: 1;
 
   min-height: 0;
 
-  display: flex;
-  flex-direction: column;
-
-  justify-content: center;
-
-  gap: 12px;
+  display: grid;
+  grid-auto-rows: calc((100% - var(--row-gap) - var(--row-gap)) / 3);
+  align-content: center;
+  gap: var(--row-gap);
 }
 
 /* =========================================
@@ -125,20 +124,13 @@
 
   display: grid;
 
-  grid-template-columns:
-    minmax(0, 1fr)
-    150px
-    100px
-    70px
-    100px
-    150px
-    minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 100px 70px 100px minmax(0, 1fr);
 
   align-items: stretch;
 
   gap: 12px;
 
-  padding: 0 18px;
+  padding: 10px 18px;
 
   box-sizing: border-box;
 
@@ -151,21 +143,105 @@
 }
 
 /* =========================================
-   LADOS
+   EQUIPOS Y PARTICIPANTES
 ========================================= */
 
-.side {
+.team {
   min-width: 0;
   height: 100%;
-
   display: flex;
-
-  align-items: center;
-  justify-content: flex-start;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.sideRight {
-  justify-content: flex-end;
+.teamRight {
+  text-align: right;
+}
+
+.teamLabel {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.teamRoster {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.teamRight .teamRoster {
+  flex-direction: row-reverse;
+}
+
+.member {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(54px, 0.7fr) minmax(58px, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.teamRight .member {
+  grid-template-columns: minmax(58px, 1fr) minmax(54px, 0.7fr);
+}
+
+.teamRight .member .personImageWrap {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.teamRight .member .personData {
+  grid-column: 1;
+  grid-row: 1;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.teamDense .member,
+.teamRight.teamDense .member {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(42px, 1fr) auto;
+  gap: 2px;
+  padding: 3px;
+}
+
+.teamRight.teamDense .member .personImageWrap,
+.teamRight.teamDense .member .personData {
+  grid-column: 1;
+}
+
+.teamRight.teamDense .member .personImageWrap {
+  grid-row: 1;
+}
+
+.teamRight.teamDense .member .personData {
+  grid-row: 2;
+}
+
+.teamDense .personData,
+.teamRight.teamDense .personData {
+  align-items: center;
+  text-align: center;
+}
+
+.teamDense .personName,
+.teamRight.teamDense .personName {
+  text-align: center;
+}
+
+.teamDense .campaignLogos,
+.teamDense .sedesList {
+  display: none;
 }
 
 /* =========================================
@@ -182,15 +258,9 @@
   align-items: flex-start;
   justify-content: center;
 
-  gap: 6px;
+  gap: 3px;
 
   text-align: left;
-}
-
-.sideRight .personData {
-  align-items: flex-end;
-
-  text-align: right;
 }
 
 /* =========================================
@@ -208,12 +278,12 @@
   align-items: center;
   justify-content: flex-start;
 
-  gap: 8px;
+  gap: 4px;
 
   overflow: hidden;
 }
 
-.sideRight .campaignLogos {
+.teamRight .campaignLogos {
   justify-content: flex-end;
 }
 
@@ -222,10 +292,12 @@
 ========================================= */
 
 .logoWrap {
-  width: 42px;
-  height: 42px;
+  position: relative;
 
-  flex: 0 0 42px;
+  width: 24px;
+  height: 24px;
+
+  flex: 0 0 24px;
 
   display: flex;
   align-items: center;
@@ -244,7 +316,7 @@
   width: 100%;
   height: 100%;
 
-  padding: 5px;
+  padding: 3px;
 
   box-sizing: border-box;
 
@@ -268,7 +340,7 @@
 
   color: #ffffff;
 
-  font-size: 20px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -282,11 +354,7 @@
 
   color: #ffffff;
 
-  font-size: clamp(
-    20px,
-    1.5vw,
-    30px
-  );
+  font-size: clamp(12px, 0.9vw, 17px);
 
   font-weight: 900;
 
@@ -300,8 +368,15 @@
   text-align: left;
 }
 
-.sideRight .personName {
+.teamRight .personName {
   text-align: right;
+}
+
+.memberScore {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 /* =========================================
@@ -322,7 +397,7 @@
   gap: 5px;
 }
 
-.sideRight .sedesList {
+.teamRight .sedesList {
   justify-content: flex-end;
 }
 
@@ -332,9 +407,9 @@
   align-items: center;
   justify-content: center;
 
-  min-height: 23px;
+  min-height: 16px;
 
-  padding: 3px 10px;
+  padding: 2px 5px;
 
   box-sizing: border-box;
 
@@ -344,7 +419,7 @@
 
   color: #111111;
 
-  font-size: 12px;
+  font-size: 8px;
   font-weight: 900;
 
   line-height: 1;
@@ -360,7 +435,7 @@
   width: 100%;
   height: 100%;
 
-  min-height: 145px;
+  min-height: 0;
 
   align-self: stretch;
 
@@ -383,6 +458,7 @@
 
   display: flex;
 
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 
@@ -393,18 +469,23 @@
     0.55
   );
 
-  font-size: clamp(
-    34px,
-    3vw,
-    56px
-  );
-
-  font-weight: 900;
-
   line-height: 1;
 
   font-variant-numeric:
     tabular-nums;
+}
+
+.score strong {
+  font-size: clamp(34px, 3vw, 56px);
+  font-weight: 900;
+}
+
+.score span {
+  margin-top: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .scoreLeader {
@@ -427,6 +508,7 @@
 .vs {
   display: flex;
 
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 
@@ -434,6 +516,74 @@
 
   font-size: 22px;
   font-weight: 900;
+}
+
+.vs small {
+  max-width: 68px;
+  margin-top: 5px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================
+   VERSUS DE TRES O MÁS EQUIPOS
+========================================= */
+
+.rowMulti {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 14px;
+}
+
+.multiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 9px;
+}
+
+.multiHeader strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiTeams {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #444 transparent;
+}
+
+.multiTeam {
+  flex: 1 0 240px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 65px;
+  gap: 7px;
+  padding: 5px;
+  border: 1px solid #232323;
+  border-radius: 8px;
+  background: #0d0e10;
+}
+
+.multiTeamLeader {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: #141518;
+}
+
+.multiTeam .score strong {
+  font-size: clamp(28px, 2vw, 42px);
 }
 
 /* =========================================
@@ -542,22 +692,11 @@
   .row {
     min-height: 170px;
 
-    grid-template-columns:
-      minmax(0, 1fr)
-      180px
-      115px
-      80px
-      115px
-      180px
-      minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 115px 80px 115px minmax(0, 1fr);
 
     gap: 16px;
 
     padding: 0 22px;
-  }
-
-  .personImageWrap {
-    min-height: 165px;
   }
 
   .campaignLogos {
@@ -565,29 +704,25 @@
   }
 
   .logoWrap {
-    width: 46px;
-    height: 46px;
+    width: 28px;
+    height: 28px;
 
-    flex-basis: 46px;
+    flex-basis: 28px;
   }
 
   .personName {
-    font-size: clamp(
-      24px,
-      1.7vw,
-      34px
-    );
+    font-size: clamp(14px, 1vw, 19px);
   }
 
   .sedeBadge {
-    min-height: 25px;
+    min-height: 18px;
 
-    padding: 4px 11px;
+    padding: 2px 6px;
 
-    font-size: 13px;
+    font-size: 9px;
   }
 
-  .score {
+  .score strong {
     font-size: clamp(
       42px,
       3.4vw,
@@ -607,9 +742,7 @@
 @media (max-width: 1400px) {
 
   .container {
-    padding:
-      18px
-      26px;
+    padding: 50px;
   }
 
   .header {
@@ -627,22 +760,11 @@
   .row {
     min-height: 120px;
 
-    grid-template-columns:
-      minmax(0, 1fr)
-      105px
-      72px
-      46px
-      72px
-      105px
-      minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 72px 46px 72px minmax(0, 1fr);
 
     gap: 8px;
 
     padding: 0 12px;
-  }
-
-  .personImageWrap {
-    min-height: 115px;
   }
 
   .personData {
@@ -654,10 +776,10 @@
   }
 
   .logoWrap {
-    width: 34px;
-    height: 34px;
+    width: 20px;
+    height: 20px;
 
-    flex-basis: 34px;
+    flex-basis: 20px;
   }
 
   .logo {
@@ -665,24 +787,24 @@
   }
 
   .fallback {
-    font-size: 17px;
-  }
-
-  .personName {
-    font-size: 18px;
-  }
-
-  .sedeBadge {
-    min-height: 21px;
-
-    padding:
-      2px
-      8px;
-
     font-size: 10px;
   }
 
-  .score {
+  .personName {
+    font-size: 11px;
+  }
+
+  .sedeBadge {
+    min-height: 14px;
+
+    padding:
+      2px
+      4px;
+
+    font-size: 7px;
+  }
+
+  .score strong {
     font-size: 34px;
   }
 
@@ -702,8 +824,8 @@
 @media (max-height: 800px) {
 
   .container {
-    padding-top: 16px;
-    padding-bottom: 16px;
+    padding-top: 50px;
+    padding-bottom: 50px;
   }
 
   .header {
@@ -711,29 +833,25 @@
   }
 
   .list {
-    gap: 6px;
+    --row-gap: 6px;
   }
 
   .row {
     min-height: 105px;
   }
 
-  .personImageWrap {
-    min-height: 100px;
-  }
-
   .logoWrap {
-    width: 30px;
-    height: 30px;
+    width: 18px;
+    height: 18px;
 
-    flex-basis: 30px;
+    flex-basis: 18px;
   }
 
   .personName {
-    font-size: 16px;
+    font-size: 10px;
   }
 
-  .score {
+  .score strong {
     font-size: 30px;
   }
 

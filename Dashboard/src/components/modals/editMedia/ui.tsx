@@ -75,6 +75,8 @@ export default function EditMediaModal({
           };
         });
 
+    // Este efecto reconstruye el formulario cuando cambia la media seleccionada.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedSedes(selected);
 
     setConfigs(initialConfigs);

@@ -64,6 +64,7 @@ export default function EditarCerrador({
      PREVISUALIZACIÓN DEL AVATAR
   ======================================== */
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!archivo) {
       setPreview(null);
@@ -76,6 +77,7 @@ export default function EditarCerrador({
 
     return () => URL.revokeObjectURL(url);
   }, [archivo]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   /* ========================================
      GUARDAR NOMBRES

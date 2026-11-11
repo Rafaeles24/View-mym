@@ -1,18 +1,27 @@
 .general {
   display: flex;
   height: 100vh;
+  padding: 6px;
+  gap: 6px;
+  background: #090909;
 }
 
 .aside {
-  width: 200px;
-  padding: 5px;
+  width: 205px;
+  padding: 0;
   background: #121212;
   color: white;
+  border: 1px solid #222;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .main {
   flex: 1;
-  padding: 20px;
+  min-width: 0;
+  padding: 22px 24px;
   background: #0D0D0D;
   color: white;
+  border-radius: 10px;
+  overflow: auto;
 }
