@@ -172,12 +172,12 @@ export default function SedeViews({
               rankingRango={rankingRango}
             />
           )
-        },
+        }, 
         ...(visorSedeVersus.participantes.length > 0 ? [
           {
             id: "sede-versus",
             type: "timed" as const,
-            durationMs: 60_000,
+            durationMs: 120_000,
             render: (
               <SedeVersusUI
                 data={visorSedeVersus}
@@ -204,7 +204,7 @@ export default function SedeViews({
         {
           id: "resumen-global",
           type: "timed",
-          durationMs: 60_000,
+          durationMs: 120_000,
           render: (
             <VentasResumenUI
               sedeOrigin={sede}

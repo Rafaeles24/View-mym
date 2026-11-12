@@ -1,36 +1,52 @@
 /* =========================================
    CONTENEDOR PRINCIPAL
-   ========================================= */
+========================================= */
 
 .container {
   width: 100%;
   height: 100%;
+
+  min-width: 0;
   min-height: 0;
 
-  padding: 50px;
-  box-sizing: border-box;
+  padding:
+    clamp(
+      20px,
+      2.6vw,
+      50px
+    );
+
+  box-sizing:
+    border-box;
 
   display: flex;
   flex-direction: column;
 
-  gap: 10px;
+  gap: 16px;
 
   overflow: hidden;
 
   color: #ffffff;
+
   background: #0d0d0d;
 }
 
 /* =========================================
    HEADER
-   ========================================= */
+========================================= */
 
 .header {
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
+  justify-content:
+    space-between;
+
+  gap: 24px;
 
   flex-shrink: 0;
+
+  min-width: 0;
 }
 
 .titleContent {
@@ -53,16 +69,9 @@
   flex-shrink: 0;
 }
 
-.rankingRango {
-  flex: 1;
-
-  display: flex;
-  align-items: center;
-
-  justify-content: flex-end;
-
-  min-width: 0;
-}
+/* =========================================
+   TÍTULO
+========================================= */
 
 .titulo {
   display: flex;
@@ -74,21 +83,35 @@
 
   padding-left: 20px;
 
-  border-left: 3px solid #ffffff;
+  border-left:
+    3px solid #ffffff;
 }
 
 .titulo h1 {
   margin: 0;
 
-  font-size: 40px;
+  font-size: clamp(
+    24px,
+    2.1vw,
+    40px
+  );
+
   font-weight: 1000;
+
   line-height: 1;
+
+  white-space: nowrap;
 }
 
 .titulo p {
   margin: 0;
 
-  font-size: 20px;
+  font-size: clamp(
+    12px,
+    1.05vw,
+    20px
+  );
+
   font-weight: 700;
 
   color: #a1a1aa;
@@ -99,587 +122,196 @@
 }
 
 /* =========================================
-   LISTA
-   ========================================= */
+   RANGO
+========================================= */
+
+.rankingRango {
+  flex: 1;
+
+  display: flex;
+
+  align-items: center;
+  justify-content:
+    flex-end;
+
+  min-width: 0;
+}
+
+/* =========================================
+   STAGE
+========================================= */
+
+.versusStage {
+  position: relative;
+
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  isolation: isolate;
+}
+
+/* =========================================
+   LIST
+========================================= */
 
 .list {
-  --row-gap: 28px;
-  flex: 1;
+  --row-gap: 18px;
 
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
   min-height: 0;
 
   display: grid;
-  grid-auto-rows: calc((100% - var(--row-gap) - var(--row-gap)) / 3);
-  align-content: center;
-  gap: var(--row-gap);
+
+  gap:
+    var(--row-gap);
+
+  align-content: stretch;
 }
 
 /* =========================================
-   FILA VERSUS 1VS1
-   ========================================= */
+   CAPAS
+========================================= */
 
-.row1v1 {
-  width: 100%;
-  min-width: 0;
+.versusLayer {
+  position: absolute;
 
-  min-height: 0;
+  inset: 0;
 
-  display: flex;
-  flex-direction: column;
+  transition:
+    opacity 500ms ease;
 
-  gap: 12px;
-
-  padding: 10px 18px;
-
-  box-sizing: border-box;
-
-  background: #08090b;
-
-  border: 2px solid #18191a;
-
-  border-radius: 10px;
-
-  overflow: hidden;
+  will-change:
+    opacity;
 }
 
-/* Estado líder para 1vs1 */
-.row1v1.isLeader {
-  border-color: #5f1524;
-  box-shadow: 0 0 26px rgba(217, 29, 70, 0.12);
+.layerActive {
+  opacity: 1;
+
+  z-index: 2;
+
+  visibility: visible;
 }
 
-/* Caption para 1vs1 */
-.caption1v1 {
-  flex: none;
+.layerHidden {
+  opacity: 0;
+
+  z-index: 1;
+
+  visibility: visible;
+
+  pointer-events: none;
+}
+
+/* =========================================
+   PAGINACIÓN
+========================================= */
+
+.pagination {
   display: flex;
+
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 8px 22px;
-  border-bottom: 1px solid #1b1c21;
-  background: #0b0c10;
-}
+  justify-content: center;
 
-.caption1v1 h2 {
-  margin: 0;
-  font-size: clamp(17px, 1.1vw, 23px);
-  text-transform: uppercase;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.caption1v1 > span {
-  flex: none;
-  color: #a5a5b0;
-  font-size: clamp(13px, 0.94vw, 19px);
-}
-
-/* Contenedor del duelo 1vs1 */
-.body1v1 {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
   gap: 10px;
+
+  flex-shrink: 0;
+
+  min-height: 10px;
 }
 
-/* Duelo invertido: izq = avatar+contenido abajo, score pegado a VS der */
-.duelBody1v1 {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 0 24px;
-}
+.dot {
+  width: 8px;
+  height: 8px;
 
-/* Jugador izq: avatar arriba, contenido abajo, score a la derecha pegado VS */
-.duelLeft1v1 {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  min-width: 0;
-}
-
-.duelLeft1v1 .figure {
-  width: 140px;
-  height: 140px;
-  min-width: 0;
-}
-
-.duelLeft1v1 .figure img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  transform: scale(1.5);
-  transform-origin: center top;
-}
-
-.duelLeft1v1 .personName {
-  font-size: clamp(18px, 1.5vw, 24px);
-  font-weight: 800;
-  color: #fff;
-  text-shadow: 0 2px 8px #000;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-}
-
-.duelLeft1v1 .metaRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-  align-items: center;
-  color: #a1a1aa;
-  font-size: 12px;
-}
-
-.duelLeft1v1 .sedeBadge {
-  padding: 4px 8px;
-  border-radius: 5px;
-  background: #fff;
-  color: #111;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.duelLeft1v1 .campaignLogos {
-  display: flex;
-  gap: 4px;
-}
-
-.duelLeft1v1 .logoWrap {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-}
-
-.duelLeft1v1 .logoDot {
   border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
+
+  background: #44444e;
+
+  transition:
+    background
+      300ms ease,
+    transform
+      300ms ease;
 }
 
-.duelLeft1v1 .leaderPill {
-  padding: 3px 6px;
-  border-radius: 50%;
-  background: #d91d46;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
+.dotActive {
+  background: #ed244b;
 
-/* Score pegado al VS a la derecha para el jugador izq */
-.duelLeft1v1 .duelScore {
-  margin-left: auto;
-  color: #fff;
-  font-size: clamp(56px, 4.4vw, 86px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -2px;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 14px #000;
-  white-space: nowrap;
-}
-
-/* Jugador der: avatar arriba, contenido abajo, score pegado a la izquierda VS */
-.duelRight1v1 {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  min-width: 0;
-  position: relative;
-  right: 0;
-}
-
-.duelRight1v1 .figure {
-  width: 140px;
-  height: 140px;
-  min-width: 0;
-  position: relative;
-  right: 0;
-}
-
-.duelRight1v1 .figure img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  transform: scale(1.5);
-  transform-origin: center top;
-}
-
-.duelRight1v1 .personName {
-  font-size: clamp(18px, 1.5vw, 24px);
-  font-weight: 800;
-  color: #fff;
-  text-shadow: 0 2px 8px #000;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-}
-
-.duelRight1v1 .metaRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-  align-items: center;
-  color: #a1a1aa;
-  font-size: 12px;
-}
-
-.duelRight1v1 .sedeBadge {
-  padding: 4px 8px;
-  border-radius: 5px;
-  background: #fff;
-  color: #111;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.duelRight1v1 .campaignLogos {
-  display: flex;
-  gap: 4px;
-}
-
-.duelRight1v1 .logoWrap {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-}
-
-.duelRight1v1 .logoDot {
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.duelRight1v1 .leaderPill {
-  padding: 3px 6px;
-  border-radius: 50%;
-  background: #d91d46;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-/* Score pegado al VS a la izquierda para el jugador der */
-.duelRight1v1 .duelScore {
-  margin-right: auto;
-  color: #fff;
-  font-size: clamp(56px, 4.4vw, 86px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -2px;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 14px #000;
-  white-space: nowrap;
-}
-
-/* VS central entre los dos jugadores */
-.vsCenter {
-  width: 60px;
-  height: 60px;
-  display: grid;
-  place-items:center;
-  border: 1px solid #34343d;
-  border-radius: 50%;
-  background: #111216;
-  color: #d4d4dd;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  transform:
+    scale(1.25);
 }
 
 /* =========================================
-   FILA VERSUS GRUPAL (FORMATO "0   NOMBRE   0")
-   ========================================= */
+   RESPONSIVE
+========================================= */
 
-.rowGrupal {
-  width: 100%;
-  min-width: 0;
-
-  min-height: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 12px;
-
-  padding: 10px 18px;
-
-  box-sizing: border-box;
-
-  background: #08090b;
-
-  border: 2px solid #18191a;
-
-  border-radius: 10px;
-
-  overflow: hidden;
-}
-
-/* Estado líder para grupal */
-.rowGrupal.isLeader {
-  border-color: #5f1524;
-  box-shadow: 0 0 26px rgba(217, 29, 70, 0.12);
-}
-
-/* Caption para grupal */
-.captionGrupal {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 8px 22px;
-  border-bottom: 1px solid #1b1c21;
-  background: #0b0c10;
-}
-
-.captionGrupal h2 {
-  margin: 0;
-  font-size: clamp(17px, 1.1vw, 23px);
-  text-transform: uppercase;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.captionGrupal > span {
-  flex: none;
-  color: #a5a5b0;
-  font-size: clamp(13px, 0.94vw, 19px);
-}
-
-/* Contenedor del VS grupal */
-.teamsGrupal {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Cada bando del VS grupal */
-.teamGrupal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-/* Nombre del VS con formato "0   nombre   0" */
-.nombreGrupal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-  text-align: center;
-}
-
-.nombreGrupal span {
-  color: #fff;
-  font-size: clamp(28px, 3.5vw, 48px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -2px;
-  font-variant-numeric: tabular-nums;
-}
-
-.nombreGrupal .leader {
-  color: #d91d46;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-/* Avatares grupales */
-.avataresGrupal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.memberGrupal {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-}
-
-.memberGrupal .personImageWrap {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 4px;
-}
-
-.memberGrupal .personImageWrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: top center;
-  transform: scale(1.2);
-  transform-origin: center top;
-}
-
-.memberGrupal .nombreIntegrante {
-  color: #fff;
-  font-size: clamp(12px, 1vw, 14px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* VS entre dos equipos grupales */
-.vsGrupal {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #34343d;
-  border-radius: 50%;
-  background: #111216;
-  color: #d4d4dd;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-/* Responsive: Full HD */
-@media (min-width: 1600px) {
-  .row1v1 {
-    min-height: 170px;
-    padding: 0 22px;
-  }
-
-  .rowGrupal {
-    min-height: 170px;
-    padding: 0 22px;
-  }
-
-  .caption1v1,
-  .captionGrupal {
-    padding: 0 22px;
-  }
-
-  .duelBody1v1 {
-    gap: 32px;
-    padding: 0 24px;
-  }
-
-  .vsCenter {
-    width: 64px;
-    height: 64px;
-    font-size: 20px;
-  }
-
-  .vsGrupal {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
-  }
-
-  .nombreGrupal span {
-    font-size: 36px;
-  }
-}
-
-/* Responsive: Pantallas medianas */
-@media (max-width: 1400px) {
-  .row1v1 {
-    min-height: 120px;
-    padding: 0 12px;
-  }
-
-  .rowGrupal {
-    min-height: 120px;
-    padding: 0 12px;
-  }
-
-  .caption1v1,
-  .captionGrupal {
-    padding: 0 12px;
-  }
-
-  .duelBody1v1 {
-    gap: 20px;
-    padding: 0 16px;
-  }
-
-  .vsCenter {
-    width: 52px;
-    height: 52px;
-    font-size: 14px;
-  }
-
-  .vsGrupal {
-    width: 36px;
-    height: 36px;
-    font-size: 12px;
-  }
-
-  .nombreGrupal span {
-    font-size: 28px;
-  }
-}
-
-/* Responsive: Pantallas bajas */
-@media (max-height: 800px) {
+@media (
+  max-width: 1400px
+) {
   .container {
-    padding-top: 50px;
-    padding-bottom: 50px;
+    padding: 24px;
   }
 
   .header {
-    margin-bottom: 6px;
+    gap: 12px;
+  }
+
+  .titleContent {
+    gap: 12px;
+  }
+
+  .titleContent img {
+    width: 65px;
+    height: 65px;
+  }
+
+  .titulo {
+    padding-left: 12px;
+  }
+
+  .titulo h1 {
+    font-size: clamp(
+      22px,
+      2vw,
+      32px
+    );
+  }
+
+  .titulo p {
+    font-size: 13px;
   }
 
   .list {
-    --row-gap: 6px;
+    --row-gap: 12px;
   }
+}
 
-  .row1v1 {
-    min-height: 105px;
-  }
+/* =========================================
+   PANTALLAS BAJAS
+========================================= */
 
-  .rowGrupal {
-    min-height: 105px;
-  }
+@media (
+  max-height: 800px
+) {
+  .container {
+    padding-top: 20px;
+    padding-bottom: 20px;
 
-  .duelBody1v1 {
     gap: 10px;
-    padding: 0;
   }
 
-  .vsCenter {
-    display: none;
+  .list {
+    --row-gap: 8px;
   }
 
-  .vsGrupal {
-    width: 30px;
-    height: 30px;
-    font-size: 10px;
-  }
-
-  .nombreGrupal span {
-    font-size: 20px;
+  .pagination {
+    min-height: 8px;
   }
 }
