@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  CSSProperties,
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -8,32 +10,47 @@ import {
   useState,
 } from "react";
 
+import Image from "next/image";
+
 import styles from "./ui.module.css";
+import content from "./content.module.css";
 
 import type {
   VersusCampaignIcon,
+  VersusCerrador,
+  VersusEquipo,
   VersusRangoFecha,
   VisorVersus,
 } from "@/types/versus";
 
-import Image from "next/image";
 import LogoSvg from "@/icons/logo.svg";
-import VersusRango from "../versusRangoFecha/ui";
 import DefaultPerson from "@/images/default.png";
+import VersusRango from "../versusRangoFecha/ui";
 
 /* =========================================
    CONFIGURACIÓN
 ========================================= */
 
-const ITEMS_PER_PAGE = 4;
-
-/*
- * Debe coincidir con el tiempo
- * de transición CSS.
- */
+const PAGE_ROW_CAPACITY = 3;
+const MAX_COLUMNS = 4;
 const FADE_MS = 500;
 
 type Layer = "a" | "b";
+
+type VersusPage = {
+  items: VisorVersus[];
+  rows: number;
+};
+
+type MultiTeamRow = {
+  equipos: VersusEquipo[];
+  memberRows: number;
+};
+
+type TeamAccentStyle = CSSProperties & {
+  "--team-accent": string;
+  "--team-accent-rgb": string;
+};
 
 const oppositeLayer = (
   layer: Layer,
@@ -44,79 +61,748 @@ const oppositeLayer = (
 };
 
 /* =========================================
+   COLORES DE LOS EQUIPOS
+========================================= */
+
+const TEAM_ACCENTS = [
+  {
+    hex: "#ed244b",
+    rgb: "237,36,75",
+  },
+  {
+    hex: "#2b6dff",
+    rgb: "43,109,255",
+  },
+  {
+    hex: "#f59e0b",
+    rgb: "245,158,11",
+  },
+  {
+    hex: "#22c55e",
+    rgb: "34,197,94",
+  },
+  {
+    hex: "#a855f7",
+    rgb: "168,85,247",
+  },
+  {
+    hex: "#06b6d4",
+    rgb: "6,182,212",
+  },
+];
+
+function getTeamAccent(
+  teamNumber: number,
+) {
+  const index =
+    (Math.max(teamNumber, 1) - 1) %
+    TEAM_ACCENTS.length;
+
+  return TEAM_ACCENTS[index];
+}
+
+function getTeamAccentStyle(
+  teamNumber: number,
+): TeamAccentStyle {
+  const accent =
+    getTeamAccent(teamNumber);
+
+  return {
+    "--team-accent":
+      accent.hex,
+
+    "--team-accent-rgb":
+      accent.rgb,
+  };
+}
+
+/* =========================================
+   HELPERS
+========================================= */
+
+function isVersusDuel(
+  versus: VisorVersus,
+) {
+  return (
+    versus.equipos.length === 2 &&
+    versus.equipos.every(
+      (equipo) =>
+        equipo.participantes.length === 1,
+    )
+  );
+}
+
+/* =========================================
+   UNIDADES DEL EQUIPO
+========================================= */
+
+/*
+ * Cada integrante representa
+ * una unidad horizontal.
+ *
+ * 1 integrante = 1
+ * 2 integrantes = 2
+ * 3 integrantes = 3
+ * 4+ integrantes = 4
+ */
+
+function getTeamUnits(
+  equipo: VersusEquipo,
+) {
+  return Math.min(
+    Math.max(
+      equipo.participantes.length,
+      1,
+    ),
+    MAX_COLUMNS,
+  );
+}
+
+/* =========================================
+   FILAS INTERNAS DEL EQUIPO
+========================================= */
+
+function getTeamMemberRows(
+  equipo: VersusEquipo,
+) {
+  return Math.max(
+    1,
+    Math.ceil(
+      equipo.participantes.length /
+        MAX_COLUMNS,
+    ),
+  );
+}
+
+/* =========================================
+   CREAR FILAS MULTI
+========================================= */
+
+function buildMultiTeamRows(
+  equipos: VersusEquipo[],
+): MultiTeamRow[] {
+  const rows: MultiTeamRow[] = [];
+
+  let currentTeams:
+    VersusEquipo[] = [];
+
+  let currentUnits = 0;
+
+  const pushCurrentRow = () => {
+    if (!currentTeams.length) {
+      return;
+    }
+
+    rows.push({
+      equipos: currentTeams,
+
+      memberRows:
+        Math.max(
+          1,
+
+          ...currentTeams.map(
+            (equipo) =>
+              getTeamMemberRows(
+                equipo,
+              ),
+          ),
+        ),
+    });
+
+    currentTeams = [];
+    currentUnits = 0;
+  };
+
+  for (const equipo of equipos) {
+    const units =
+      getTeamUnits(
+        equipo,
+      );
+
+    /*
+     * Máximo cuatro unidades
+     * por fila.
+     */
+
+    if (
+      currentTeams.length > 0 &&
+      currentUnits + units >
+        MAX_COLUMNS
+    ) {
+      pushCurrentRow();
+    }
+
+    currentTeams.push(
+      equipo,
+    );
+
+    currentUnits += units;
+
+    if (
+      currentUnits >=
+      MAX_COLUMNS
+    ) {
+      pushCurrentRow();
+    }
+  }
+
+  pushCurrentRow();
+
+  return rows;
+}
+
+/* =========================================
+   GRID DE UNA FILA MULTI
+========================================= */
+
+/*
+ * Ahora el VS ocupa una columna REAL.
+ *
+ * Ejemplo:
+ *
+ * equipo 1 = 2 integrantes
+ * equipo 2 = 1 integrante
+ *
+ * queda:
+ *
+ * 2fr | 84px | 1fr
+ *
+ * El separador ya no se superpone
+ * sobre ningún equipo.
+ */
+
+function getMultiGridTemplate(
+  row: MultiTeamRow,
+) {
+  const columns:
+    string[] = [];
+
+  row.equipos.forEach(
+    (
+      equipo,
+      index,
+    ) => {
+      const units =
+        getTeamUnits(
+          equipo,
+        );
+
+      columns.push(
+        `minmax(0, ${units}fr)`,
+      );
+
+      if (
+        index <
+        row.equipos.length - 1
+      ) {
+        columns.push(
+          "var(--multi-vs-width)",
+        );
+      }
+    },
+  );
+
+  return columns.join(
+    " ",
+  );
+}
+
+/* =========================================
+   ALTURA DEL VERSUS
+========================================= */
+
+function getVersusRowSpan(
+  versus: VisorVersus,
+) {
+  if (
+    isVersusDuel(
+      versus,
+    )
+  ) {
+    return 1;
+  }
+
+  const rows =
+    buildMultiTeamRows(
+      versus.equipos,
+    );
+
+  return Math.max(
+    1,
+
+    rows.reduce(
+      (
+        total,
+        row,
+      ) =>
+        total +
+        row.memberRows,
+      0,
+    ),
+  );
+}
+
+/* =========================================
+   PAGINACIÓN DINÁMICA
+========================================= */
+
+function buildPages(
+  data: VisorVersus[],
+): VersusPage[] {
+  const result:
+    VersusPage[] = [];
+
+  let currentItems:
+    VisorVersus[] = [];
+
+  let currentRows = 0;
+
+  const pushPage = () => {
+    if (
+      !currentItems.length
+    ) {
+      return;
+    }
+
+    result.push({
+      items:
+        currentItems,
+
+      rows:
+        Math.max(
+          PAGE_ROW_CAPACITY,
+          currentRows,
+        ),
+    });
+
+    currentItems = [];
+    currentRows = 0;
+  };
+
+  for (const versus of data) {
+    const span =
+      getVersusRowSpan(
+        versus,
+      );
+
+    if (
+      currentItems.length > 0 &&
+      currentRows + span >
+        PAGE_ROW_CAPACITY
+    ) {
+      pushPage();
+    }
+
+    currentItems.push(
+      versus,
+    );
+
+    currentRows += span;
+
+    if (
+      currentRows >=
+      PAGE_ROW_CAPACITY
+    ) {
+      pushPage();
+    }
+  }
+
+  pushPage();
+
+  return result;
+}
+
+function emptyPage():
+  VersusPage {
+  return {
+    items: [],
+
+    rows:
+      PAGE_ROW_CAPACITY,
+  };
+}
+
+/* =========================================
    LOGOS DE CAMPAÑAS
 ========================================= */
 
 function CampaignLogos({
   campaigns,
 }: {
-  campaigns: VersusCampaignIcon[];
+  campaigns:
+    VersusCampaignIcon[];
 }) {
   if (!campaigns.length) {
     return null;
   }
 
   return (
-    <div className={styles.campaignLogos}>
-      {campaigns.map((campaign) => (
-        <div
-          key={campaign.id}
-          className={styles.logoWrap}
-          title={campaign.nombre}
-        >
-          {campaign.logo_url ? (
-            <img
-              src={campaign.logo_url}
-              alt={campaign.nombre}
-              className={styles.logo}
-            />
-          ) : (
-            <div className={styles.fallback}>
-              {campaign.nombre
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-          )}
-        </div>
-      ))}
+    <div
+      className={
+        content.campaignLogos
+      }
+    >
+      {campaigns.map(
+        (campaign) => (
+          <div
+            key={
+              campaign.id
+            }
+            className={
+              content.logoWrap
+            }
+            title={
+              campaign.nombre
+            }
+          >
+            {campaign.logo_url ? (
+              <img
+                src={
+                  campaign.logo_url
+                }
+                alt={
+                  campaign.nombre
+                }
+                className={
+                  content.logo
+                }
+              />
+            ) : (
+              <div
+                className={
+                  content.fallback
+                }
+                style={{
+                  backgroundColor:
+                    campaign.hex ||
+                    "#2563eb",
+                }}
+              >
+                {campaign.nombre
+                  .charAt(0)
+                  .toUpperCase()}
+              </div>
+            )}
+          </div>
+        ),
+      )}
     </div>
   );
 }
 
 /* =========================================
-   INFORMACIÓN DEL CERRADOR
+   PARTICIPANTE
 ========================================= */
 
 function CerradorInfo({
   cerrador,
+  showScore = true,
+  scoreValue,
 }: {
-  cerrador: VisorVersus["cerrador_1"];
+  cerrador:
+    VersusCerrador;
+
+  showScore?: boolean;
+
+  scoreValue?: number;
 }) {
+  const avatar =
+    cerrador.avatar_url?.trim();
+
+  const displayScore =
+    scoreValue ??
+    cerrador.ventas;
+
   return (
-    <div className={styles.personData}>
-      <CampaignLogos
-        campaigns={cerrador.campaigns}
-      />
+    <div
+      className={
+        content.member
+      }
+    >
+      {/* AVATAR */}
 
       <div
-        className={styles.personName}
-        title={cerrador.nombre}
+        className={
+          content.personImageWrap
+        }
       >
-        {cerrador.nombre}
+        {avatar ? (
+          <img
+            src={avatar}
+            alt={
+              cerrador.nombre
+            }
+            className={
+              content.personImage
+            }
+          />
+        ) : (
+          <Image
+            src={
+              DefaultPerson
+            }
+            alt={
+              cerrador.nombre
+            }
+            fill
+            sizes="25vw"
+            className={
+              content.personImage
+            }
+          />
+        )}
       </div>
 
-      {cerrador.sedes.length > 0 && (
-        <div className={styles.sedesList}>
-          {cerrador.sedes.map((sede) => (
+      {/* DATOS */}
+
+      <div
+        className={
+          content.personData
+        }
+      >
+        <div
+          className={
+            content.identity
+          }
+        >
+          <div
+            className={
+              content.personName
+            }
+            title={
+              cerrador.nombre
+            }
+          >
+            {
+              cerrador.nombre
+            }
+          </div>
+
+          <div
+            className={
+              content.metadata
+            }
+          >
+            {cerrador.sedes.map(
+              (sede) => (
+                <span
+                  key={
+                    sede.id
+                  }
+                  className={
+                    content.sedeBadge
+                  }
+                >
+                  {
+                    sede.nombre
+                  }
+                </span>
+              ),
+            )}
+
+            <CampaignLogos
+              campaigns={
+                cerrador.campaigns
+              }
+            />
+          </div>
+        </div>
+
+        {/* PUNTAJE */}
+
+        {showScore && (
+          <div
+            className={
+              content.memberScore
+            }
+          >
+            <strong>
+              {
+                displayScore
+              }
+            </strong>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   EQUIPO
+========================================= */
+
+function EquipoInfo({
+  equipo,
+  isDuel,
+}: {
+  equipo: VersusEquipo;
+  isDuel: boolean;
+}) {
+  const totalMembers =
+    equipo.participantes.length;
+
+  /*
+   * MULTI con 1 integrante:
+   * no mostrar score individual.
+   *
+   * 1vs1:
+   * sí mostrar marcador.
+   */
+  const showIndividualScore =
+    isDuel ||
+    totalMembers > 1;
+
+  const teamAccentStyle =
+    getTeamAccentStyle(
+      equipo.numero,
+    );
+
+  const memberColumns =
+    Math.min(
+      Math.max(
+        equipo.participantes.length,
+        1,
+      ),
+      MAX_COLUMNS,
+    );
+
+  return (
+    <div
+      className={`
+        ${content.team}
+        ${
+          equipo.lider
+            ? content.teamLeader
+            : ""
+        }
+      `}
+      style={
+        teamAccentStyle
+      }
+    >
+      {/* HEADER MULTI */}
+
+      {!isDuel && (
+        <div
+          className={
+            content.teamHeader
+          }
+        >
+          <strong>
+            EQUIPO{" "}
+            {String(
+              equipo.numero,
+            ).padStart(
+              2,
+              "0",
+            )}
+          </strong>
+
+          {equipo.lider && (
             <span
-              key={sede.id}
-              className={styles.sedeBadge}
+              className={
+                content.headerLeader
+              }
             >
-              {sede.nombre}
+              ● EN VENTAJA
             </span>
-          ))}
+          )}
+
+          <span
+            className={
+              content.teamTotal
+            }
+          >
+            {
+              equipo.ventas
+            }
+          </span>
         </div>
       )}
+
+      {/* BADGE 1VS1 */}
+
+      {isDuel &&
+        equipo.lider && (
+          <span
+            className={
+              content.leaderBadge
+            }
+          >
+            ● EN VENTAJA
+          </span>
+        )}
+
+      {/* PARTICIPANTES */}
+
+      <div
+        className={`
+          ${content.teamRoster}
+          ${
+            !isDuel
+              ? content.multiRoster
+              : ""
+          }
+        `}
+        style={
+          !isDuel
+            ? {
+                gridTemplateColumns:
+                  `repeat(${memberColumns}, minmax(0, 1fr))`,
+              }
+            : undefined
+        }
+      >
+        {equipo.participantes.map(
+          (cerrador) => (
+            <CerradorInfo
+              key={
+                cerrador.id
+              }
+              cerrador={
+                cerrador
+              }
+              showScore={
+                showIndividualScore
+              }
+              scoreValue={
+                isDuel
+                  ? equipo.ventas
+                  : undefined
+              }
+            />
+          ),
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   SEPARADOR MULTI
+========================================= */
+
+/*
+ * Utilizamos exactamente el mismo
+ * componente visual que el 1vs1.
+ *
+ * La diferencia es que en multi
+ * ocupa una columna real del GRID.
+ */
+
+function MultiSeparator() {
+  return (
+    <div
+      className={`
+        ${content.duelSeparator}
+        ${content.multiSeparator}
+      `}
+      aria-hidden="true"
+    >
+      <span>
+        VS
+      </span>
     </div>
   );
 }
@@ -130,79 +816,255 @@ function VersusRow({
 }: {
   versus: VisorVersus;
 }) {
+  const isDuel =
+    isVersusDuel(
+      versus,
+    );
+
+  const totalParticipantes =
+    versus.equipos.reduce(
+      (
+        total,
+        equipo,
+      ) =>
+        total +
+        equipo.participantes
+          .length,
+      0,
+    );
+
+  const rowSpan =
+    getVersusRowSpan(
+      versus,
+    );
+
+  const leaderExists =
+    versus.equipos.some(
+      (equipo) =>
+        equipo.lider,
+    );
+
+  /* =========================================
+     1 VS 1
+  ========================================= */
+
+  if (isDuel) {
+    return (
+      <article
+        className={`
+          ${content.row}
+          ${content.duel}
+        `}
+        style={{
+          gridRow:
+            `span ${rowSpan}`,
+        }}
+      >
+        <div
+          className={
+            content.caption
+          }
+        >
+          <h2>
+            {
+              versus.nombre
+            }
+          </h2>
+
+          <span>
+            {
+              versus.equipos.length
+            }{" "}
+            equipos ·{" "}
+            {
+              totalParticipantes
+            }{" "}
+            participantes
+          </span>
+        </div>
+
+        <div
+          className={`
+            ${content.versusCard}
+            ${
+              leaderExists
+                ? content.hasLeader
+                : ""
+            }
+          `}
+        >
+          <div
+            className={
+              content.teams
+            }
+          >
+            {versus.equipos.map(
+              (
+                equipo,
+                index,
+              ) => (
+                <Fragment
+                  key={
+                    equipo.numero
+                  }
+                >
+                  {index > 0 && (
+                    <div
+                      className={
+                        content.duelSeparator
+                      }
+                    >
+                      <span>
+                        VS
+                      </span>
+                    </div>
+                  )}
+
+                  <EquipoInfo
+                    equipo={
+                      equipo
+                    }
+                    isDuel
+                  />
+                </Fragment>
+              ),
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  /* =========================================
+     MULTI
+  ========================================= */
+
+  const teamRows =
+    buildMultiTeamRows(
+      versus.equipos,
+    );
+
   return (
-    <article className={styles.row}>
-      {/* INFORMACIÓN IZQUIERDA */}
-      <div className={styles.side}>
-        <CerradorInfo
-          cerrador={versus.cerrador_1}
-        />
-      </div>
-
-      {/* PERSONA IZQUIERDA */}
-      <div className={styles.personImageWrap}>
-        <Image
-          src={
-            versus.cerrador_1.avatar_url?.trim() ||
-            DefaultPerson
+    <article
+      className={`
+        ${content.row}
+        ${content.multi}
+      `}
+      style={{
+        gridRow:
+          `span ${rowSpan}`,
+      }}
+    >
+      <div
+        className={
+          content.caption
+        }
+      >
+        <h2>
+          {
+            versus.nombre
           }
-          alt={versus.cerrador_1.nombre}
-          fill
-          unoptimized
-          sizes="(min-width: 1600px) 180px, (max-width: 1400px) 105px, 150px"
-          className={styles.personImage}
-        />
+        </h2>
+
+        <span>
+          {
+            versus.equipos.length
+          }{" "}
+          equipos ·{" "}
+          {
+            totalParticipantes
+          }{" "}
+          participantes
+        </span>
       </div>
 
-      {/* SCORE IZQUIERDA */}
       <div
-        className={`${styles.score} ${
-          versus.cerrador_1.lider
-            ? styles.scoreLeader
-            : styles.scoreLoser
-        }`}
-      >
-        {versus.cerrador_1.id === 30 ? versus.cerrador_2.ventas + 1 : versus.cerrador_1.ventas}
-      </div>
-
-      {/* VS */}
-      <div className={styles.vs}>
-        VS
-      </div>
-
-      {/* SCORE DERECHA */}
-      <div
-        className={`${styles.score} ${
-          versus.cerrador_2.lider
-            ? styles.scoreLeader
-            : styles.scoreLoser
-        }`}
-      >
-        {versus.cerrador_2.id === 30 ? versus.cerrador_1.ventas + 1 : versus.cerrador_2.ventas}
-      </div>
-
-      {/* PERSONA DERECHA */}
-      <div className={styles.personImageWrap}>
-        <Image
-          src={
-            versus.cerrador_2.avatar_url?.trim() ||
-            DefaultPerson
+        className={`
+          ${content.versusCard}
+          ${
+            leaderExists
+              ? content.hasLeader
+              : ""
           }
-          alt={versus.cerrador_2.nombre}
-          fill
-          unoptimized
-          sizes="(min-width: 1600px) 180px, (max-width: 1400px) 105px, 150px"
-          className={styles.personImage}
-        />
-      </div>
-
-      {/* INFORMACIÓN DERECHA */}
-      <div
-        className={`${styles.side} ${styles.sideRight}`}
+        `}
       >
-        <CerradorInfo
-          cerrador={versus.cerrador_2}
-        />
+        <div
+          className={`
+            ${content.teams}
+            ${content.multiTeams}
+          `}
+        >
+          {teamRows.map(
+            (
+              row,
+              rowIndex,
+            ) => (
+              <div
+                key={
+                  rowIndex
+                }
+                className={
+                  content.teamRow
+                }
+                style={{
+                  /*
+                   * Ejemplo:
+                   *
+                   * 1 vs 1 vs 1
+                   *
+                   * 1fr 84px
+                   * 1fr 84px
+                   * 1fr
+                   *
+                   *
+                   * 2 integrantes vs 1
+                   *
+                   * 2fr 84px 1fr
+                   */
+                  gridTemplateColumns:
+                    getMultiGridTemplate(
+                      row,
+                    ),
+
+                  flexGrow:
+                    row.memberRows,
+                }}
+              >
+                {row.equipos.map(
+                  (
+                    equipo,
+                    index,
+                  ) => (
+                    <Fragment
+                      key={
+                        equipo.numero
+                      }
+                    >
+                      {index > 0 && (
+                        <MultiSeparator />
+                      )}
+
+                      <div
+                        className={
+                          content.teamSlot
+                        }
+                      >
+                        <EquipoInfo
+                          equipo={
+                            equipo
+                          }
+                          isDuel={
+                            false
+                          }
+                        />
+                      </div>
+                    </Fragment>
+                  ),
+                )}
+              </div>
+            ),
+          )}
+        </div>
       </div>
     </article>
   );
@@ -222,39 +1084,26 @@ export default function VersusUI({
   data: VisorVersus[];
   durationMs?: number;
   onComplete?: () => void;
-  versusRango: VersusRangoFecha;
+  versusRango:
+    VersusRangoFecha;
   isActive: boolean;
 }) {
-  /*
-   * =========================================
-   * PAGINACIÓN
-   * =========================================
-   */
+  /* =========================================
+     PÁGINAS
+  ========================================= */
 
-  const pages = useMemo(() => {
-    const result: VisorVersus[][] = [];
-
-    for (
-      let i = 0;
-      i < data.length;
-      i += ITEMS_PER_PAGE
-    ) {
-      result.push(
-        data.slice(
-          i,
-          i + ITEMS_PER_PAGE,
+  const pages =
+    useMemo(
+      () =>
+        buildPages(
+          data,
         ),
-      );
-    }
+      [data],
+    );
 
-    return result;
-  }, [data]);
-
-  /*
-   * =========================================
-   * ESTADO
-   * =========================================
-   */
+  /* =========================================
+     ESTADOS
+  ========================================= */
 
   const [
     pageIndex,
@@ -264,48 +1113,35 @@ export default function VersusUI({
   const [
     active,
     setActive,
-  ] = useState<Layer>("a");
+  ] =
+    useState<Layer>("a");
 
-  /*
-   * Cada capa contiene una página completa.
-   *
-   * A = página visible
-   * B = siguiente página precargada
-   *
-   * Luego se intercambian.
-   */
   const [
     layerPages,
     setLayerPages,
   ] = useState<
     Record<
       Layer,
-      VisorVersus[]
+      VersusPage
     >
   >(() => ({
     a:
       pages[0] ??
-      [],
+      emptyPage(),
 
     b:
       pages[1] ??
-      [],
+      emptyPage(),
   }));
 
-  /*
-   * Solo comenzamos el contador cuando
-   * ViewRotator ya colocó Versus delante.
-   */
   const [
     playbackReady,
     setPlaybackReady,
   ] = useState(false);
 
-  /*
-   * =========================================
-   * REFS
-   * =========================================
-   */
+  /* =========================================
+     REFS
+  ========================================= */
 
   const onCompleteRef =
     useRef(onComplete);
@@ -317,9 +1153,9 @@ export default function VersusUI({
     useRef(0);
 
   const pagesRef =
-    useRef<VisorVersus[][]>(
-      pages,
-    );
+    useRef<
+      VersusPage[]
+    >(pages);
 
   const transitioningRef =
     useRef(false);
@@ -342,19 +1178,12 @@ export default function VersusUI({
       null,
     );
 
-  /*
-   * Lo iniciamos en false para que
-   * si Versus nace activo también
-   * ejecute el proceso de entrada.
-   */
   const previousIsActiveRef =
     useRef(false);
 
-  /*
-   * =========================================
-   * SINCRONIZAR REFS
-   * =========================================
-   */
+  /* =========================================
+     SINCRONIZAR REFS
+  ========================================= */
 
   useEffect(() => {
     onCompleteRef.current =
@@ -371,11 +1200,9 @@ export default function VersusUI({
       pageIndex;
   }, [pageIndex]);
 
-  /*
-   * =========================================
-   * CANCELAR FRAMES
-   * =========================================
-   */
+  /* =========================================
+     CANCELAR FRAMES
+  ========================================= */
 
   const cancelFrames =
     useCallback(() => {
@@ -404,17 +1231,12 @@ export default function VersusUI({
       }
     }, []);
 
-  /*
-   * =========================================
-   * RESET
-   * =========================================
-   */
+  /* =========================================
+     RESET
+  ========================================= */
 
   const resetVersus =
     useCallback(() => {
-      /*
-       * Cancelar transición pendiente.
-       */
       if (
         transitionTimerRef.current !==
         null
@@ -433,10 +1255,6 @@ export default function VersusUI({
       completedRef.current =
         false;
 
-      /*
-       * Comenzar siempre desde
-       * página 0.
-       */
       pageIndexRef.current =
         0;
 
@@ -447,29 +1265,23 @@ export default function VersusUI({
 
       setActive("a");
 
-      /*
-       * Precargar las dos primeras
-       * páginas inmediatamente.
-       */
       const list =
         pagesRef.current;
 
       setLayerPages({
         a:
           list[0] ??
-          [],
+          emptyPage(),
 
         b:
           list[1] ??
-          [],
+          emptyPage(),
       });
     }, []);
 
-  /*
-   * =========================================
-   * FINALIZAR VERSUS
-   * =========================================
-   */
+  /* =========================================
+     FINALIZAR
+  ========================================= */
 
   const completeVersus =
     useCallback(() => {
@@ -482,23 +1294,19 @@ export default function VersusUI({
       completedRef.current =
         true;
 
-      setPlaybackReady(false);
+      setPlaybackReady(
+        false,
+      );
 
       onCompleteRef.current?.();
     }, []);
 
-  /*
-   * =========================================
-   * AVANZAR
-   * =========================================
-   */
+  /* =========================================
+     AVANZAR
+  ========================================= */
 
   const advance =
     useCallback(() => {
-      /*
-       * Una vista oculta nunca debe
-       * modificar sus páginas.
-       */
       if (
         !isActive ||
         !playbackReady
@@ -509,17 +1317,11 @@ export default function VersusUI({
       const list =
         pagesRef.current;
 
-      if (
-        list.length === 0
-      ) {
+      if (!list.length) {
         completeVersus();
-
         return;
       }
 
-      /*
-       * Evitar doble transición.
-       */
       if (
         transitioningRef.current
       ) {
@@ -533,56 +1335,28 @@ export default function VersusUI({
         currentIndex >=
         list.length - 1;
 
-      /*
-       * Si estamos en la última página,
-       * termina Versus y ViewRotator
-       * continúa con la siguiente vista.
-       */
       if (isLastPage) {
         completeVersus();
-
         return;
       }
 
       transitioningRef.current =
         true;
 
-      /*
-       * Capa visible actualmente.
-       */
       const from =
         activeRef.current;
 
-      /*
-       * Capa que estaba oculta.
-       */
       const to =
         oppositeLayer(
           from,
         );
 
-      /*
-       * Página que pasará a mostrarse.
-       */
       const nextIndex =
         currentIndex + 1;
 
-      /*
-       * Página que se dejará preparada
-       * después de la transición.
-       */
       const preloadIndex =
         nextIndex + 1;
 
-      /*
-       * =====================================
-       * ASEGURAR SIGUIENTE PÁGINA
-       * =====================================
-       *
-       * Normalmente ya estaba cargada,
-       * pero la volvemos a sincronizar
-       * por seguridad.
-       */
       setLayerPages(
         (current) => ({
           ...current,
@@ -591,15 +1365,9 @@ export default function VersusUI({
             list[
               nextIndex
             ] ??
-            [],
+            emptyPage(),
         }),
       );
-
-      /*
-       * =====================================
-       * INTERCAMBIAR CAPAS
-       * =====================================
-       */
 
       activeRef.current =
         to;
@@ -618,10 +1386,6 @@ export default function VersusUI({
       transitionTimerRef.current =
         window.setTimeout(
           () => {
-            /*
-             * La transición terminó.
-             */
-
             pageIndexRef.current =
               nextIndex;
 
@@ -629,28 +1393,6 @@ export default function VersusUI({
               nextIndex,
             );
 
-            /*
-             * =================================
-             * PRECARGAR LA SIGUIENTE
-             * =================================
-             *
-             * La capa que acaba de quedar
-             * atrás ahora recibe la página
-             * siguiente.
-             *
-             * Ejemplo:
-             *
-             * A = página 1 visible
-             * B = página 2 precargada
-             *
-             * cambio:
-             *
-             * B = página 2 visible
-             *
-             * y después:
-             *
-             * A = página 3 precargada
-             */
             setLayerPages(
               (current) => ({
                 ...current,
@@ -659,7 +1401,7 @@ export default function VersusUI({
                   list[
                     preloadIndex
                   ] ??
-                  [],
+                  emptyPage(),
               }),
             );
 
@@ -673,37 +1415,29 @@ export default function VersusUI({
           FADE_MS,
         );
     }, [
-      completeVersus,
       isActive,
       playbackReady,
+      completeVersus,
     ]);
 
-  /*
-   * =========================================
-   * DATA / PÁGINAS ACTUALIZADAS
-   * =========================================
-   */
+  /* =========================================
+     DATA
+  ========================================= */
 
   useEffect(() => {
     pagesRef.current =
       pages;
 
-    /*
-     * Si cambia la información proveniente
-     * del backend/socket, reconstruimos
-     * las dos capas.
-     */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     resetVersus();
   }, [
     pages,
     resetVersus,
   ]);
 
-  /*
-   * =========================================
-   * ACTIVACIÓN DE LA VISTA
-   * =========================================
-   */
+  /* =========================================
+     ACTIVACIÓN
+  ========================================= */
 
   useEffect(() => {
     const wasActive =
@@ -712,43 +1446,27 @@ export default function VersusUI({
     previousIsActiveRef.current =
       isActive;
 
-    /*
-     * ===========================
-     * VERSUS OCULTO
-     * ===========================
-     */
     if (!isActive) {
       cancelFrames();
 
-      setPlaybackReady(false);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPlaybackReady(
+        false,
+      );
 
       return;
     }
 
-    /*
-     * ===========================
-     * VERSUS ACABA DE ENTRAR
-     * ===========================
-     */
     if (
       isActive &&
       !wasActive
     ) {
       resetVersus();
 
-      setPlaybackReady(false);
+      setPlaybackReady(
+        false,
+      );
 
-      /*
-       * Esperamos dos frames,
-       * igual que Player.
-       *
-       * Primer frame:
-       * React coloca la capa.
-       *
-       * Segundo frame:
-       * navegador ya resolvió
-       * opacity / z-index.
-       */
       frameARef.current =
         requestAnimationFrame(
           () => {
@@ -775,28 +1493,18 @@ export default function VersusUI({
     resetVersus,
   ]);
 
-  /*
-   * =========================================
-   * PÁGINA ACTIVA
-   * =========================================
-   */
+  /* =========================================
+     PÁGINA ACTIVA
+  ========================================= */
 
   const activePage =
-    layerPages[
-      active
-    ];
+    layerPages[active];
 
-  /*
-   * =========================================
-   * TEMPORIZADOR
-   * =========================================
-   */
+  /* =========================================
+     TIMER
+  ========================================= */
 
   useEffect(() => {
-    /*
-     * No contar tiempo mientras
-     * Versus esté detrás de otra vista.
-     */
     if (
       !isActive ||
       !playbackReady
@@ -804,22 +1512,14 @@ export default function VersusUI({
       return;
     }
 
-    /*
-     * No existen versus.
-     */
     if (
-      pagesRef.current.length ===
-      0
+      !pagesRef.current.length
     ) {
       completeVersus();
 
       return;
     }
 
-    /*
-     * Cada página permanece visible
-     * durationMs.
-     */
     const timer =
       window.setTimeout(
         () => {
@@ -837,26 +1537,16 @@ export default function VersusUI({
   }, [
     isActive,
     playbackReady,
-
-    /*
-     * Muy importante:
-     *
-     * cada cambio de capa representa
-     * una nueva página.
-     */
     active,
     activePage,
-
     durationMs,
     advance,
     completeVersus,
   ]);
 
-  /*
-   * =========================================
-   * CLEANUP GENERAL
-   * =========================================
-   */
+  /* =========================================
+     CLEANUP
+  ========================================= */
 
   useEffect(() => {
     return () => {
@@ -878,30 +1568,32 @@ export default function VersusUI({
     cancelFrames,
   ]);
 
-  /*
-   * =========================================
-   * SIN DATOS
-   * =========================================
-   */
-
   if (!data.length) {
     return null;
   }
 
-  /*
-   * =========================================
-   * UI
-   * =========================================
-   */
+  /* =========================================
+     RENDER
+  ========================================= */
 
   return (
-    <main className={styles.container}>
-      {/* =====================================
-          HEADER
-      ===================================== */}
+    <main
+      className={
+        styles.container
+      }
+    >
+      {/* HEADER */}
 
-      <header className={styles.header}>
-        <div className={styles.titleContent}>
+      <header
+        className={
+          styles.header
+        }
+      >
+        <div
+          className={
+            styles.titleContent
+          }
+        >
           <Image
             src={LogoSvg}
             width={80}
@@ -910,7 +1602,11 @@ export default function VersusUI({
             aria-hidden="true"
           />
 
-          <div className={styles.titulo}>
+          <div
+            className={
+              styles.titulo
+            }
+          >
             <h1>
               VS. DE{" "}
               <span
@@ -923,30 +1619,33 @@ export default function VersusUI({
             </h1>
 
             <p>
-              Disciplina hoy, grandes resultados mañana
+              Disciplina hoy,
+              grandes resultados mañana
             </p>
           </div>
         </div>
 
-        <div className={styles.rankingRango}>
+        <div
+          className={
+            styles.rankingRango
+          }
+        >
           <VersusRango
-            schedule={versusRango}
+            schedule={
+              versusRango
+            }
           />
         </div>
       </header>
 
-      {/* =====================================
-          STAGE DE CAPAS
-      ===================================== */}
+      {/* STAGE */}
 
       <div
         className={
           styles.versusStage
         }
       >
-        {/* ================================
-            CAPA A
-        ================================ */}
+        {/* CAPA A */}
 
         <section
           className={`
@@ -958,20 +1657,26 @@ export default function VersusUI({
                 : styles.layerHidden
             }
           `}
+          style={{
+            gridTemplateRows:
+              `repeat(${layerPages.a.rows}, minmax(0, 1fr))`,
+          }}
         >
-          {layerPages.a.map(
+          {layerPages.a.items.map(
             (versus) => (
               <VersusRow
-                key={versus.id}
-                versus={versus}
+                key={
+                  versus.id
+                }
+                versus={
+                  versus
+                }
               />
             ),
           )}
         </section>
 
-        {/* ================================
-            CAPA B
-        ================================ */}
+        {/* CAPA B */}
 
         <section
           className={`
@@ -983,33 +1688,50 @@ export default function VersusUI({
                 : styles.layerHidden
             }
           `}
+          style={{
+            gridTemplateRows:
+              `repeat(${layerPages.b.rows}, minmax(0, 1fr))`,
+          }}
         >
-          {layerPages.b.map(
+          {layerPages.b.items.map(
             (versus) => (
               <VersusRow
-                key={versus.id}
-                versus={versus}
+                key={
+                  versus.id
+                }
+                versus={
+                  versus
+                }
               />
             ),
           )}
         </section>
       </div>
 
-      {/* =====================================
-          PAGINACIÓN
-      ===================================== */}
+      {/* PAGINACIÓN */}
 
       {pages.length > 1 && (
-        <div className={styles.pagination}>
+        <div
+          className={
+            styles.pagination
+          }
+        >
           {pages.map(
-            (_, index) => (
+            (
+              _,
+              index,
+            ) => (
               <span
                 key={index}
-                className={`${styles.dot} ${
-                  index === pageIndex
-                    ? styles.dotActive
-                    : ""
-                }`}
+                className={`
+                  ${styles.dot}
+                  ${
+                    index ===
+                    pageIndex
+                      ? styles.dotActive
+                      : ""
+                  }
+                `}
               />
             ),
           )}

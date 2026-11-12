@@ -5,19 +5,29 @@
 .container {
   width: 100%;
   height: 100%;
+
+  min-width: 0;
   min-height: 0;
 
-  padding: 60px;
-  box-sizing: border-box;
+  padding:
+    clamp(
+      20px,
+      2.6vw,
+      50px
+    );
+
+  box-sizing:
+    border-box;
 
   display: flex;
   flex-direction: column;
 
-  gap: 10px;
+  gap: 16px;
 
   overflow: hidden;
 
   color: #ffffff;
+
   background: #0d0d0d;
 }
 
@@ -27,10 +37,16 @@
 
 .header {
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
+  justify-content:
+    space-between;
+
+  gap: 24px;
 
   flex-shrink: 0;
+
+  min-width: 0;
 }
 
 .titleContent {
@@ -53,15 +69,9 @@
   flex-shrink: 0;
 }
 
-.rankingRango {
-  flex: 1;
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  min-width: 0;
-}
+/* =========================================
+   TÍTULO
+========================================= */
 
 .titulo {
   display: flex;
@@ -73,20 +83,35 @@
 
   padding-left: 20px;
 
-  border-left: 3px solid #ffffff;
+  border-left:
+    3px solid #ffffff;
 }
 
 .titulo h1 {
   margin: 0;
 
-  font-size: 40px;
+  font-size: clamp(
+    24px,
+    2.1vw,
+    40px
+  );
+
   font-weight: 1000;
+
+  line-height: 1;
+
+  white-space: nowrap;
 }
 
 .titulo p {
   margin: 0;
 
-  font-size: 20px;
+  font-size: clamp(
+    12px,
+    1.05vw,
+    20px
+  );
+
   font-weight: 700;
 
   color: #a1a1aa;
@@ -97,343 +122,91 @@
 }
 
 /* =========================================
-   LISTA
+   RANGO
+========================================= */
+
+.rankingRango {
+  flex: 1;
+
+  display: flex;
+
+  align-items: center;
+  justify-content:
+    flex-end;
+
+  min-width: 0;
+}
+
+/* =========================================
+   STAGE
+========================================= */
+
+.versusStage {
+  position: relative;
+
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  isolation: isolate;
+}
+
+/* =========================================
+   LIST
 ========================================= */
 
 .list {
-  flex: 1;
+  --row-gap: 18px;
 
-  min-height: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  justify-content: center;
-
-  gap: 12px;
-}
-
-/* =========================================
-   FILA VERSUS
-========================================= */
-
-.row {
   width: 100%;
-  min-width: 0;
+  height: 100%;
 
-  min-height: 150px;
+  min-width: 0;
+  min-height: 0;
 
   display: grid;
 
-  grid-template-columns:
-    minmax(0, 1fr)
-    150px
-    100px
-    70px
-    100px
-    150px
-    minmax(0, 1fr);
+  gap:
+    var(--row-gap);
 
-  align-items: stretch;
-
-  gap: 12px;
-
-  padding: 0 18px;
-
-  box-sizing: border-box;
-
-  background: #08090b;
-
-  border: 2px solid #18191a;
-  border-radius: 10px;
-
-  overflow: hidden;
+  align-content: stretch;
 }
 
 /* =========================================
-   LADOS
+   CAPAS
 ========================================= */
 
-.side {
-  min-width: 0;
-  height: 100%;
+.versusLayer {
+  position: absolute;
 
-  display: flex;
+  inset: 0;
 
-  align-items: center;
-  justify-content: flex-start;
+  transition:
+    opacity 500ms ease;
+
+  will-change:
+    opacity;
 }
 
-.sideRight {
-  justify-content: flex-end;
+.layerActive {
+  opacity: 1;
+
+  z-index: 2;
+
+  visibility: visible;
 }
 
-/* =========================================
-   INFORMACIÓN DEL CERRADOR
-========================================= */
+.layerHidden {
+  opacity: 0;
 
-.personData {
-  width: 100%;
-  min-width: 0;
+  z-index: 1;
 
-  display: flex;
-  flex-direction: column;
+  visibility: visible;
 
-  align-items: flex-start;
-  justify-content: center;
-
-  gap: 6px;
-
-  text-align: left;
-}
-
-.sideRight .personData {
-  align-items: flex-end;
-
-  text-align: right;
-}
-
-/* =========================================
-   CAMPAÑAS
-========================================= */
-
-.campaignLogos {
-  width: 100%;
-  min-width: 0;
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-
-  align-items: center;
-  justify-content: flex-start;
-
-  gap: 8px;
-
-  overflow: hidden;
-}
-
-.sideRight .campaignLogos {
-  justify-content: flex-end;
-}
-
-/* =========================================
-   LOGO CAMPAÑA
-========================================= */
-
-.logoWrap {
-  width: 42px;
-  height: 42px;
-
-  flex: 0 0 42px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  overflow: hidden;
-
-  box-sizing: border-box;
-
-  border-radius: 50%;
-}
-
-.logo {
-  display: block;
-
-  width: 100%;
-  height: 100%;
-
-  padding: 5px;
-
-  box-sizing: border-box;
-
-  object-fit: contain;
-  object-position: center;
-
-  border-radius: 50%;
-}
-
-.fallback {
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: #202024;
-
-  color: #ffffff;
-
-  font-size: 20px;
-  font-weight: 800;
-}
-
-/* =========================================
-   NOMBRE
-========================================= */
-
-.personName {
-  width: 100%;
-  min-width: 0;
-
-  color: #ffffff;
-
-  font-size: clamp(
-    20px,
-    1.5vw,
-    30px
-  );
-
-  font-weight: 900;
-
-  line-height: 1.1;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  text-align: left;
-}
-
-.sideRight .personName {
-  text-align: right;
-}
-
-/* =========================================
-   SEDES
-========================================= */
-
-.sedesList {
-  width: 100%;
-  min-width: 0;
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-
-  align-items: center;
-  justify-content: flex-start;
-
-  gap: 5px;
-}
-
-.sideRight .sedesList {
-  justify-content: flex-end;
-}
-
-.sedeBadge {
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
-  min-height: 23px;
-
-  padding: 3px 10px;
-
-  box-sizing: border-box;
-
-  border-radius: 5px;
-
-  background: #e6e6e6;
-
-  color: #111111;
-
-  font-size: 12px;
-  font-weight: 900;
-
-  line-height: 1;
-}
-
-/* =========================================
-   IMAGEN DE LA PERSONA
-========================================= */
-
-.personImageWrap {
-  position: relative;
-
-  width: 100%;
-  height: 100%;
-
-  min-height: 145px;
-
-  align-self: stretch;
-
-  overflow: hidden;
-}
-
-/* Imagen del cerrador */
-.personImage {
-  object-fit: contain !important;
-
-  object-position: bottom center !important;
-}
-
-/* =========================================
-   SCORE
-========================================= */
-
-.score {
-  min-width: 0;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  color: rgba(
-    255,
-    255,
-    255,
-    0.55
-  );
-
-  font-size: clamp(
-    34px,
-    3vw,
-    56px
-  );
-
-  font-weight: 900;
-
-  line-height: 1;
-
-  font-variant-numeric:
-    tabular-nums;
-}
-
-.scoreLeader {
-  color: #ffffff;
-}
-
-.scoreLoser {
-  color: rgba(
-    255,
-    255,
-    255,
-    0.45
-  );
-}
-
-/* =========================================
-   VS
-========================================= */
-
-.vs {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  color: #ffffff;
-
-  font-size: 22px;
-  font-weight: 900;
+  pointer-events: none;
 }
 
 /* =========================================
@@ -441,257 +214,82 @@
 ========================================= */
 
 .pagination {
-  flex-shrink: 0;
-
   display: flex;
 
   align-items: center;
   justify-content: center;
 
-  gap: 8px;
+  gap: 10px;
 
-  margin-top: 14px;
+  flex-shrink: 0;
+
+  min-height: 10px;
 }
 
 .dot {
-  width: 26px;
-  height: 4px;
+  width: 8px;
+  height: 8px;
 
-  border-radius: 999px;
+  border-radius: 50%;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.13
-    );
+  background: #44444e;
 
   transition:
-    width 0.3s ease,
-    background 0.3s ease;
+    background
+      300ms ease,
+    transform
+      300ms ease;
 }
 
 .dotActive {
-  width: 48px;
+  background: #ed244b;
 
-  background: #ffffff;
+  transform:
+    scale(1.25);
 }
 
 /* =========================================
-   STAGE DE PÁGINAS VERSUS
+   RESPONSIVE
 ========================================= */
 
-.versusStage {
-  position: relative;
-  flex: 1;
-  width: 100%;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* =========================================
-   CAPAS A / B
-========================================= */
-
-.versusLayer {
-  position: absolute;
-  inset: 0;
-
-  width: 100%;
-  height: 100%;
-
-  transition:
-    opacity 500ms ease;
-
-  will-change: opacity;
-}
-
-/* =========================================
-   CAPA ACTIVA
-========================================= */
-
-.layerActive {
-  opacity: 1;
-  z-index: 2;
-
-  pointer-events: auto;
-}
-
-/* =========================================
-   CAPA PRECARGADA
-========================================= */
-
-.layerHidden {
-  opacity: 0;
-  z-index: 1;
-
-  pointer-events: none;
-}
-
-/* =========================================
-   FULL HD
-========================================= */
-
-@media (min-width: 1600px) {
-
-  .header {
-    margin-bottom: 20px;
-  }
-
-  .row {
-    min-height: 170px;
-
-    grid-template-columns:
-      minmax(0, 1fr)
-      180px
-      115px
-      80px
-      115px
-      180px
-      minmax(0, 1fr);
-
-    gap: 16px;
-
-    padding: 0 22px;
-  }
-
-  .personImageWrap {
-    min-height: 165px;
-  }
-
-  .campaignLogos {
-    gap: 9px;
-  }
-
-  .logoWrap {
-    width: 46px;
-    height: 46px;
-
-    flex-basis: 46px;
-  }
-
-  .personName {
-    font-size: clamp(
-      24px,
-      1.7vw,
-      34px
-    );
-  }
-
-  .sedeBadge {
-    min-height: 25px;
-
-    padding: 4px 11px;
-
-    font-size: 13px;
-  }
-
-  .score {
-    font-size: clamp(
-      42px,
-      3.4vw,
-      64px
-    );
-  }
-
-  .vs {
-    font-size: 24px;
-  }
-}
-
-/* =========================================
-   1366 / PANTALLAS MEDIAS
-========================================= */
-
-@media (max-width: 1400px) {
-
+@media (
+  max-width: 1400px
+) {
   .container {
-    padding:
-      18px
-      26px;
+    padding: 24px;
   }
 
   .header {
-    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .titleContent {
+    gap: 12px;
+  }
+
+  .titleContent img {
+    width: 65px;
+    height: 65px;
+  }
+
+  .titulo {
+    padding-left: 12px;
   }
 
   .titulo h1 {
-    font-size: 38px;
+    font-size: clamp(
+      22px,
+      2vw,
+      32px
+    );
   }
 
   .titulo p {
-    font-size: 16px;
+    font-size: 13px;
   }
 
-  .row {
-    min-height: 120px;
-
-    grid-template-columns:
-      minmax(0, 1fr)
-      105px
-      72px
-      46px
-      72px
-      105px
-      minmax(0, 1fr);
-
-    gap: 8px;
-
-    padding: 0 12px;
-  }
-
-  .personImageWrap {
-    min-height: 115px;
-  }
-
-  .personData {
-    gap: 4px;
-  }
-
-  .campaignLogos {
-    gap: 5px;
-  }
-
-  .logoWrap {
-    width: 34px;
-    height: 34px;
-
-    flex-basis: 34px;
-  }
-
-  .logo {
-    padding: 4px;
-  }
-
-  .fallback {
-    font-size: 17px;
-  }
-
-  .personName {
-    font-size: 18px;
-  }
-
-  .sedeBadge {
-    min-height: 21px;
-
-    padding:
-      2px
-      8px;
-
-    font-size: 10px;
-  }
-
-  .score {
-    font-size: 34px;
-  }
-
-  .vs {
-    font-size: 16px;
-  }
-
-  .pagination {
-    margin-top: 8px;
+  .list {
+    --row-gap: 12px;
   }
 }
 
@@ -699,45 +297,21 @@
    PANTALLAS BAJAS
 ========================================= */
 
-@media (max-height: 800px) {
-
+@media (
+  max-height: 800px
+) {
   .container {
-    padding-top: 16px;
-    padding-bottom: 16px;
-  }
+    padding-top: 20px;
+    padding-bottom: 20px;
 
-  .header {
-    margin-bottom: 6px;
+    gap: 10px;
   }
 
   .list {
-    gap: 6px;
-  }
-
-  .row {
-    min-height: 105px;
-  }
-
-  .personImageWrap {
-    min-height: 100px;
-  }
-
-  .logoWrap {
-    width: 30px;
-    height: 30px;
-
-    flex-basis: 30px;
-  }
-
-  .personName {
-    font-size: 16px;
-  }
-
-  .score {
-    font-size: 30px;
+    --row-gap: 8px;
   }
 
   .pagination {
-    margin-top: 6px;
+    min-height: 8px;
   }
 }

@@ -27,7 +27,7 @@
   overflow: hidden;
 
   border: 1px solid #303030;
-  border-radius: 14px;
+  border-radius: 10px;
 
   background: #151515;
 
@@ -133,7 +133,7 @@
   justify-content: center;
 
   border: 1px dashed #656565;
-  border-radius: 12px;
+  border-radius: 10px;
 
   background: #111111;
 
@@ -340,7 +340,7 @@
   border: 1px solid
     rgba(255, 255, 255, 0.25);
 
-  border-radius: 50%;
+  border-radius: 10px;
 
   background: rgba(0, 0, 0, 0.65);
 
@@ -411,7 +411,7 @@
   place-items: center;
 
   border: 1px solid #8a8a8a;
-  border-radius: 50%;
+  border-radius: 10px;
 
   color: #ddd;
 
@@ -538,7 +538,7 @@
 }
 
 .body::-webkit-scrollbar-thumb {
-  border-radius: 20px;
+  border-radius: 10px;
 
   background: #343434;
 }
@@ -561,8 +561,7 @@
   .modal {
     max-height: 94vh;
 
-    border-radius:
-      15px 15px 0 0;
+    border-radius: 10px 10px 0 0;
   }
 
   .header,
@@ -644,7 +643,7 @@
     rgb(255 255 255 / 30%);
 
   border-top-color: #ffffff;
-  border-radius: 50%;
+  border-radius: 10px;
 
   animation: girar 0.7s linear infinite;
 }

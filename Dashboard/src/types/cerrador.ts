@@ -2,7 +2,7 @@ export type Cerrador = {
   id: number;
   nombre: string;
   nombre_normalizado: string;
-  avatar_url: string;
+  avatar_url: string | null;
   activo: boolean;
 }
 

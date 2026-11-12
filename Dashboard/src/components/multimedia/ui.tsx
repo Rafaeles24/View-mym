@@ -2,7 +2,7 @@
 
 import { getFileName } from "@/libs/getFilename";
 import { getMediaType } from "@/libs/getMediaType";
-import { MediaType, PaginationMedia, SedesMedia } from "@/types/media";
+import { MediaType, PaginationMedia } from "@/types/media";
 import { useMemo, useState } from "react";
 import styles from "./ui.module.css";
 import { MediaCard } from "../cards/media/ui";
@@ -94,8 +94,9 @@ export default function MultimediaUI({
     <section className={styles.page}>
       <header className={styles.header}>
         <div>
+          <span className={styles.eyebrow}>Contenido / Media</span>
           <h1 className={styles.title}>
-            CONTENIDO MULTIMEDIA
+            Contenido multimedia
           </h1>
 
           <p className={styles.subtitle}>
@@ -124,6 +125,8 @@ export default function MultimediaUI({
           />
         )}
       </header>
+
+      {error && <div className={styles.error}>{error}</div>}
 
       <div className={styles.filters}>
         <div className={styles.searchWrapper}>

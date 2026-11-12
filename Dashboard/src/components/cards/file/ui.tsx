@@ -1,11 +1,16 @@
 import styles from "./ui.module.css";
 
+type FilePreview = {
+  file: File;
+  preview: string;
+};
+
 export default function CardFile({
   data,
   selected,
   onSelect
 } : {
-  data: any;
+  data: FilePreview;
   selected: boolean;
   onSelect: () => void;
 }) {

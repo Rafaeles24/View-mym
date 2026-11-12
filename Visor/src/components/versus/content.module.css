@@ -1,0 +1,1506 @@
+/* =========================================
+   FILA
+========================================= */
+
+.row {
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+/* =========================================
+   CAPTION
+========================================= */
+
+.caption {
+  flex: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.caption h2 {
+  margin: 0;
+
+  font-size: clamp(
+    17px,
+    1.1vw,
+    23px
+  );
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caption > span {
+  flex: none;
+
+  color: #a5a5b0;
+
+  font-size: clamp(
+    13px,
+    0.94vw,
+    19px
+  );
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.versusCard {
+  position: relative;
+
+  flex: 1;
+
+  display: flex;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  border: 1px solid #36363e;
+
+  border-radius: 10px;
+
+  background: linear-gradient(
+    180deg,
+    #202027,
+    #111116
+  );
+}
+
+.hasLeader {
+  border-color: #9c2641;
+}
+
+/* =========================================
+   EQUIPOS
+========================================= */
+
+.teams {
+  display: flex;
+
+  width: 100%;
+  height: 100%;
+
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+}
+
+/* =========================================
+   EQUIPO
+========================================= */
+
+.team {
+  --team-accent:
+    #ed244b;
+
+  --team-accent-rgb:
+    237, 36, 75;
+
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 50% 26%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.11
+      )
+        0%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.045
+      )
+        30%,
+      transparent 62%
+    );
+}
+
+.teamLeader {
+  background:
+    radial-gradient(
+      circle at 50% 24%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.15
+      )
+        0%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.055
+      )
+        30%,
+      transparent 64%
+    );
+}
+
+/* =========================================
+   HEADER EQUIPO
+========================================= */
+
+.teamHeader {
+  position: relative;
+
+  z-index: 7;
+
+  flex: none;
+
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding:
+    6px 16px;
+
+  box-sizing:
+    border-box;
+
+  border-bottom:
+    1px solid #353039;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.13
+      )
+        0%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.035
+      )
+        30%,
+      rgba(
+        22,
+        22,
+        28,
+        0.91
+      )
+        70%
+    );
+}
+
+.teamHeader > strong {
+  font-size: clamp(
+    13px,
+    0.94vw,
+    17px
+  );
+
+  font-weight: 900;
+
+  letter-spacing:
+    0.5px;
+
+  white-space: nowrap;
+}
+
+.teamLeader
+  .teamHeader {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.18
+      )
+        0%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.065
+      )
+        35%,
+      rgba(
+        30,
+        26,
+        32,
+        0.95
+      )
+        100%
+    );
+}
+
+/* =========================================
+   LÍDER
+========================================= */
+
+.headerLeader {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding:
+    4px 8px;
+
+  border-radius: 5px;
+
+  background: #d91d46;
+
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   TOTAL EQUIPO
+========================================= */
+
+.teamTotal {
+  margin-left: auto;
+
+  color: #ffffff;
+
+  font-size: clamp(
+    25px,
+    2vw,
+    38px
+  );
+
+  font-weight: 900;
+
+  line-height: 1;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* =========================================
+   BADGE 1VS1
+========================================= */
+
+.leaderBadge {
+  position: absolute;
+
+  top: 12px;
+  left: 0;
+
+  z-index: 10;
+
+  padding:
+    7px 12px;
+
+  border:
+    1px solid #ff5073;
+
+  border-left: none;
+
+  border-radius:
+    0 6px 6px 0;
+
+  background: #d91d46;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+.duel
+  .team:last-child
+  .leaderBadge {
+  left: auto;
+  right: 0;
+
+  border-left:
+    1px solid #ff5073;
+
+  border-right: none;
+
+  border-radius:
+    6px 0 0 6px;
+}
+
+/* =========================================
+   ROSTER
+========================================= */
+
+.teamRoster {
+  display: flex;
+
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+/* =========================================
+   PARTICIPANTE
+========================================= */
+
+.member {
+  position: relative;
+
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 50% 31%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.16
+      )
+        0%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.07
+      )
+        28%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 50% 38%,
+      #36323b,
+      #15151b 78%
+    );
+
+  container-type:
+    inline-size;
+}
+
+.member + .member {
+  border-left:
+    1px solid #303039;
+}
+
+/* =========================================
+   AVATAR
+========================================= */
+
+.personImageWrap {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 0;
+
+  overflow: hidden;
+}
+
+.personImage {
+  position: absolute;
+
+  inset: 0;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  object-position:
+    center;
+
+  transform:
+    translateY(6%)
+    scale(1.3);
+
+  transform-origin:
+    center 50%;
+}
+
+/* =========================================
+   SOMBRA
+========================================= */
+
+.member::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 1;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(
+        8,
+        9,
+        13,
+        0.48
+      ),
+      rgba(
+        8,
+        9,
+        13,
+        0.06
+      )
+        46%,
+      rgba(
+        8,
+        9,
+        13,
+        0.2
+      )
+    ),
+    linear-gradient(
+      0deg,
+      rgba(
+        8,
+        9,
+        13,
+        0.65
+      ),
+      rgba(
+        8,
+        9,
+        13,
+        0.01
+      )
+        70%
+    );
+}
+
+/* =========================================
+   DATOS
+========================================= */
+
+.personData {
+  position: absolute;
+
+  top: 50%;
+
+  left: 18px;
+  right: 18px;
+
+  z-index: 4;
+
+  display: flex;
+
+  align-items: center;
+  justify-content:
+    space-between;
+
+  gap: 14px;
+
+  min-width: 0;
+
+  transform:
+    translateY(-50%);
+}
+
+.identity {
+  flex: 1;
+
+  min-width: 0;
+}
+
+/* =========================================
+   NOMBRE
+========================================= */
+
+.personName {
+  margin-bottom: 12px;
+
+  color: #ffffff;
+
+  font-size: clamp(
+    22px,
+    1.65vw,
+    34px
+  );
+
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  text-shadow:
+    0 2px 6px
+      #000000,
+    0 4px 12px
+      rgba(
+        0,
+        0,
+        0,
+        0.7
+      );
+}
+
+/* =========================================
+   METADATA
+========================================= */
+
+.metadata {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px 10px;
+}
+
+.sedeBadge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    6px 11px;
+
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #111217;
+
+  font-size: clamp(
+    12px,
+    0.78vw,
+    15px
+  );
+
+  font-weight: 900;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+/* =========================================
+   CAMPAÑAS
+========================================= */
+
+.campaignLogos {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.logoWrap {
+  position: relative;
+
+  width: 30px;
+  height: 30px;
+
+  flex:
+    0 0 30px;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+}
+
+.logo {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+.fallback {
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* =========================================
+   SCORE
+========================================= */
+
+.memberScore {
+  flex: none;
+
+  color: #ffffff;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.memberScore strong {
+  display: block;
+
+  font-size: clamp(
+    42px,
+    3.6vw,
+    76px
+  );
+
+  font-weight: 900;
+
+  line-height: 0.95;
+
+  letter-spacing: -3px;
+
+  text-shadow:
+    0 2px 6px
+      #000000;
+}
+
+/* =========================================
+   1 VS 1
+========================================= */
+
+.duel .personImage {
+  transform:
+    translateY(6%)
+    scale(1.25);
+}
+
+.duel
+  .team:first-child
+  .personImage {
+  object-position:
+    61% center;
+}
+
+.duel
+  .team:last-child
+  .personImage {
+  object-position:
+    39% center;
+}
+
+.duel .personData {
+  inset: 0;
+
+  display: block;
+
+  transform: none;
+}
+
+/* =========================================
+   CONTRINCANTE 1
+========================================= */
+
+.duel .identity {
+  position: absolute;
+
+  top: 50%;
+  left: 24px;
+
+  max-width:
+    calc(
+      100% - 190px
+    );
+
+  transform:
+    translateY(-50%);
+}
+
+.duel .memberScore {
+  position: absolute;
+
+  top: 50%;
+  right: 52px;
+
+  transform:
+    translateY(-50%);
+}
+
+.duel
+  .memberScore
+  strong {
+  font-size: clamp(
+    50px,
+    4vw,
+    82px
+  );
+}
+
+.duel
+  .team:first-child
+  .metadata {
+  flex-direction: row;
+
+  justify-content:
+    flex-start;
+}
+
+/* =========================================
+   CONTRINCANTE 2
+========================================= */
+
+.duel
+  .team:last-child
+  .identity {
+  left: auto;
+  right: 24px;
+
+  text-align: right;
+}
+
+.duel
+  .team:last-child
+  .metadata {
+  flex-direction:
+    row-reverse;
+
+  justify-content:
+    flex-start;
+}
+
+.duel
+  .team:last-child
+  .memberScore {
+  right: auto;
+  left: 52px;
+}
+
+/* =========================================
+   SEPARADOR VS
+   USADO EN 1VS1 Y MULTI
+========================================= */
+
+.duelSeparator {
+  position: relative;
+
+  flex:
+    0 0 84px;
+
+  align-self: stretch;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  min-height: 0;
+
+  z-index: 8;
+
+  background:
+    linear-gradient(
+      180deg,
+      #202027 0%,
+      #17171e 50%,
+      #111116 100%
+    );
+
+  border-left:
+    1px solid #36363f;
+
+  border-right:
+    1px solid #36363f;
+
+  overflow: visible;
+}
+
+/* =========================================
+   LÍNEA DEL VS
+========================================= */
+
+.duelSeparator::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  left: 50%;
+
+  width: 1px;
+
+  transform:
+    translateX(-50%);
+
+  background: #62626d;
+
+  z-index: 0;
+}
+
+/* =========================================
+   TEXTO VS
+========================================= */
+
+.duelSeparator span {
+  position: relative;
+
+  z-index: 2;
+
+  width: 58px;
+  height: 58px;
+
+  display: grid;
+
+  place-items: center;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 1000;
+
+  line-height: 1;
+
+  text-align: center;
+
+  text-shadow:
+    0 2px 6px
+      #000000;
+
+  isolation: isolate;
+}
+
+/* =========================================
+   ROMBO
+========================================= */
+
+.duelSeparator
+  span::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 7px;
+
+  z-index: -1;
+
+  transform:
+    rotate(45deg);
+
+  border:
+    1px solid #52525e;
+
+  background: #121218;
+
+  box-shadow:
+    0 6px 14px
+      rgba(
+        0,
+        0,
+        0,
+        0.55
+      );
+}
+
+/* =========================================
+   MULTI
+========================================= */
+
+.multi .versusCard {
+  overflow: hidden;
+}
+
+/* =========================================
+   CONTENEDOR MULTI
+========================================= */
+
+.multiTeams {
+  display: flex;
+
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+}
+
+/* =========================================
+   FILA MULTI
+========================================= */
+
+.teamRow {
+  --multi-vs-width:
+    84px;
+
+  position: relative;
+
+  display: grid;
+
+  flex-basis: 0;
+
+  min-width: 0;
+  min-height: 0;
+
+  align-items: stretch;
+}
+
+.teamRow
+  + .teamRow {
+  border-top:
+    1px solid #3a3a43;
+}
+
+/* =========================================
+   SLOT EQUIPO
+========================================= */
+
+.teamSlot {
+  position: relative;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+
+  overflow: hidden;
+}
+
+/* =========================================
+   SEPARADOR MULTI
+========================================= */
+
+/*
+ * Ya NO está:
+ *
+ * position: absolute
+ *
+ * y ya NO usa:
+ *
+ * translateX(50%)
+ *
+ * Es una columna real del grid.
+ */
+
+.multiSeparator {
+  width: 100%;
+
+  height: 100%;
+
+  flex: none;
+
+  align-self: stretch;
+}
+
+/* =========================================
+   EQUIPO MULTI
+========================================= */
+
+.multi .team {
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+/* =========================================
+   ROSTER MULTI
+========================================= */
+
+.multiRoster {
+  display: grid;
+
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  grid-auto-rows:
+    minmax(0, 1fr);
+
+  overflow: hidden;
+}
+
+/* =========================================
+   MEMBER MULTI
+========================================= */
+
+.multi .member {
+  min-width: 0;
+  min-height: 0;
+
+  border-left:
+    1px solid
+      rgba(
+        255,
+        255,
+        255,
+        0.035
+      );
+
+  border-top:
+    1px solid
+      rgba(
+        255,
+        255,
+        255,
+        0.035
+      );
+
+  /*
+   * Luz más visible
+   * justo detrás del avatar.
+   */
+
+  background:
+    radial-gradient(
+      ellipse at 50% 34%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.2
+      )
+        0%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.085
+      )
+        30%,
+      rgba(
+        var(
+          --team-accent-rgb
+        ),
+        0.025
+      )
+        52%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse at 50% 40%,
+      #292932,
+      #131319 80%
+    );
+}
+
+/* =========================================
+   AVATAR MULTI
+========================================= */
+
+.multi .personImage {
+  transform:
+    translateY(9%)
+    scale(1.13);
+
+  object-position:
+    center center;
+}
+
+/* =========================================
+   DATOS MULTI
+========================================= */
+
+.multi .personData {
+  inset: 0;
+
+  display: block;
+
+  transform: none;
+}
+
+.multi .identity {
+  position: static;
+
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================================
+   NOMBRE MULTI
+========================================= */
+
+.multi .personName {
+  position: absolute;
+
+  left: 10px;
+  right: 10px;
+
+  bottom: 14px;
+
+  z-index: 5;
+
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(
+    14px,
+    1.1vw,
+    22px
+  );
+
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  text-align: center;
+
+  overflow-wrap: anywhere;
+
+  text-shadow:
+    0 2px 5px
+      #000000,
+    0 4px 10px
+      #000000;
+}
+
+/* =========================================
+   METADATA MULTI
+========================================= */
+
+.multi .metadata {
+  position: absolute;
+
+  top: 13px;
+  left: 13px;
+  right: 66px;
+
+  z-index: 5;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content:
+    flex-start;
+
+  gap: 6px;
+
+  flex-wrap: wrap;
+}
+
+.multi .sedeBadge {
+  padding:
+    5px 8px;
+
+  font-size: clamp(
+    10px,
+    0.68vw,
+    13px
+  );
+}
+
+.multi .logoWrap {
+  width: 25px;
+  height: 25px;
+
+  flex-basis: 25px;
+}
+
+.multi .fallback {
+  font-size: 10px;
+}
+
+/* =========================================
+   SCORE MULTI
+========================================= */
+
+/*
+ * Solo aparece cuando el equipo
+ * tiene más de 1 integrante.
+ */
+
+.multi .memberScore {
+  position: absolute;
+
+  top: 11px;
+  right: 13px;
+
+  z-index: 6;
+
+  transform: none;
+
+  text-align: right;
+}
+
+.multi
+  .memberScore
+  strong {
+  font-size: clamp(
+    28px,
+    2.4vw,
+    50px
+  );
+
+  letter-spacing: -2px;
+}
+
+/* =========================================
+   OVERLAY MULTI
+========================================= */
+
+.multi .member::after {
+  background:
+    linear-gradient(
+      0deg,
+      rgba(
+        7,
+        8,
+        11,
+        0.88
+      )
+        0%,
+      rgba(
+        7,
+        8,
+        11,
+        0.24
+      )
+        34%,
+      transparent 65%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(
+        7,
+        8,
+        11,
+        0.28
+      ),
+      transparent 35%
+    );
+}
+
+/* =========================================
+   RESPONSIVE <= 1400
+========================================= */
+
+@media (
+  max-width: 1400px
+) {
+  .row {
+    gap: 9px;
+  }
+
+  .teamHeader {
+    height: 36px;
+
+    padding:
+      5px 10px;
+
+    gap: 7px;
+  }
+
+  .teamHeader
+    > strong {
+    font-size: 12px;
+  }
+
+  .headerLeader {
+    padding:
+      3px 6px;
+
+    font-size: 8px;
+  }
+
+  .teamTotal {
+    font-size: 24px;
+  }
+
+  /* ================================
+     VS
+  ================================= */
+
+  .duelSeparator {
+    flex-basis:
+      66px;
+  }
+
+  .duelSeparator span {
+    width: 48px;
+    height: 48px;
+
+    font-size: 14px;
+  }
+
+  .teamRow {
+    --multi-vs-width:
+      66px;
+  }
+
+  /* ================================
+     1VS1
+  ================================= */
+
+  .duel .identity {
+    left: 15px;
+
+    max-width:
+      calc(
+        100% - 145px
+      );
+  }
+
+  .duel .memberScore {
+    right: 34px;
+  }
+
+  .duel
+    .team:last-child
+    .identity {
+    left: auto;
+    right: 15px;
+  }
+
+  .duel
+    .team:last-child
+    .memberScore {
+    left: 34px;
+    right: auto;
+  }
+
+  .duel
+    .memberScore
+    strong {
+    font-size: clamp(
+      42px,
+      3.5vw,
+      65px
+    );
+  }
+
+  /* ================================
+     MULTI
+  ================================= */
+
+  .multi .personName {
+    left: 8px;
+    right: 8px;
+
+    bottom: 10px;
+
+    font-size: clamp(
+      13px,
+      1.02vw,
+      18px
+    );
+  }
+
+  .multi .metadata {
+    top: 9px;
+    left: 9px;
+    right: 55px;
+
+    gap: 4px;
+  }
+
+  .multi .sedeBadge {
+    padding:
+      4px 6px;
+
+    font-size: 10px;
+  }
+
+  .multi .logoWrap {
+    width: 21px;
+    height: 21px;
+
+    flex-basis: 21px;
+  }
+
+  .multi .memberScore {
+    top: 9px;
+    right: 9px;
+  }
+
+  .multi
+    .memberScore
+    strong {
+    font-size: clamp(
+      24px,
+      2.1vw,
+      40px
+    );
+  }
+}
+
+/* =========================================
+   PANTALLAS BAJAS
+========================================= */
+
+@media (
+  max-height: 800px
+) {
+  .row {
+    gap: 7px;
+  }
+
+  .teamHeader {
+    height: 32px;
+  }
+
+  .multi .personName {
+    bottom: 8px;
+  }
+
+  .multi .metadata {
+    top: 8px;
+  }
+
+  .multi .memberScore {
+    top: 8px;
+  }
+}

@@ -628,6 +628,7 @@ export default function ConfiguracionVisoresUI({
 
       <header className={styles.encabezado}>
         <div>
+          <span className={styles.eyebrow}>Visor / Configuración</span>
           <h1>
             Configuración de visores
           </h1>

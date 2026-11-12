@@ -5,9 +5,10 @@
   overflow: hidden;
 
   border: 1px solid #2b2b2b;
-  border-radius: 12px;
+  border-radius: 10px;
 
   background: #171717;
+  align-self: start;
 
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.28);
@@ -88,7 +89,7 @@
   padding: 0;
 
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
+  border-radius: 10px;
 
   background: rgba(0, 0, 0, 0.72);
 
@@ -237,7 +238,8 @@
 }
 
 .sedeBadge,
-.noSedeBadge {
+.noSedeBadge,
+.moreSedes {
   min-height: 28px;
 
   padding: 0 11px;
@@ -246,7 +248,7 @@
   align-items: center;
   gap: 7px;
 
-  border-radius: 999px;
+  border-radius: 10px;
 
   font-size: 12px;
   font-weight: 600;
@@ -268,6 +270,12 @@
   color: #bdbdbd;
 }
 
+.moreSedes {
+  border: 1px solid #333;
+  background: #202020;
+  color: #aaa;
+}
+
 .sedeBadge svg,
 .noSedeBadge svg {
   width: 15px;
@@ -278,29 +286,45 @@
    META
 ========================= */
 
-.meta {
-  min-height: 21px;
-
-  display: flex;
-  align-items: center;
-  gap: 9px;
-
-  margin-bottom: 13px;
-
-  color: #909090;
-
-  font-size: 12px;
+.details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 8px;
 }
 
-.dot {
-  width: 3px;
-  height: 3px;
+.details div {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #292929;
+  border-radius: 7px;
+  background: #131313;
+}
 
-  flex-shrink: 0;
+.details span,
+.details strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  border-radius: 50%;
+.details span {
+  margin-bottom: 4px;
+  color: #747474;
+  font-size: 9px;
+  text-transform: uppercase;
+}
 
-  background: #5d5d5d;
+.details strong {
+  color: #ddd;
+  font-size: 10px;
+}
+
+.createdAt {
+  margin-bottom: 12px;
+  color: #777;
+  font-size: 10px;
 }
 
 /* =========================

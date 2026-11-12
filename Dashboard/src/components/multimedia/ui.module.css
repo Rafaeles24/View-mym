@@ -2,12 +2,13 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
   min-height: 0;
   min-width: 0;
 
-  padding: 20px;
+  padding: 8px;
 
-  background: #0d0d0d;
+  background: transparent;
 
   color: #f2f2f2;
 
@@ -20,19 +21,29 @@
 ========================= */
 
 .header {
+  flex-shrink: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
 
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 
 .title {
-
+  margin: 7px 0 5px;
   color: #f5f5f5;
   font-weight: 800;
   letter-spacing: 0;
+  font-size: 29px;
+}
+
+.eyebrow {
+  color: #e11d48;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .subtitle {
@@ -60,10 +71,10 @@
   justify-content: center;
   gap: 9px;
 
-  border: 1px solid #3a3a3a;
-  border-radius: 8px;
+  border: 1px solid #e11d48;
+  border-radius: 9px;
 
-  background: #1c1c1c;
+  background: #e11d48;
 
   color: #ededed;
 
@@ -79,9 +90,8 @@
 }
 
 .uploadButton:hover {
-  background: #252525;
-
-  border-color: #4a4a4a;
+  background: #f02350;
+  border-color: #f02350;
 }
 
 .uploadButton:active {
@@ -94,11 +104,22 @@
   line-height: 1;
 }
 
+.error {
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border: 1px solid #642737;
+  border-radius: 8px;
+  background: #291218;
+  color: #f5a3b5;
+  font-size: 11px;
+}
+
 /* =========================
    FILTERS
 ========================= */
 
 .filters {
+  flex-shrink: 0;
   width: 100%;
 
   display: grid;
@@ -111,6 +132,10 @@
   gap: 14px;
 
   margin-bottom: 18px;
+  padding: 12px;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  background: #131313;
 }
 
 .searchWrapper {
@@ -187,6 +212,7 @@
 ========================= */
 
 .summary {
+  flex-shrink: 0;
   width: 100%;
 
   padding: 12px 1px 14px;
@@ -207,13 +233,15 @@
 ========================= */
 
 .grid {
+  flex: 1 1 0;
   display: grid;
 
   grid-template-columns: repeat(4, minmax(0, 1fr));
 
   gap: 18px;
 
-  max-height: calc(100dvh - 280px);
+  grid-auto-rows: max-content;
+  max-height: none;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
@@ -238,7 +266,7 @@
   justify-content: center;
 
   border: 1px dashed #303030;
-  border-radius: 12px;
+  border-radius: 10px;
 
   background: #131313;
 

@@ -4,6 +4,7 @@ import { MediaType } from "@/types/media";
 import styles from "./ui.module.css";
 import { formatDate } from "@/libs/formatDate";
 import { formatearTiempo } from "@/libs/formatTime";
+import Image from "next/image";
 
 export function MediaCard({
   item,
@@ -50,9 +51,12 @@ export function MediaCard({
         )}
 
         {type === "image" && (
-          <img
+          <Image
             src={item.url}
             alt={fileName}
+            fill
+            unoptimized
+            sizes="(max-width: 1150px) 50vw, 25vw"
             className={styles.media}
           />
         )}
@@ -122,7 +126,7 @@ export function MediaCard({
 
         <div className={styles.sedes}>
           {hasSedes ? (
-            item.sedes.map((sede) => (
+            item.sedes.slice(0, 3).map((sede) => (
               <span
                 key={sede.id}
                 className={styles.sedeBadge}
@@ -142,7 +146,15 @@ export function MediaCard({
 
                 {sede.nombre}
               </span>
-            ))
+            )).concat(
+              item.sedes.length > 3
+                ? [
+                    <span key="more" className={styles.moreSedes}>
+                      +{item.sedes.length - 3} más
+                    </span>,
+                  ]
+                : [],
+            )
           ) : (
             <span className={styles.noSedeBadge}>
               <svg
@@ -162,31 +174,22 @@ export function MediaCard({
           )}
         </div>
 
-        <div className={styles.meta}>
-          {hasSedes ? (
-            <>
-              <span>
-                Prioridad: {item.sedes[0].prioridad}
-              </span>
-
-              <span className={styles.dot} />
-
-              <span>
-                {formatDate(item.createdat)}
-              </span>
-            </>
-          ) : (
-            <>
-              <span>{formatearTiempo(item.duration)}</span>
-
-              <span className={styles.dot} />
-
-              <span>
-                {formatDate(item.createdat)}
-              </span>
-            </>
-          )}
+        <div className={styles.details}>
+          <div>
+            <span>Tipo</span>
+            <strong>{type === "video" ? "Video" : type === "image" ? "Imagen" : "Archivo"}</strong>
+          </div>
+          <div>
+            <span>{type === "video" ? "Duración" : "Sedes"}</span>
+            <strong>{type === "video" ? formatearTiempo(item.duration) : `${item.sedes.length} asignadas`}</strong>
+          </div>
+          <div>
+            <span>{hasSedes ? "Prioridad" : "Asignación"}</span>
+            <strong>{hasSedes ? item.sedes[0].prioridad ?? 0 : "Sin sedes"}</strong>
+          </div>
         </div>
+
+        <div className={styles.createdAt}>Creado: {formatDate(item.createdat)}</div>
 
         <div className={styles.actions}>
           <button

@@ -10,6 +10,7 @@ import { AuthResponse } from "@/types/auth";
 import UsuarioBadge from "../badges/usuario/ui";
 import logo from "@/img/mymcorp.png";
 import StartIcon from "@/icons/star";
+import Image from "next/image";
 
 export default function Sidebar({
   user,
@@ -21,7 +22,7 @@ export default function Sidebar({
   return (
     <nav className={styles.nav}>
       <div className={styles.logo}>
-        <img src={logo.src} alt="MyDecks Logo" width={30} height={30} />
+        <Image src={logo} alt="MyDecks Logo" width={30} height={30} />
         <h2>Dashboard</h2>
       </div>
       <div className={styles.links}>
@@ -38,10 +39,26 @@ export default function Sidebar({
           <StartIcon/>
           <span>Visor</span>
         </Link>
-        <Link href={"/dashboard/cerrador"} className={`${styles.navLinks} ${pathname === "/dashboard/cerrador" && styles.active}`}>
+        <Link href={"/dashboard/cerrador"} className={`${styles.navLinks} ${pathname.startsWith("/dashboard/cerrador") && styles.active}`}>
           <EstructuraIcon/>
           <span>Cerradores</span>
         </Link>
+        {pathname.startsWith("/dashboard/cerrador") && (
+          <div className={styles.subLinks}>
+            <Link
+              href="/dashboard/cerrador"
+              className={pathname === "/dashboard/cerrador" ? styles.subActive : ""}
+            >
+              Directorio
+            </Link>
+            <Link
+              href="/dashboard/cerrador/versus"
+              className={pathname.startsWith("/dashboard/cerrador/versus") ? styles.subActive : ""}
+            >
+              Versus
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className={styles.user}>
