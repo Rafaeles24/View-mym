@@ -27,7 +27,7 @@ import DefaultPerson from "@/images/default.png";
 
 /* =========================================
    CONFIGURACIÓN
-========================================= */
+   ========================================= */
 
 const ITEMS_PER_PAGE = 3;
 
@@ -49,7 +49,7 @@ const oppositeLayer = (
 
 /* =========================================
    LOGOS DE CAMPAÑAS
-========================================= */
+   ========================================= */
 
 function CampaignLogos({
   campaigns,
@@ -92,7 +92,7 @@ function CampaignLogos({
 
 /* =========================================
    INFORMACIÓN DEL CERRADOR
-========================================= */
+   ========================================= */
 
 function CerradorInfo({
   cerrador,
@@ -177,30 +177,151 @@ function EquipoInfo({
 }
 
 /* =========================================
-   FILA VERSUS
-========================================= */
+   FILA VERSUS 1VS1 (FORMATO INVERTIDO)
+   ========================================= */
 
-function VersusRow({
+function VersusRow1v1({
+  versus,
+  isActive,
+}: {
+  versus: VersusEquipo[];
+  isActive: boolean;
+}) {
+  const isDuel = versus.length === 2 &&
+    versus.every((equipo) => equipo.participantes.length === 1);
+
+  return (
+    <article className={`${content.row} ${isDuel ? content.duel : ""}`}>
+      <div className={content.caption1v1}>
+        <h2>{versus[0]?.numero ? `Duelo ${versus[0].numero}` : "Duelo"}</h2>
+        <span>{versus.length} equipos · {versus.reduce((total, equipo) => total + equipo.participantes.length, 0)} participantes</span>
+      </div>
+
+      <div className={content.teams}>
+        {versus.map((equipo, index) => (
+          <Fragment key={equipo.numero}>
+            {index > 0 && <span className={content.duelSeparator}>VS</span>}
+            <EquipoInfo1v1 equipo={equipo} isActive={isActive} />
+          </Fragment>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+/* =========================================
+   SUB-COMPONENTE PARA 1VS1
+   ========================================= */
+
+function EquipoInfo1v1({
+  equipo,
+  isActive,
+}: {
+  equipo: VersusEquipo;
+  isActive: boolean;
+}) {
+  const [page, setPage] = useState(0);
+  const pageCount = Math.max(equipo.participantes.length, 1);
+  const currentPage = page % Math.max(pageCount, 1);
+  useEffect(() => {
+    if (!isActive || pageCount <= 1) return;
+    const timer = window.setInterval(() => setPage((value) => (value + 1) % pageCount), 8000);
+    return () => window.clearInterval(timer);
+  }, [isActive, pageCount]);
+
+  return (
+    <div className={content.team}>
+      <div className={content.teamHeader}>
+        <strong>{equipo.numero === 1 ? "IZQUIERDA" : "DERECHA"}</strong>
+        {equipo.lider && <span className={content.headerLeader}>● LÍDER</span>}
+      </div>
+
+      <div className={content.teamRoster}>
+        {equipo.participantes.map((cerrador, idx) => (
+          <div key={cerrador.id} className={content.member}>
+            <div className={content.personImageWrap}>
+              <Image
+                src={cerrador.avatar_url?.trim() || DefaultPerson}
+                alt={cerrador.nombre}
+                fill
+                unoptimized
+                className={content.personImage}
+              />
+            </div>
+            <div className={content.personData}>
+              <div className={content.identity}>
+                <div className={content.personName} title={cerrador.nombre}>
+                  {cerrador.nombre}
+                </div>
+                <div className={content.metadata}>
+                  <span className={content.sedeBadge}>
+                    {cerrador.sedes.map((s) => s.nombre).join(", ")}
+                  </span>
+                  <div className={content.campaignLogos}>
+                    {cerrador.campaigns.map((camp) => (
+                      <div key={camp.id} className={content.logoWrap}>
+                        <div className={content.logoDot} style={{background: camp.hex || "#6b46c1"}}>
+                          {camp.nombre.charAt(0)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className={content.memberScore}>
+                <strong>{cerrador.ventas}</strong>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   FILA VERSUS GRUPAL (FORMATO "0   NOMBRE   0")
+   ========================================= */
+
+function VersusRowGrupal({
   versus,
   isActive,
 }: {
   versus: VisorVersus;
   isActive: boolean;
 }) {
-  const isDuel = versus.equipos.length === 2 &&
-    versus.equipos.every((equipo) => equipo.participantes.length === 1);
-
   return (
-    <article className={`${content.row} ${isDuel ? content.duel : ""}`}>
-      <div className={content.caption}>
+    <article className={`${content.row} ${content.grupal}`}>
+      <div className={content.captionGrupal}>
         <h2>{versus.nombre}</h2>
         <span>{versus.equipos.length} equipos · {versus.equipos.reduce((total, equipo) => total + equipo.participantes.length, 0)} participantes</span>
       </div>
+
       <div className={content.teams}>
         {versus.equipos.map((equipo, index) => (
           <Fragment key={equipo.numero}>
-            {index > 0 && <span className={content.duelSeparator}>VS</span>}
-            <EquipoInfo equipo={equipo} isActive={isActive} />
+            <div className={content.teamGrupal}>
+              <div className={content.nombreGrupal}>
+                <span>{equipo.ventas}</span>{equipo.lider ? " LÍDER" : ""}
+              </div>
+              <div className={content.avataresGrupal}>
+                {equipo.participantes.map((p) => (
+                  <div key={p.id} className={content.memberGrupal}>
+                    <div className={content.personImageWrap}>
+                      <Image
+                        src={p.avatar_url?.trim() || DefaultPerson}
+                        alt={p.nombre}
+                        fill
+                        unoptimized
+                        className={content.personImage}
+                      />
+                    </div>
+                    <div className={content.nombreIntegrante}>{p.nombre}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {index < versus.equipos.length - 1 && <span className={content.vsGrupal}>VS</span>}
           </Fragment>
         ))}
       </div>
@@ -210,7 +331,7 @@ function VersusRow({
 
 /* =========================================
    COMPONENTE PRINCIPAL
-========================================= */
+   ========================================= */
 
 export default function VersusUI({
   data,
@@ -621,7 +742,6 @@ export default function VersusUI({
             /*
              * La transición terminó.
              */
-
             pageIndexRef.current =
               nextIndex;
 
@@ -964,13 +1084,26 @@ export default function VersusUI({
           `}
         >
           {layerPages.a.map(
-            (versus) => (
-              <VersusRow
-                key={versus.id}
-                versus={versus}
-                isActive={isActive && active === "a"}
-              />
-            ),
+            (versus) => {
+              // Determinar el tipo de versus (1vs1 o grupal)
+              const equipos = versus.equipos;
+              const es1v1 = equipos.length === 2 &&
+                equipos.every((e) => e.participantes.length === 1);
+
+              return es1v1 ? (
+                <VersusRow1v1
+                  key={versus.id}
+                  versus={equipos}
+                  isActive={isActive && active === "a"}
+                />
+              ) : (
+                <VersusRowGrupal
+                  key={versus.id}
+                  versus={versus}
+                  isActive={isActive && active === "a"}
+                />
+              );
+            }
           )}
         </section>
 
@@ -990,13 +1123,25 @@ export default function VersusUI({
           `}
         >
           {layerPages.b.map(
-            (versus) => (
-              <VersusRow
-                key={versus.id}
-                versus={versus}
-                isActive={isActive && active === "b"}
-              />
-            ),
+            (versus) => {
+              const equipos = versus.equipos;
+              const es1v1 = equipos.length === 2 &&
+                equipos.every((e) => e.participantes.length === 1);
+
+              return es1v1 ? (
+                <VersusRow1v1
+                  key={versus.id}
+                  versus={equipos}
+                  isActive={isActive && active === "b"}
+                />
+              ) : (
+                <VersusRowGrupal
+                  key={versus.id}
+                  versus={versus}
+                  isActive={isActive && active === "b"}
+                />
+              );
+            }
           )}
         </section>
       </div>

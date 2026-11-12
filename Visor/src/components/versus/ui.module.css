@@ -1,6 +1,6 @@
 /* =========================================
    CONTENEDOR PRINCIPAL
-========================================= */
+   ========================================= */
 
 .container {
   width: 100%;
@@ -23,7 +23,7 @@
 
 /* =========================================
    HEADER
-========================================= */
+   ========================================= */
 
 .header {
   display: flex;
@@ -58,6 +58,7 @@
 
   display: flex;
   align-items: center;
+
   justify-content: flex-end;
 
   min-width: 0;
@@ -81,6 +82,7 @@
 
   font-size: 40px;
   font-weight: 1000;
+  line-height: 1;
 }
 
 .titulo p {
@@ -98,7 +100,7 @@
 
 /* =========================================
    LISTA
-========================================= */
+   ========================================= */
 
 .list {
   --row-gap: 28px;
@@ -113,20 +115,17 @@
 }
 
 /* =========================================
-   FILA VERSUS
-========================================= */
+   FILA VERSUS 1VS1
+   ========================================= */
 
-.row {
+.row1v1 {
   width: 100%;
   min-width: 0;
 
-  min-height: 150px;
+  min-height: 0;
 
-  display: grid;
-
-  grid-template-columns: minmax(0, 1fr) 100px 70px 100px minmax(0, 1fr);
-
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
 
   gap: 12px;
 
@@ -137,692 +136,513 @@
   background: #08090b;
 
   border: 2px solid #18191a;
+
   border-radius: 10px;
 
   overflow: hidden;
 }
 
-/* =========================================
-   EQUIPOS Y PARTICIPANTES
-========================================= */
-
-.team {
-  min-width: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* Estado líder para 1vs1 */
+.row1v1.isLeader {
+  border-color: #5f1524;
+  box-shadow: 0 0 26px rgba(217, 29, 70, 0.12);
 }
 
-.teamRight {
-  text-align: right;
-}
-
-.teamLabel {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-}
-
-.teamRoster {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  overflow: hidden;
-}
-
-.teamRight .teamRoster {
-  flex-direction: row-reverse;
-}
-
-.member {
-  flex: 1 1 0;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(54px, 0.7fr) minmax(58px, 1fr);
-  align-items: center;
-  gap: 7px;
-  padding: 5px;
-  box-sizing: border-box;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.035);
-}
-
-.teamRight .member {
-  grid-template-columns: minmax(58px, 1fr) minmax(54px, 0.7fr);
-}
-
-.teamRight .member .personImageWrap {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.teamRight .member .personData {
-  grid-column: 1;
-  grid-row: 1;
-  align-items: flex-end;
-  text-align: right;
-}
-
-.teamDense .member,
-.teamRight.teamDense .member {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(42px, 1fr) auto;
-  gap: 2px;
-  padding: 3px;
-}
-
-.teamRight.teamDense .member .personImageWrap,
-.teamRight.teamDense .member .personData {
-  grid-column: 1;
-}
-
-.teamRight.teamDense .member .personImageWrap {
-  grid-row: 1;
-}
-
-.teamRight.teamDense .member .personData {
-  grid-row: 2;
-}
-
-.teamDense .personData,
-.teamRight.teamDense .personData {
-  align-items: center;
-  text-align: center;
-}
-
-.teamDense .personName,
-.teamRight.teamDense .personName {
-  text-align: center;
-}
-
-.teamDense .campaignLogos,
-.teamDense .sedesList {
-  display: none;
-}
-
-/* =========================================
-   INFORMACIÓN DEL CERRADOR
-========================================= */
-
-.personData {
-  width: 100%;
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  align-items: flex-start;
-  justify-content: center;
-
-  gap: 3px;
-
-  text-align: left;
-}
-
-/* =========================================
-   CAMPAÑAS
-========================================= */
-
-.campaignLogos {
-  width: 100%;
-  min-width: 0;
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-
-  align-items: center;
-  justify-content: flex-start;
-
-  gap: 4px;
-
-  overflow: hidden;
-}
-
-.teamRight .campaignLogos {
-  justify-content: flex-end;
-}
-
-/* =========================================
-   LOGO CAMPAÑA
-========================================= */
-
-.logoWrap {
-  position: relative;
-
-  width: 24px;
-  height: 24px;
-
-  flex: 0 0 24px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  overflow: hidden;
-
-  box-sizing: border-box;
-
-  border-radius: 50%;
-}
-
-.logo {
-  display: block;
-
-  width: 100%;
-  height: 100%;
-
-  padding: 3px;
-
-  box-sizing: border-box;
-
-  object-fit: contain;
-  object-position: center;
-
-  border-radius: 50%;
-}
-
-.fallback {
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: #202024;
-
-  color: #ffffff;
-
-  font-size: 12px;
-  font-weight: 800;
-}
-
-/* =========================================
-   NOMBRE
-========================================= */
-
-.personName {
-  width: 100%;
-  min-width: 0;
-
-  color: #ffffff;
-
-  font-size: clamp(12px, 0.9vw, 17px);
-
-  font-weight: 900;
-
-  line-height: 1.1;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  text-align: left;
-}
-
-.teamRight .personName {
-  text-align: right;
-}
-
-.memberScore {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-/* =========================================
-   SEDES
-========================================= */
-
-.sedesList {
-  width: 100%;
-  min-width: 0;
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-
-  align-items: center;
-  justify-content: flex-start;
-
-  gap: 5px;
-}
-
-.teamRight .sedesList {
-  justify-content: flex-end;
-}
-
-.sedeBadge {
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
-  min-height: 16px;
-
-  padding: 2px 5px;
-
-  box-sizing: border-box;
-
-  border-radius: 5px;
-
-  background: #e6e6e6;
-
-  color: #111111;
-
-  font-size: 8px;
-  font-weight: 900;
-
-  line-height: 1;
-}
-
-/* =========================================
-   IMAGEN DE LA PERSONA
-========================================= */
-
-.personImageWrap {
-  position: relative;
-
-  width: 100%;
-  height: 100%;
-
-  min-height: 0;
-
-  align-self: stretch;
-
-  overflow: hidden;
-}
-
-/* Imagen del cerrador */
-.personImage {
-  object-fit: contain !important;
-
-  object-position: bottom center !important;
-}
-
-/* =========================================
-   SCORE
-========================================= */
-
-.score {
-  min-width: 0;
-
-  display: flex;
-
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  color: rgba(
-    255,
-    255,
-    255,
-    0.55
-  );
-
-  line-height: 1;
-
-  font-variant-numeric:
-    tabular-nums;
-}
-
-.score strong {
-  font-size: clamp(34px, 3vw, 56px);
-  font-weight: 900;
-}
-
-.score span {
-  margin-top: 5px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.scoreLeader {
-  color: #ffffff;
-}
-
-.scoreLoser {
-  color: rgba(
-    255,
-    255,
-    255,
-    0.45
-  );
-}
-
-/* =========================================
-   VS
-========================================= */
-
-.vs {
-  display: flex;
-
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  color: #ffffff;
-
-  font-size: 22px;
-  font-weight: 900;
-}
-
-.vs small {
-  max-width: 68px;
-  margin-top: 5px;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 8px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* =========================================
-   VERSUS DE TRES O MÁS EQUIPOS
-========================================= */
-
-.rowMulti {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 9px 14px;
-}
-
-.multiHeader {
+/* Caption para 1vs1 */
+.caption1v1 {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 9px;
+  gap: 20px;
+  padding: 8px 22px;
+  border-bottom: 1px solid #1b1c21;
+  background: #0b0c10;
 }
 
-.multiHeader strong {
+.caption1v1 h2 {
+  margin: 0;
+  font-size: clamp(17px, 1.1vw, 23px);
+  text-transform: uppercase;
   overflow: hidden;
-  color: #fff;
-  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.multiTeams {
+.caption1v1 > span {
+  flex: none;
+  color: #a5a5b0;
+  font-size: clamp(13px, 0.94vw, 19px);
+}
+
+/* Contenedor del duelo 1vs1 */
+.body1v1 {
   flex: 1;
   min-height: 0;
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #444 transparent;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.multiTeam {
-  flex: 1 0 240px;
+/* Duelo invertido: izq = avatar+contenido abajo, score pegado a VS der */
+.duelBody1v1 {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 24px;
+}
+
+/* Jugador izq: avatar arriba, contenido abajo, score a la derecha pegado VS */
+.duelLeft1v1 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   min-width: 0;
+}
+
+.duelLeft1v1 .figure {
+  width: 140px;
+  height: 140px;
+  min-width: 0;
+}
+
+.duelLeft1v1 .figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transform: scale(1.5);
+  transform-origin: center top;
+}
+
+.duelLeft1v1 .personName {
+  font-size: clamp(18px, 1.5vw, 24px);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 8px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.duelLeft1v1 .metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.duelLeft1v1 .sedeBadge {
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #fff;
+  color: #111;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.duelLeft1v1 .campaignLogos {
+  display: flex;
+  gap: 4px;
+}
+
+.duelLeft1v1 .logoWrap {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+}
+
+.duelLeft1v1 .logoDot {
+  border-radius: 50%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 65px;
-  gap: 7px;
-  padding: 5px;
-  border: 1px solid #232323;
-  border-radius: 8px;
-  background: #0d0e10;
+  place-items: center;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
 }
 
-.multiTeamLeader {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: #141518;
+.duelLeft1v1 .leaderPill {
+  padding: 3px 6px;
+  border-radius: 50%;
+  background: #d91d46;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
-.multiTeam .score strong {
-  font-size: clamp(28px, 2vw, 42px);
+/* Score pegado al VS a la derecha para el jugador izq */
+.duelLeft1v1 .duelScore {
+  margin-left: auto;
+  color: #fff;
+  font-size: clamp(56px, 4.4vw, 86px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 14px #000;
+  white-space: nowrap;
+}
+
+/* Jugador der: avatar arriba, contenido abajo, score pegado a la izquierda VS */
+.duelRight1v1 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+  position: relative;
+  right: 0;
+}
+
+.duelRight1v1 .figure {
+  width: 140px;
+  height: 140px;
+  min-width: 0;
+  position: relative;
+  right: 0;
+}
+
+.duelRight1v1 .figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transform: scale(1.5);
+  transform-origin: center top;
+}
+
+.duelRight1v1 .personName {
+  font-size: clamp(18px, 1.5vw, 24px);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 8px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.duelRight1v1 .metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.duelRight1v1 .sedeBadge {
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #fff;
+  color: #111;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.duelRight1v1 .campaignLogos {
+  display: flex;
+  gap: 4px;
+}
+
+.duelRight1v1 .logoWrap {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+}
+
+.duelRight1v1 .logoDot {
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.duelRight1v1 .leaderPill {
+  padding: 3px 6px;
+  border-radius: 50%;
+  background: #d91d46;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* Score pegado al VS a la izquierda para el jugador der */
+.duelRight1v1 .duelScore {
+  margin-right: auto;
+  color: #fff;
+  font-size: clamp(56px, 4.4vw, 86px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 14px #000;
+  white-space: nowrap;
+}
+
+/* VS central entre los dos jugadores */
+.vsCenter {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items:center;
+  border: 1px solid #34343d;
+  border-radius: 50%;
+  background: #111216;
+  color: #d4d4dd;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 /* =========================================
-   PAGINACIÓN
-========================================= */
+   FILA VERSUS GRUPAL (FORMATO "0   NOMBRE   0")
+   ========================================= */
 
-.pagination {
-  flex-shrink: 0;
+.rowGrupal {
+  width: 100%;
+  min-width: 0;
+
+  min-height: 0;
 
   display: flex;
+  flex-direction: column;
 
-  align-items: center;
-  justify-content: center;
+  gap: 12px;
 
-  gap: 8px;
+  padding: 10px 18px;
 
-  margin-top: 14px;
-}
+  box-sizing: border-box;
 
-.dot {
-  width: 26px;
-  height: 4px;
+  background: #08090b;
 
-  border-radius: 999px;
+  border: 2px solid #18191a;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.13
-    );
+  border-radius: 10px;
 
-  transition:
-    width 0.3s ease,
-    background 0.3s ease;
-}
-
-.dotActive {
-  width: 48px;
-
-  background: #ffffff;
-}
-
-/* =========================================
-   STAGE DE PÁGINAS VERSUS
-========================================= */
-
-.versusStage {
-  position: relative;
-  flex: 1;
-  width: 100%;
-  min-height: 0;
   overflow: hidden;
 }
 
-/* =========================================
-   CAPAS A / B
-========================================= */
+/* Estado líder para grupal */
+.rowGrupal.isLeader {
+  border-color: #5f1524;
+  box-shadow: 0 0 26px rgba(217, 29, 70, 0.12);
+}
 
-.versusLayer {
-  position: absolute;
-  inset: 0;
+/* Caption para grupal */
+.captionGrupal {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 8px 22px;
+  border-bottom: 1px solid #1b1c21;
+  background: #0b0c10;
+}
 
+.captionGrupal h2 {
+  margin: 0;
+  font-size: clamp(17px, 1.1vw, 23px);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.captionGrupal > span {
+  flex: none;
+  color: #a5a5b0;
+  font-size: clamp(13px, 0.94vw, 19px);
+}
+
+/* Contenedor del VS grupal */
+.teamsGrupal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Cada bando del VS grupal */
+.teamGrupal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Nombre del VS con formato "0   nombre   0" */
+.nombreGrupal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  text-align: center;
+}
+
+.nombreGrupal span {
+  color: #fff;
+  font-size: clamp(28px, 3.5vw, 48px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.nombreGrupal .leader {
+  color: #d91d46;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* Avatares grupales */
+.avataresGrupal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.memberGrupal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.memberGrupal .personImageWrap {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 4px;
+}
+
+.memberGrupal .personImageWrap img {
   width: 100%;
   height: 100%;
-
-  transition:
-    opacity 500ms ease;
-
-  will-change: opacity;
+  object-fit: contain;
+  object-position: top center;
+  transform: scale(1.2);
+  transform-origin: center top;
 }
 
-/* =========================================
-   CAPA ACTIVA
-========================================= */
-
-.layerActive {
-  opacity: 1;
-  z-index: 2;
-
-  pointer-events: auto;
+.memberGrupal .nombreIntegrante {
+  color: #fff;
+  font-size: clamp(12px, 1vw, 14px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* =========================================
-   CAPA PRECARGADA
-========================================= */
-
-.layerHidden {
-  opacity: 0;
-  z-index: 1;
-
-  pointer-events: none;
+/* VS entre dos equipos grupales */
+.vsGrupal {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #34343d;
+  border-radius: 50%;
+  background: #111216;
+  color: #d4d4dd;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
-/* =========================================
-   FULL HD
-========================================= */
-
+/* Responsive: Full HD */
 @media (min-width: 1600px) {
-
-  .header {
-    margin-bottom: 20px;
-  }
-
-  .row {
+  .row1v1 {
     min-height: 170px;
-
-    grid-template-columns: minmax(0, 1fr) 115px 80px 115px minmax(0, 1fr);
-
-    gap: 16px;
-
     padding: 0 22px;
   }
 
-  .campaignLogos {
-    gap: 9px;
+  .rowGrupal {
+    min-height: 170px;
+    padding: 0 22px;
   }
 
-  .logoWrap {
-    width: 28px;
-    height: 28px;
-
-    flex-basis: 28px;
+  .caption1v1,
+  .captionGrupal {
+    padding: 0 22px;
   }
 
-  .personName {
-    font-size: clamp(14px, 1vw, 19px);
+  .duelBody1v1 {
+    gap: 32px;
+    padding: 0 24px;
   }
 
-  .sedeBadge {
-    min-height: 18px;
-
-    padding: 2px 6px;
-
-    font-size: 9px;
+  .vsCenter {
+    width: 64px;
+    height: 64px;
+    font-size: 20px;
   }
 
-  .score strong {
-    font-size: clamp(
-      42px,
-      3.4vw,
-      64px
-    );
+  .vsGrupal {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
   }
 
-  .vs {
-    font-size: 24px;
+  .nombreGrupal span {
+    font-size: 36px;
   }
 }
 
-/* =========================================
-   1366 / PANTALLAS MEDIAS
-========================================= */
-
+/* Responsive: Pantallas medianas */
 @media (max-width: 1400px) {
-
-  .container {
-    padding: 50px;
-  }
-
-  .header {
-    margin-bottom: 16px;
-  }
-
-  .titulo h1 {
-    font-size: 38px;
-  }
-
-  .titulo p {
-    font-size: 16px;
-  }
-
-  .row {
+  .row1v1 {
     min-height: 120px;
-
-    grid-template-columns: minmax(0, 1fr) 72px 46px 72px minmax(0, 1fr);
-
-    gap: 8px;
-
     padding: 0 12px;
   }
 
-  .personData {
-    gap: 4px;
+  .rowGrupal {
+    min-height: 120px;
+    padding: 0 12px;
   }
 
-  .campaignLogos {
-    gap: 5px;
+  .caption1v1,
+  .captionGrupal {
+    padding: 0 12px;
   }
 
-  .logoWrap {
-    width: 20px;
-    height: 20px;
-
-    flex-basis: 20px;
+  .duelBody1v1 {
+    gap: 20px;
+    padding: 0 16px;
   }
 
-  .logo {
-    padding: 4px;
+  .vsCenter {
+    width: 52px;
+    height: 52px;
+    font-size: 14px;
   }
 
-  .fallback {
-    font-size: 10px;
+  .vsGrupal {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
   }
 
-  .personName {
-    font-size: 11px;
-  }
-
-  .sedeBadge {
-    min-height: 14px;
-
-    padding:
-      2px
-      4px;
-
-    font-size: 7px;
-  }
-
-  .score strong {
-    font-size: 34px;
-  }
-
-  .vs {
-    font-size: 16px;
-  }
-
-  .pagination {
-    margin-top: 8px;
+  .nombreGrupal span {
+    font-size: 28px;
   }
 }
 
-/* =========================================
-   PANTALLAS BAJAS
-========================================= */
-
+/* Responsive: Pantallas bajas */
 @media (max-height: 800px) {
-
   .container {
     padding-top: 50px;
     padding-bottom: 50px;
@@ -836,26 +656,30 @@
     --row-gap: 6px;
   }
 
-  .row {
+  .row1v1 {
     min-height: 105px;
   }
 
-  .logoWrap {
-    width: 18px;
-    height: 18px;
-
-    flex-basis: 18px;
+  .rowGrupal {
+    min-height: 105px;
   }
 
-  .personName {
+  .duelBody1v1 {
+    gap: 10px;
+    padding: 0;
+  }
+
+  .vsCenter {
+    display: none;
+  }
+
+  .vsGrupal {
+    width: 30px;
+    height: 30px;
     font-size: 10px;
   }
 
-  .score strong {
-    font-size: 30px;
-  }
-
-  .pagination {
-    margin-top: 6px;
+  .nombreGrupal span {
+    font-size: 20px;
   }
 }
