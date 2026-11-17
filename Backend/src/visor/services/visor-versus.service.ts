@@ -27,6 +27,12 @@ export class VisorVersusService {
       select: {
         id: true,
         nombre: true,
+        equipos: {
+          select: {
+            numero: true,
+            nombre: true,
+          },
+        },
         participantes: {
           orderBy: [{ equipo: 'asc' }, { orden: 'asc' }],
           select: {
@@ -232,6 +238,9 @@ export class VisorVersusService {
 
         return {
           numero,
+          nombre:
+            item.equipos.find((equipo) => equipo.numero === numero)?.nombre ??
+            `Equipo ${numero}`,
           ventas: miembros.reduce(
             (total, miembro) => total + miembro.ventas,
             0,

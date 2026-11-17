@@ -122,8 +122,19 @@ model Versus {
   fecha  DateTime? @default(now())
 
   participantes VersusParticipante[]
+  equipos       VersusEquipo[]
 
   @@index([activo])
+}
+
+model VersusEquipo {
+  versus_id Int
+  numero    Int
+  nombre    String @db.VarChar(100)
+
+  versus Versus @relation(fields: [versus_id], references: [id], onDelete: Cascade)
+
+  @@id([versus_id, numero])
 }
 
 model VersusParticipante {

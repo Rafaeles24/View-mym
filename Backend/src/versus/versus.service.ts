@@ -8,6 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { VersusConfigService } from 'src/versus-config/versus-config.service';
 import {
   CreateVersusDto,
+  VersusEquipoDto,
   VersusParticipanteDto,
 } from './dto/create-versus.dto';
 import { UpdateVersusDto } from './dto/update-versus.dto';
@@ -78,6 +79,35 @@ export class VersusService {
     }
   }
 
+  private normalizarEquipos(
+    participantes: VersusParticipanteDto[],
+    equipos?: VersusEquipoDto[],
+  ): VersusEquipoDto[] {
+    const numeros = [...new Set(participantes.map((item) => item.equipo))].sort(
+      (a, b) => a - b,
+    );
+    const nombresPorNumero = new Map<number, string>();
+
+    for (const equipo of equipos ?? []) {
+      if (nombresPorNumero.has(equipo.numero)) {
+        throw new BadRequestException('No se puede repetir el número de equipo');
+      }
+      if (!equipo.nombre.trim()) {
+        throw new BadRequestException('El nombre del equipo no puede estar vacío');
+      }
+      nombresPorNumero.set(equipo.numero, equipo.nombre.trim());
+    }
+
+    if ([...nombresPorNumero.keys()].some((numero) => !numeros.includes(numero))) {
+      throw new BadRequestException('Solo se pueden nombrar equipos con participantes');
+    }
+
+    return numeros.map((numero) => ({
+      numero,
+      nombre: nombresPorNumero.get(numero) ?? `Equipo ${numero}`,
+    }));
+  }
+
   private readonly participantesInclude = {
     orderBy: [{ equipo: 'asc' as const }, { orden: 'asc' as const }],
     include: {
@@ -85,8 +115,13 @@ export class VersusService {
     },
   };
 
+  private readonly equiposInclude = {
+    orderBy: { numero: 'asc' as const },
+  };
+
   async crear(dto: CreateVersusDto) {
     await this.validarParticipantes(dto.participantes);
+    const equipos = this.normalizarEquipos(dto.participantes, dto.equipos);
 
     return this.prisma.versus.create({
       data: {
@@ -95,9 +130,13 @@ export class VersusService {
         participantes: {
           create: dto.participantes,
         },
+        equipos: {
+          create: equipos,
+        },
       },
       include: {
         participantes: this.participantesInclude,
+        equipos: this.equiposInclude,
       },
     });
   }
@@ -106,6 +145,7 @@ export class VersusService {
     return this.prisma.versus.findMany({
       include: {
         participantes: this.participantesInclude,
+        equipos: this.equiposInclude,
       },
       orderBy: { id: 'desc' },
     });
@@ -116,6 +156,7 @@ export class VersusService {
       where: { id },
       include: {
         participantes: this.participantesInclude,
+        equipos: this.equiposInclude,
       },
     });
 
@@ -137,6 +178,11 @@ export class VersusService {
       await this.validarParticipantes(dto.participantes);
     }
 
+    const equipos =
+      dto.participantes === undefined
+        ? undefined
+        : this.normalizarEquipos(dto.participantes, dto.equipos);
+
     return this.prisma.versus.update({
       where: { id },
       data: {
@@ -147,10 +193,34 @@ export class VersusService {
             deleteMany: {},
             create: dto.participantes,
           },
+          equipos: {
+            deleteMany: {},
+            create: equipos,
+          },
+        }),
+        ...(dto.participantes === undefined && dto.equipos !== undefined && {
+          equipos: {
+            upsert: dto.equipos.map((equipo) => ({
+              where: {
+                versus_id_numero: {
+                  versus_id: id,
+                  numero: equipo.numero,
+                },
+              },
+              create: {
+                numero: equipo.numero,
+                nombre: equipo.nombre.trim(),
+              },
+              update: {
+                nombre: equipo.nombre.trim(),
+              },
+            })),
+          },
         }),
       },
       include: {
         participantes: this.participantesInclude,
+        equipos: this.equiposInclude,
       },
     });
   }
@@ -214,6 +284,9 @@ export class VersusService {
 
       return {
         numero,
+        nombre:
+          versus.equipos.find((equipo) => equipo.numero === numero)?.nombre ??
+          `Equipo ${numero}`,
         ventas: datos.reduce((total, item) => total + item.ventas, 0),
         primera_venta:
           datos

@@ -26,6 +26,17 @@ export class VersusParticipanteDto {
   orden!: number;
 }
 
+export class VersusEquipoDto {
+  @IsInt()
+  @Min(1)
+  numero!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  nombre!: string;
+}
+
 export class CreateVersusDto {
   @IsString()
   @IsNotEmpty()
@@ -37,6 +48,12 @@ export class CreateVersusDto {
   @ValidateNested({ each: true })
   @Type(() => VersusParticipanteDto)
   participantes!: VersusParticipanteDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => VersusEquipoDto)
+  equipos?: VersusEquipoDto[];
 
   @IsOptional()
   @IsBoolean()
