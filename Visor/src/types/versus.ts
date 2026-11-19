@@ -47,6 +47,7 @@ export type VersusResultado = {
 
 export type VersusEquipo = {
   numero: number;
+  nombre: string;
   ventas: number;
   primera_venta: string | null;
   lider: boolean;

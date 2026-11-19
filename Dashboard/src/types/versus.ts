@@ -13,7 +13,19 @@ export type Versus = {
   nombre: string;
   activo: boolean;
   fecha: string | null;
+  equipos: VersusEquipo[];
   participantes: VersusParticipante[];
+};
+
+export type VersusEquipo = {
+  versus_id: number;
+  numero: number;
+  nombre: string;
+};
+
+export type VersusEquipoInput = {
+  numero: number;
+  nombre: string;
 };
 
 export type VersusParticipanteInput = {
@@ -25,5 +37,6 @@ export type VersusParticipanteInput = {
 export type VersusInput = {
   nombre: string;
   activo: boolean;
+  equipos: VersusEquipoInput[];
   participantes: VersusParticipanteInput[];
 };

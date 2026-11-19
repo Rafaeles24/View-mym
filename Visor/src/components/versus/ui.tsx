@@ -690,13 +690,8 @@ function EquipoInfo({
           }
         >
           <strong>
-            EQUIPO{" "}
-            {String(
-              equipo.numero,
-            ).padStart(
-              2,
-              "0",
-            )}
+            {equipo.nombre ||
+              `EQUIPO ${String(equipo.numero).padStart(2, "0")}`}
           </strong>
 
           {equipo.lider && (

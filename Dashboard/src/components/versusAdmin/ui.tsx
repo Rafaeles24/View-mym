@@ -21,12 +21,14 @@ type FormState = {
   nombre: string;
   activo: boolean;
   equipos: Record<number, number[]>;
+  nombresEquipos: Record<number, string>;
 };
 
 const emptyForm = (): FormState => ({
   nombre: '',
   activo: true,
   equipos: { 1: [], 2: [] },
+  nombresEquipos: { 1: '', 2: '' },
 });
 
 function initials(nombre: string): string {
@@ -107,6 +109,14 @@ export default function VersusAdmin({
               .map((p) => p.cerrador_id),
           ]),
       ),
+      nombresEquipos: Object.fromEntries(
+        [...new Set(item.participantes.map((p) => p.equipo))]
+          .sort((a, b) => a - b)
+          .map((team) => [
+            team,
+            item.equipos?.find((equipo) => equipo.numero === team)?.nombre ?? '',
+          ]),
+      ),
     });
     setError(null);
     setOpen(true);
@@ -154,6 +164,10 @@ export default function VersusAdmin({
         ...current.equipos,
         [Object.keys(current.equipos).length + 1]: [],
       },
+      nombresEquipos: {
+        ...current.nombresEquipos,
+        [Object.keys(current.equipos).length + 1]: '',
+      },
     }));
   }
 
@@ -167,6 +181,12 @@ export default function VersusAdmin({
         ...current,
         equipos: Object.fromEntries(
           equipos.map(([, miembros], index) => [index + 1, miembros]),
+        ),
+        nombresEquipos: Object.fromEntries(
+          equipos.map(([numero], index) => [
+            index + 1,
+            current.nombresEquipos[Number(numero)] ?? '',
+          ]),
         ),
       };
     });
@@ -185,6 +205,10 @@ export default function VersusAdmin({
     return {
       nombre: form.nombre.trim(),
       activo: form.activo,
+      equipos: teamNumbers.map((numero) => ({
+        numero,
+        nombre: form.nombresEquipos[numero]?.trim() || `Equipo ${numero}`,
+      })),
       participantes,
     };
   }
@@ -283,7 +307,7 @@ export default function VersusAdmin({
                           {p.cerrador.avatar_url ? <Image src={avatarUrl(p.cerrador.avatar_url)} alt="" fill unoptimized sizes="30px" /> : initials(p.cerrador.nombre)}
                         </span>
                       ))}{team.length > 3 && <span className={styles.avatar}>+{team.length - 3}</span>}</div>
-                      <div><strong>{team[0]?.cerrador.nombre ?? 'Sin integrantes'}{team.length > 1 ? ` y ${team.length - 1} más` : ''}</strong><span>Equipo {teamIds[index]} · {team.length} {team.length === 1 ? 'integrante' : 'integrantes'}</span></div>
+                       <div><strong>{item.equipos?.find((equipo) => equipo.numero === teamIds[index])?.nombre ?? `Equipo ${teamIds[index]}`}</strong><span>{team.length} {team.length === 1 ? 'integrante' : 'integrantes'}{team.length ? ` · ${team[0].cerrador.nombre}${team.length > 1 ? ` y ${team.length - 1} más` : ''}` : ''}</span></div>
                     </div>
                   )).flatMap((team, index) => index < teams.length - 1 ? [team, <span className={styles.vs} key={`vs-${index}`}>VS</span>] : [team])}</div>
                   <span className={item.activo ? styles.activeStatus : styles.inactiveStatus}>{item.activo ? 'Activo' : 'Inactivo'}</span>
@@ -303,6 +327,7 @@ export default function VersusAdmin({
               <div className={styles.teamEditors}>{teamNumbers.map((team) => (
                 <section className={styles.teamEditor} key={team}>
                   <header><strong>Equipo {team}</strong><span>{form.equipos[team].length}</span>{teamNumbers.length > 2 && <button type="button" onClick={() => removeTeam(team)} aria-label={`Eliminar equipo ${team}`}>×</button>}</header>
+                  <label className={styles.teamNameField}>Nombre del equipo<input value={form.nombresEquipos[team] ?? ''} maxLength={100} onChange={(event) => setForm((current) => ({ ...current, nombresEquipos: { ...current.nombresEquipos, [team]: event.target.value } }))} placeholder={`Equipo ${team}`} /></label>
                   <div className={styles.members}>{form.equipos[team].map((id, index) => { const cerrador = cerradoresById.get(id); return (
                     <div className={styles.member} key={id}><span className={styles.memberAvatar}>{cerrador ? initials(cerrador.nombre) : '?'}</span><span>{cerrador?.nombre ?? `Cerrador #${id}`}</span><div><button type="button" disabled={index === 0} onClick={() => moveMember(team, index, -1)}>↑</button><button type="button" disabled={index === form.equipos[team].length - 1} onClick={() => moveMember(team, index, 1)}>↓</button><button type="button" onClick={() => removeMember(team, id)}>×</button></div></div>
                   ); })}</div>
