@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup · Ranking estilo Versus</title>
+  <style>
+    :root{
+      --bg:#09090c;--panel:#111116;--line:#36363e;--muted:#92929e;
+      --red:#ed244b;--red-rgb:237,36,75;--blue:#3a8dff;--blue-rgb:58,141,255;
+      --violet:#a76cff;--violet-rgb:167,108,255;--gold:#ffc44d;
+    }
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);color:#fff;font-family:Inter,Arial,sans-serif}
+    body{background:radial-gradient(circle at 20% 0%,rgba(237,36,75,.08),transparent 31%),radial-gradient(circle at 85% 100%,rgba(58,141,255,.07),transparent 34%),#0b0b0e}
+    .screen{width:100vw;height:100vh;min-width:1120px;min-height:680px;padding:28px 36px 30px;display:flex;flex-direction:column;gap:14px}
+    .top{display:grid;grid-template-columns:minmax(430px,.85fr) minmax(620px,1.15fr);align-items:center;gap:36px;flex:none}
+    .brand{display:flex;align-items:center;gap:18px;min-width:0}
+    .logo{width:68px;height:68px;display:grid;place-items:center;flex:none;border:1px solid #4a4a52;border-radius:10px;background:linear-gradient(145deg,#202027,#0e0e12);font-size:22px;font-weight:1000;letter-spacing:-3px;white-space:nowrap;box-shadow:inset 0 1px rgba(255,255,255,.08)}
+    .logo i{font-style:normal;color:var(--red)}
+    .heading{min-width:0;padding-left:18px;border-left:3px solid #fff}
+    .heading h1{margin:0;font-size:clamp(28px,2.1vw,42px);line-height:.98;font-weight:1000;letter-spacing:-1.5px;text-transform:uppercase}
+    .heading h1 span{color:var(--red)}
+    .heading p{margin:7px 0 0;color:#c2c2c9;font-size:14px;font-weight:700}
+    .period{padding:12px 16px;border:1px solid #303038;border-radius:10px;background:linear-gradient(180deg,rgba(28,28,34,.95),rgba(13,13,17,.95));box-shadow:0 12px 40px rgba(0,0,0,.2)}
+    .periodTop,.periodBottom{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .periodLabel{color:#ff5475;font-size:11px;font-weight:1000;letter-spacing:.13em}
+    .dates{font-size:16px;font-weight:900}
+    .progress{height:6px;margin:9px 0 8px;border-radius:99px;background:#280b12;overflow:hidden}
+    .progress:after{content:"";display:block;width:64%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#9c1632,var(--red));box-shadow:0 0 16px rgba(237,36,75,.7)}
+    .periodBottom{color:#9696a1;font-size:11px;font-weight:600}
+    .periodBottom b{color:#fff}
+    .summary{display:grid;grid-template-columns:1.3fr repeat(3,.75fr);gap:10px;flex:none}
+    .live,.metric{min-height:54px;border:1px solid #303038;border-radius:9px;background:rgba(16,16,21,.92);display:flex;align-items:center}
+    .live{gap:14px;padding:10px 16px;background:linear-gradient(90deg,rgba(237,36,75,.13),rgba(16,16,21,.92) 36%)}
+    .pill{padding:5px 9px;border:1px solid #ff6682;border-radius:5px;background:#d91d46;font-size:9px;font-weight:1000;letter-spacing:.12em}
+    .live strong{font-size:15px}.live small{color:#9b9ba5;font-weight:700}
+    .metric{justify-content:space-between;padding:9px 14px}
+    .metric div{display:flex;flex-direction:column;gap:3px}.metric small{color:#858590;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.metric strong{font-size:21px;font-weight:1000}
+    .metric .delta{color:#3fd28b;font-size:10px}.metric .icon{font-size:20px;color:#6f6f7a}
+    .boards{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .board{--accent:var(--red);--accent-rgb:var(--red-rgb);position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:radial-gradient(circle at 50% 20%,rgba(var(--accent-rgb),.11),transparent 42%),linear-gradient(180deg,#202027,#111116 50%,#0d0d12)}
+    .board.blue{--accent:var(--blue);--accent-rgb:var(--blue-rgb)}
+    .board.violet{--accent:var(--violet);--accent-rgb:var(--violet-rgb)}
+    .boardHeader{height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid #353039;background:linear-gradient(90deg,rgba(var(--accent-rgb),.17),rgba(var(--accent-rgb),.04) 36%,rgba(18,18,24,.9))}
+    .boardIcon{width:36px;height:36px;display:grid;place-items:center;border:1px solid rgba(var(--accent-rgb),.55);border-radius:7px;background:rgba(var(--accent-rgb),.12);color:var(--accent);font-size:18px}
+    .boardTitle{min-width:0}.boardTitle small{display:block;color:#a5a5b0;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.boardTitle h2{margin:2px 0 0;font-size:18px;line-height:1;font-weight:1000;text-transform:uppercase}
+    .boardCount{margin-left:auto;text-align:right}.boardCount strong{display:block;color:var(--accent);font-size:23px;line-height:.9}.boardCount small{color:#858590;font-size:8px;font-weight:900;letter-spacing:.1em}
+    .winner{position:relative;height:150px;flex:none;display:grid;grid-template-columns:98px minmax(0,1fr) 94px;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #353039;background:radial-gradient(circle at 18% 45%,rgba(var(--accent-rgb),.26),transparent 33%),linear-gradient(90deg,rgba(var(--accent-rgb),.11),transparent 65%)}
+    .winner:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);box-shadow:0 0 16px var(--accent)}
+    .avatar{position:relative;width:82px;height:82px;margin:auto;border:2px solid var(--accent);border-radius:10px;background:linear-gradient(145deg,rgba(var(--accent-rgb),.8),#22232b 65%);display:grid;place-items:center;font-size:26px;font-weight:1000;box-shadow:0 0 25px rgba(var(--accent-rgb),.19)}
+    .avatar:after{content:"★";position:absolute;top:-12px;right:-10px;width:27px;height:27px;display:grid;place-items:center;border:1px solid #ffdb7c;border-radius:50%;background:#7a5312;color:#ffd66b;font-size:12px}
+    .winnerInfo{min-width:0}.winnerInfo .lead{display:inline-flex;padding:4px 7px;border-radius:4px;background:var(--accent);font-size:8px;font-weight:1000;letter-spacing:.12em}.winnerInfo h3{margin:8px 0 3px;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.winnerInfo p{margin:0;color:#a1a1ad;font-size:10px;font-weight:800;text-transform:uppercase}
+    .bar{height:5px;margin-top:12px;border-radius:99px;background:#292931;overflow:hidden}.bar span{display:block;height:100%;border-radius:inherit;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+    .score{text-align:right}.score strong{display:block;font-size:54px;line-height:.8;font-weight:1000;font-variant-numeric:tabular-nums}.score small{display:block;margin-top:8px;color:#9d9da8;font-size:9px;font-weight:900;letter-spacing:.15em}
+    .rankList{flex:1;min-height:0;margin:0;padding:6px 10px 10px;list-style:none;display:flex;flex-direction:column;gap:4px}
+    .row{flex:1;min-height:42px;display:grid;grid-template-columns:32px 34px minmax(0,1fr) 50px;align-items:center;gap:8px;padding:5px 9px;border:1px solid transparent;border-radius:7px;background:rgba(8,8,12,.6)}
+    .row:hover{border-color:rgba(var(--accent-rgb),.35);background:rgba(var(--accent-rgb),.06)}
+    .place{font-size:15px;font-weight:1000;color:#8e8e99}.place.medal{color:#ffca55}.miniAvatar{width:31px;height:31px;display:grid;place-items:center;border:1px solid #43434c;border-radius:6px;background:#222229;color:#d4d4da;font-size:9px;font-weight:1000}
+    .person{min-width:0}.person strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.person small{display:block;margin-top:2px;color:#858590;font-size:8px;font-weight:800;text-transform:uppercase}.person .miniBar{width:76%;height:3px;margin-top:5px;border-radius:99px;background:#292931;overflow:hidden}.person .miniBar i{display:block;height:100%;background:var(--accent);opacity:.8}
+    .sales{text-align:right}.sales strong{font-size:20px;font-variant-numeric:tabular-nums}.sales small{display:block;color:#6f6f79;font-size:7px;font-weight:900}.up{color:#39d58a!important}.down{color:#ff667e!important}
+    .boardFooter{height:26px;flex:none;padding:7px 12px;border-top:1px solid #292930;color:#777781;font-size:8px;font-weight:800;letter-spacing:.08em;text-align:center;text-transform:uppercase}
+    @media(max-width:1350px){.screen{padding:18px 20px;gap:9px}.top{gap:18px}.heading h1{font-size:30px}.logo{width:58px;height:58px}.summary{grid-template-columns:1.15fr repeat(3,.72fr)}.winner{height:132px;grid-template-columns:82px minmax(0,1fr) 78px}.avatar{width:69px;height:69px}.score strong{font-size:43px}.winnerInfo h3{font-size:15px}.rankList{gap:2px}.row{min-height:36px}.person .miniBar{display:none}}
+  </style>
+</head>
+<body>
+<main class="screen">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">M<i>&amp;</i>M</div>
+      <div class="heading"><h1>RANKING DE <span>VENTAS</span></h1><p>Disciplina hoy, grandes resultados mañana</p></div>
+    </div>
+    <section class="period">
+      <div class="periodTop"><span class="periodLabel">RANGO ACTUAL · NOVIEMBRE</span><span class="dates">17 nov. 2026 — 30 nov. 2026</span></div>
+      <div class="progress"></div>
+      <div class="periodBottom"><span>Última actualización: <b>18 nov. · 09:30</b></span><span>Actualiza en <b>08:42</b></span><span>Cada <b>15 min</b></span></div>
+    </section>
+  </header>
+
+  <section class="summary">
+    <div class="live"><span class="pill">EN VIVO</span><strong>¡La competencia está al máximo!</strong><small>3 líderes · 1 sola meta</small></div>
+    <div class="metric"><div><small>Ventas hoy</small><strong>184</strong><span class="delta">↑ 12% vs. ayer</span></div><span class="icon">◫</span></div>
+    <div class="metric"><div><small>Meta diaria</small><strong>78%</strong><span class="delta">A 52 ventas</span></div><span class="icon">◎</span></div>
+    <div class="metric"><div><small>En competencia</small><strong>68</strong><span class="delta">5 sedes activas</span></div><span class="icon">◉</span></div>
+  </section>
+
+  <section class="boards">
+    <article class="board">
+      <header class="boardHeader"><span class="boardIcon">⌂</span><div class="boardTitle"><small>Top 10 asesores</small><h2>Lima Centro</h2></div><div class="boardCount"><strong>76</strong><small>VENTAS</small></div></header>
+      <div class="winner"><div class="avatar">MS</div><div class="winnerInfo"><span class="lead">● LÍDER</span><h3>Martín Salazar</h3><p>Campaña Hogar · Alta</p><div class="bar"><span style="width:100%"></span></div></div><div class="score"><strong>18</strong><small>VENTAS</small></div></div>
+      <ol class="rankList">
+        <li class="row"><span class="place medal">02</span><span class="miniAvatar">AR</span><div class="person"><strong>Ana Rodríguez</strong><small>Patria · Alta</small><span class="miniBar"><i style="width:89%"></i></span></div><div class="sales"><strong>16</strong><small class="up">▲ 1</small></div></li>
+        <li class="row"><span class="place medal">03</span><span class="miniAvatar">DL</span><div class="person"><strong>Diego Lozano</strong><small>Encuestas · OJT</small><span class="miniBar"><i style="width:78%"></i></span></div><div class="sales"><strong>14</strong><small>—</small></div></li>
+        <li class="row"><span class="place">04</span><span class="miniAvatar">CM</span><div class="person"><strong>Carla Mendoza</strong><small>Patria · Alta</small><span class="miniBar"><i style="width:67%"></i></span></div><div class="sales"><strong>12</strong><small class="up">▲ 2</small></div></li>
+        <li class="row"><span class="place">05</span><span class="miniAvatar">JP</span><div class="person"><strong>José Paredes</strong><small>Hogar · OJT</small><span class="miniBar"><i style="width:56%"></i></span></div><div class="sales"><strong>10</strong><small class="down">▼ 1</small></div></li>
+        <li class="row"><span class="place">06</span><span class="miniAvatar">LV</span><div class="person"><strong>Lucía Vargas</strong><small>Encuestas · Alta</small><span class="miniBar"><i style="width:33%"></i></span></div><div class="sales"><strong>6</strong><small>—</small></div></li>
+      </ol>
+      <footer class="boardFooter">Ranking local · Sede Lima Centro</footer>
+    </article>
+
+    <article class="board blue">
+      <header class="boardHeader"><span class="boardIcon">♟</span><div class="boardTitle"><small>Top 10 asesores</small><h2>M&amp;M Global</h2></div><div class="boardCount"><strong>184</strong><small>VENTAS</small></div></header>
+      <div class="winner"><div class="avatar">YT</div><div class="winnerInfo"><span class="lead">● LÍDER</span><h3>Yajaira Torres</h3><p>PRO · Campaña Patria</p><div class="bar"><span style="width:100%"></span></div></div><div class="score"><strong>26</strong><small>VENTAS</small></div></div>
+      <ol class="rankList">
+        <li class="row"><span class="place medal">02</span><span class="miniAvatar">JS</span><div class="person"><strong>Jhon Silva</strong><small>Tomás Valle · Hogar</small><span class="miniBar"><i style="width:92%"></i></span></div><div class="sales"><strong>24</strong><small class="up">▲ 2</small></div></li>
+        <li class="row"><span class="place medal">03</span><span class="miniAvatar">AB</span><div class="person"><strong>Allison Benites</strong><small>Callao · Patria</small><span class="miniBar"><i style="width:81%"></i></span></div><div class="sales"><strong>21</strong><small>—</small></div></li>
+        <li class="row"><span class="place">04</span><span class="miniAvatar">EG</span><div class="person"><strong>Edu Gutiérrez</strong><small>Comas · Encuestas</small><span class="miniBar"><i style="width:73%"></i></span></div><div class="sales"><strong>19</strong><small class="down">▼ 1</small></div></li>
+        <li class="row"><span class="place">05</span><span class="miniAvatar">RV</span><div class="person"><strong>Rosa Valdivia</strong><small>Lima Centro · Hogar</small><span class="miniBar"><i style="width:65%"></i></span></div><div class="sales"><strong>17</strong><small class="up">▲ 3</small></div></li>
+        <li class="row"><span class="place">06</span><span class="miniAvatar">FA</span><div class="person"><strong>Franco Acosta</strong><small>PRO · Patria</small><span class="miniBar"><i style="width:58%"></i></span></div><div class="sales"><strong>15</strong><small>—</small></div></li>
+      </ol>
+      <footer class="boardFooter">Ranking global · Todas las sedes</footer>
+    </article>
+
+    <article class="board violet">
+      <header class="boardHeader"><span class="boardIcon">◖</span><div class="boardTitle"><small>Top 10 supervisores</small><h2>Cerradores</h2></div><div class="boardCount"><strong>93</strong><small>VENTAS</small></div></header>
+      <div class="winner"><div class="avatar">CM</div><div class="winnerInfo"><span class="lead">● LÍDER</span><h3>Camila Mendoza</h3><p>Comas · Equipo Fénix</p><div class="bar"><span style="width:100%"></span></div></div><div class="score"><strong>31</strong><small>VENTAS</small></div></div>
+      <ol class="rankList">
+        <li class="row"><span class="place medal">02</span><span class="miniAvatar">RP</span><div class="person"><strong>Renato Palomino</strong><small>PRO · Team Élite</small><span class="miniBar"><i style="width:90%"></i></span></div><div class="sales"><strong>28</strong><small class="up">▲ 1</small></div></li>
+        <li class="row"><span class="place medal">03</span><span class="miniAvatar">VC</span><div class="person"><strong>Valeria Campos</strong><small>Callao · Impacto</small><span class="miniBar"><i style="width:84%"></i></span></div><div class="sales"><strong>26</strong><small>—</small></div></li>
+        <li class="row"><span class="place">04</span><span class="miniAvatar">SO</span><div class="person"><strong>Sebastián Ortiz</strong><small>Tomás Valle · Titanes</small><span class="miniBar"><i style="width:71%"></i></span></div><div class="sales"><strong>22</strong><small class="down">▼ 2</small></div></li>
+        <li class="row"><span class="place">05</span><span class="miniAvatar">NF</span><div class="person"><strong>Natalia Flores</strong><small>Lima Centro · Fusión</small><span class="miniBar"><i style="width:61%"></i></span></div><div class="sales"><strong>19</strong><small class="up">▲ 1</small></div></li>
+        <li class="row"><span class="place">06</span><span class="miniAvatar">HB</span><div class="person"><strong>Hugo Bravo</strong><small>PRO · Águilas</small><span class="miniBar"><i style="width:52%"></i></span></div><div class="sales"><strong>16</strong><small>—</small></div></li>
+      </ol>
+      <footer class="boardFooter">Ranking global · Cerradores</footer>
+    </article>
+  </section>
+</main>
+</body>
+</html>

@@ -12,10 +12,22 @@ import { VisorVersusService } from './services/visor-versus.service';
 import { VisorSedeVersusService } from './services/visor-sede-versus.service';
 import { SedeVersusConfigModule } from 'src/sede-versus-config/sede-versus-config.module';
 import { VersusConfigModule } from 'src/versus-config/versus-config.module';
+import { VisorSupervisorRankingService } from './services/visor-supervisor-ranking.service';
 
 @Module({
   imports: [ConfigRankingModule, SedeVersusConfigModule, VersusConfigModule],
   controllers: [VisorController],
-  providers: [VisorService, VisorSedeService, VisorRankingService, VisorSedeStatsDiarioService, VisorMediaService, VisorTimeService, VisorResumenVentasService, VisorVersusService, VisorSedeVersusService],
+  providers: [
+    VisorService,
+    VisorSedeService,
+    VisorRankingService,
+    VisorSedeStatsDiarioService,
+    VisorMediaService,
+    VisorTimeService,
+    VisorResumenVentasService,
+    VisorVersusService,
+    VisorSedeVersusService,
+    VisorSupervisorRankingService,
+  ],
 })
 export class VisorModule {}

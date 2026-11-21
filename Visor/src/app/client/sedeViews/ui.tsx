@@ -18,6 +18,8 @@ import VersusUI from "@/components/versus/ui";
 import { VersusRangoFecha, VisorVersus } from "@/types/versus";
 import SedeVersusUI from "@/components/sedeVersus/ui";
 import { VisorSedeVersus } from "@/types/sedeVersus";
+import SupervisorLeaderboardUI from "@/components/supervisorLeaderboard/ui";
+import { SupervisorLeaderboard } from "@/types/supervisorRanking";
 
 
 const DEFAULT_RANKING_DURATION = 5 * 60 * 1000;
@@ -41,6 +43,7 @@ export default function SedeViews({
 
   visorVersus,
   visorSedeVersus,
+  supervisorLeaderboard,
   time,
 } : {
   sede: Sede;
@@ -61,6 +64,7 @@ export default function SedeViews({
   rankingDurationMs?: number;
   visorVersus: VisorVersus[];
   visorSedeVersus: VisorSedeVersus;
+  supervisorLeaderboard: SupervisorLeaderboard;
   time: Time;
 }) {
 
@@ -157,8 +161,8 @@ export default function SedeViews({
 
   return (
     <ViewRotator
-      views={[        
-        {
+      views={[
+      {
           id: "ranking",
           type: "timed",
           durationMs: rankingDurationMs,
@@ -173,6 +177,23 @@ export default function SedeViews({
             />
           )
         }, 
+        ...(
+          (supervisorLeaderboard.destacado?.ventas ?? 0) >= 5
+            ? [
+                {
+                  id: "supervisor-leaderboard",
+                  type: "timed" as const,
+                  durationMs: 60_000,
+                  render: (
+                    <SupervisorLeaderboardUI
+                      data={supervisorLeaderboard}
+                      rankingRango={rankingRango}
+                    />
+                  ),
+                },
+              ]
+            : []
+        ),
         ...(visorSedeVersus.participantes.length > 0 ? [
           {
             id: "sede-versus",
@@ -200,7 +221,7 @@ export default function SedeViews({
               />
             )
           }
-        ]: []), 
+        ]: []),
         {
           id: "resumen-global",
           type: "timed",
@@ -236,7 +257,7 @@ export default function SedeViews({
           render: (
             <TimeUI time={time} />
           )
-        },
+        }, 
       ]}
     />
   );
