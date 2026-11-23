@@ -1,4 +1,4 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { VentaImportService } from './venta/import.service';
 import { SicaAuditService } from './services/sica-audit.service';
 import { SicaScraperService } from './services/sica-scraper.service';
@@ -25,7 +25,10 @@ export class SicaService {
     const ventas: VentaSica[] = [];
 
     for (const campaign of SICA_CAMPAIGNS) {
-      const filas = await this.scraperService.obtenerVentas(campaign.id, campaign.name);
+      const filas = await this.scraperService.obtenerVentas(
+        campaign.id,
+        campaign.name,
+      );
 
       for (const fila of filas) {
         const venta = this.transformService.transformar(fila);
@@ -35,9 +38,14 @@ export class SicaService {
     }
 
     if (ventas.length === 0) {
-      throw new ServiceUnavailableException(
-        'SICA no devolvió ventas. La sincronización se canceló para evitar registrar una actualización vacía.',
-      );
+      return {
+        estado: 'SIN_VENTAS' as const,
+        mensaje: 'SICA no devolvió ventas. No hay ventas por actualizar.',
+        ventasSicaProcesadas: 0,
+        registrosVentasProcesadas: 0,
+        ventaCerradorNoRegistrado: 0,
+        omitidos: 0,
+      };
     }
 
     await this.auditService.guardarExcel(ventas);
@@ -48,6 +56,10 @@ export class SicaService {
       this.rankingGateway.emitRankingRefresh();
     }
 
-    return resultado;
+    return {
+      estado: 'ACTUALIZADO' as const,
+      mensaje: 'Sincronización de ventas completada.',
+      ...resultado,
+    };
   }
 }

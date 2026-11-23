@@ -1,13 +1,13 @@
 
 services:
   backend:
-    image: 192.168.10.45:8080/view-mym/backend:${BACKEND_VERSION}
+    image: pc-harbor-mym.tail3a74c5.ts.net/view-mym/backend:${BACKEND_VERSION}
     build:
       context: ./Backend
       dockerfile: Dockerfile
 
   dashboard:
-    image: 192.168.10.45:8080/view-mym/dashboard:${DASHBOARD_VERSION}
+    image: pc-harbor-mym.tail3a74c5.ts.net/view-mym/dashboard:${DASHBOARD_VERSION}
     build:
       context: ./Dashboard
       dockerfile: Dockerfile
@@ -18,7 +18,7 @@ services:
         BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL}
 
   visor:
-    image: 192.168.10.45:8080/view-mym/visor:${VISOR_VERSION}
+    image: pc-harbor-mym.tail3a74c5.ts.net/view-mym/visor:${VISOR_VERSION}
     build:
       context: ./Visor
       dockerfile: Dockerfile
