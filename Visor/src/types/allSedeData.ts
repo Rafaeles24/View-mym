@@ -6,6 +6,7 @@ import { SedeStats } from "./stats";
 import { VisorSedeVersus } from "./sedeVersus";
 import { Time } from "./time";
 import { VersusRangoFecha, VisorVersus } from "./versus";
+import { SupervisorLeaderboard } from "./supervisorRanking";
 
 export type AllSedeData = {
   sede: Sede;
@@ -21,5 +22,6 @@ export type AllSedeData = {
   visorResumenAyer: ResumenVentas;
   visorVersus: VisorVersus[];
   visorSedeVersus: VisorSedeVersus;
+  supervisorLeaderboard: SupervisorLeaderboard;
   time: Time;
 }

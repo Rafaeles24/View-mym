@@ -1,0 +1,29 @@
+
+services:
+  backend:
+    image: pc-harbor-mym.tail3a74c5.ts.net/view-mym/backend:${BACKEND_VERSION}
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+
+  dashboard:
+    image: pc-harbor-mym.tail3a74c5.ts.net/view-mym/dashboard:${DASHBOARD_VERSION}
+    build:
+      context: ./Dashboard
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_API_URL: ${PROD_DASHBOARD_PUBLIC_BACKEND_API_URL}
+        NEXT_PUBLIC_SOCKET_URL: ${PROD_DASHBOARD_PUBLIC_SOCKET_URL}
+        NEXT_PUBLIC_STATIC_URL: ${PROD_DASHBOARD_PUBLIC_STATIC_URL}
+        BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL}
+
+  visor:
+    image: pc-harbor-mym.tail3a74c5.ts.net/view-mym/visor:${VISOR_VERSION}
+    build:
+      context: ./Visor
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SOCKET_URL: ${PROD_VISOR_PUBLIC_SOCKET_URL}
+        NEXT_PUBLIC_STATIC_URL: ${PROD_VISOR_PUBLIC_STATIC_URL}
+        NEXT_PUBLIC_SOCKET_PATH: ${PROD_VISOR_PUBLIC_SOCKET_PATH}
+        NEXT_PUBLIC_BACKEND_API_URL: ${PROD_VISOR_PUBLIC_BACKEND_API_URL}

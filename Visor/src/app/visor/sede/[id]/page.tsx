@@ -65,6 +65,15 @@ export default async function SedePage({
       visorResumenAyer={data.visorResumenAyer}
       visorVersus={data.visorVersus ?? []}
       visorSedeVersus={data.visorSedeVersus ?? { participantes: [], resultado: { estado: "SIN_PARTICIPANTES", lideres_sede_ids: [], ventas_lider: 0, diferencia_primero_segundo: 0 } }}
+      supervisorLeaderboard={data.supervisorLeaderboard ?? {
+        participantes: [],
+        destacado: null,
+        rango: {
+          fecha_inicio: data.rankingRango.fecha_inicio,
+          fecha_fin: data.rankingRango.fecha_fin,
+          zona_horaria: data.rankingRango.zona_horaria,
+        },
+      }}
       versusRango={data.versusRango}
       sedeVersusRango={data.sedeVersusRango}
       time={data.time}
