@@ -1,3 +1,4 @@
+
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
@@ -14,12 +15,12 @@ import { VersusGateway } from 'src/realtime/gateways/versus.gateway';
 @Injectable()
 export class ScheduleService {
   private readonly logger = new Logger(ScheduleService.name);
+  private reconciliacionSemanalEnCurso = false;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly sicaService: SicaService,
     private readonly configRankingService: ConfigRankingService,
-
     private readonly rankingGateway: RankingGateway,
     private readonly versusGateway: VersusGateway,
     private readonly mediaGateway: MediaGateway,
@@ -27,22 +28,10 @@ export class ScheduleService {
     private readonly sedeGateway: SedeGateway,
   ) {}
 
-  /*
-   * ========================================
-   * HORA ACTUAL
-   * ========================================
-   */
-
   @Cron(CronExpression.EVERY_MINUTE)
   emitCurrentTime() {
     this.timeGateway.emitCurrentTime();
   }
-
-  /*
-   * ========================================
-   * RENOVAR RANGO
-   * ========================================
-   */
 
   @Cron('0 * * * * *', {
     timeZone: 'America/Lima',
@@ -50,16 +39,6 @@ export class ScheduleService {
   })
   async renovarRangoRanking() {
     try {
-      /*
-       * renovarSiCorresponde() ya se encarga
-       * internamente de emitir:
-       *
-       * ranking-config:sync
-       * ranking:refresh
-       *
-       * solamente cuando realmente cambia
-       * el rango.
-       */
       await this.configRankingService.renovarSiCorresponde();
     } catch (error: unknown) {
       this.logger.error(
@@ -69,42 +48,28 @@ export class ScheduleService {
     }
   }
 
-  /*
-   * ========================================
-   * EJECUTAR ACTUALIZACIÓN DEL RANKING
-   * ========================================
-   */
-
   @Cron('* * * * * *', {
     timeZone: 'America/Lima',
     waitForCompletion: true,
   })
   async revisarActualizacionRanking() {
     try {
-      const config = await this.configRankingService.obtenerProgramacion();
+      const config =
+        await this.configRankingService.obtenerProgramacion();
 
-      if (!config.proxima_actualizacion) {
-        return;
-      }
+      if (!config.proxima_actualizacion) return;
 
-      const ahora = DateTime.now().setZone(config.zona_horaria);
+      const ahora = DateTime.now().setZone(
+        config.zona_horaria,
+      );
 
-      const programada = DateTime.fromJSDate(config.proxima_actualizacion, {
-        zone: config.zona_horaria,
-      });
+      const programada = DateTime.fromJSDate(
+        config.proxima_actualizacion,
+        { zone: config.zona_horaria },
+      );
 
-      /*
-       * Todavía no llegó la hora.
-       */
-      if (ahora.toMillis() < programada.toMillis()) {
-        return;
-      }
+      if (ahora.toMillis() < programada.toMillis()) return;
 
-      /*
-       * Verificamos que la fecha programada
-       * siga perteneciendo a la programación
-       * actualmente configurada.
-       */
       const puntoValido =
         this.configRankingService.siguienteActualizacionRanking(
           programada,
@@ -115,124 +80,78 @@ export class ScheduleService {
       const perteneceAlHorario =
         puntoValido.toMillis() === programada.toMillis();
 
-      const retrasoMs = ahora.toMillis() - programada.toMillis();
+      const retrasoMs = ahora.toMillis() -
+        programada.toMillis();
 
-      /*
-       * Permitimos hasta 60 segundos
-       * de retraso para ejecutar el batch.
-       */
-      const debeEjecutar = perteneceAlHorario && retrasoMs < 60_000;
+      const debeEjecutar =
+        perteneceAlHorario && retrasoMs < 60_000;
 
-      /*
-       * Calculamos desde ahora cuál será
-       * la siguiente ejecución.
-       */
-      const proxima = this.configRankingService.siguienteActualizacionRanking(
-        ahora,
-        config,
-      );
+      const proxima =
+        this.configRankingService.siguienteActualizacionRanking(
+          ahora,
+          config,
+        );
 
-      /*
-       * Reserva optimista.
-       *
-       * Si otra ejecución ya modificó
-       * proxima_actualizacion, count será 0
-       * y esta ejecución abandona.
-       */
-      const reservado = await this.prisma.configRanking.updateMany({
-        where: {
-          id: config.id,
-
-          proxima_actualizacion: config.proxima_actualizacion,
-
-          hora_inicio_actualizacion: config.hora_inicio_actualizacion,
-
-          hora_fin_actualizacion: config.hora_fin_actualizacion,
-
-          intervalo_actualizacion: config.intervalo_actualizacion,
-
-          zona_horaria: config.zona_horaria,
-        },
-
-        data: {
-          proxima_actualizacion: proxima.toUTC().toJSDate(),
-        },
-      });
-
-      /*
-       * Otra ejecución ganó la reserva.
-       */
-      if (reservado.count === 0) {
-        return;
-      }
-
-      /*
-       * El punto antiguo ya no corresponde
-       * a la programación actual.
-       *
-       * La siguiente ejecución ya quedó
-       * corregida en BD, así que no hacemos
-       * sincronización SICA.
-       */
-      if (!debeEjecutar) {
-        return;
-      }
-
-      /*
-       * ====================================
-       * INICIO DEL BATCH
-       * ====================================
-       */
-
-      this.configRankingService.establecerEstadoActualizacion('SINCRONIZANDO');
-
-      this.logger.log(`Iniciando batch programado para ${programada.toISO()}`);
-
-      try {
-        /*
-         * Sincronización principal.
-         */
-        const resultado = await this.sicaService.sincronizar(false);
-
-        if (resultado.estado === 'SIN_VENTAS') {
-          this.configRankingService.establecerEstadoActualizacion('EN_ESPERA');
-
-          this.logger.warn(
-            'Batch omitido: SICA no devolvió ventas. No hay ventas por actualizar.',
-          );
-
-          return;
-        }
-
-        /*
-         * Registrar una única vez la última
-         * actualización exitosa.
-         */
-        await this.prisma.configRanking.update({
+      const reservado =
+        await this.prisma.configRanking.updateMany({
           where: {
             id: config.id,
+            proxima_actualizacion:
+              config.proxima_actualizacion,
+            hora_inicio_actualizacion:
+              config.hora_inicio_actualizacion,
+            hora_fin_actualizacion:
+              config.hora_fin_actualizacion,
+            intervalo_actualizacion:
+              config.intervalo_actualizacion,
+            zona_horaria: config.zona_horaria,
           },
-
           data: {
-            ultima_actualizacion: new Date(),
+            proxima_actualizacion:
+              proxima.toUTC().toJSDate(),
           },
         });
 
-        /*
-         * El batch terminó correctamente.
-         */
-        this.configRankingService.establecerEstadoActualizacion('EN_ESPERA');
+      if (reservado.count === 0 || !debeEjecutar) return;
 
-        /*
-         * ÚNICA señal que obliga al visor
-         * a volver a consultar /all/:sede.
-         */
+      this.configRankingService.establecerEstadoActualizacion(
+        'SINCRONIZANDO',
+      );
+
+      this.logger.log(
+        `Iniciando batch programado para ${programada.toISO()}`,
+      );
+
+      try {
+        const resultado =
+          await this.sicaService.sincronizar(false);
+
+        if (resultado.estado === 'SIN_VENTAS') {
+          this.configRankingService.establecerEstadoActualizacion(
+            'EN_ESPERA',
+          );
+
+          this.logger.warn(
+            'Batch omitido: SICA no devolvió ventas.',
+          );
+          return;
+        }
+
+        await this.prisma.configRanking.update({
+          where: { id: config.id },
+          data: { ultima_actualizacion: new Date() },
+        });
+
+        this.configRankingService.establecerEstadoActualizacion(
+          'EN_ESPERA',
+        );
+
         this.rankingGateway.emitRankingRefresh();
-
         this.logger.log('Batch de datos completado.');
       } catch (error) {
-        this.configRankingService.establecerEstadoActualizacion('ERROR');
-
+        this.configRankingService.establecerEstadoActualizacion(
+          'ERROR',
+        );
         throw error;
       }
     } catch (error: unknown) {
@@ -243,11 +162,54 @@ export class ScheduleService {
     }
   }
 
-  /*
-   * ========================================
-   * CUENTA REGRESIVA
-   * ========================================
-   */
+  @Cron('0 0 3 * * 0', {
+    name: 'sica-reconciliacion-domingos',
+    timeZone: 'America/Lima',
+    waitForCompletion: true,
+  })
+  async reconciliarVentasSicaDomingo(): Promise<void> {
+    if (this.reconciliacionSemanalEnCurso) return;
+
+    this.reconciliacionSemanalEnCurso = true;
+
+    try {
+      const ultimoDia = DateTime.now()
+        .setZone('America/Lima')
+        .startOf('day')
+        .minus({ days: 1 });
+
+      const primerDia = ultimoDia.minus({ days: 29 });
+
+      const inicio = primerDia.toFormat('dd/MM/yyyy');
+      const fin = ultimoDia.toFormat('dd/MM/yyyy');
+
+      this.logger.log(
+        `[SICA] Reconciliación dominical ${inicio} - ${fin}`,
+      );
+
+      const resultado =
+        await this.sicaService.reconciliarPeriodo(
+          inicio,
+          fin,
+          true,
+        );
+
+      this.logger.log(
+        `[SICA] Reconciliación completada: ` +
+        `días=${resultado.diasConsultados}, ` +
+        `ventas=${resultado.ventasSicaProcesadas}, ` +
+        `registros=${resultado.registrosVentasProcesadas}, ` +
+        `omitidos=${resultado.omitidos}`,
+      );
+    } catch (error: unknown) {
+      this.logger.error(
+        'Falló la reconciliación dominical de SICA',
+        error instanceof Error ? error.stack : String(error),
+      );
+    } finally {
+      this.reconciliacionSemanalEnCurso = false;
+    }
+  }
 
   @Cron('* * * * * *', {
     timeZone: 'America/Lima',
