@@ -12,8 +12,9 @@ import { FilaSica } from '../interfaces/fila-sica.interface';
 import { RangoTramitacionSica } from '../interfaces/sica-scraper.interface';
 
 const FILTROS_TRAMITACION: Record<number, string> = {
-  1: 'FieldDateFilter_25945',    // VODAFONE
+  1: 'FieldDateFilter_25945', // VODAFONE
   4850: 'FieldDateFilter_47157', // YOIGO
+  /* 3404: 'FieldDateFilter_34180',   */ // JAZZTEL
 };
 
 @Injectable()
@@ -43,7 +44,9 @@ export class SicaScraperService {
     const finIso = this.validarFecha(fechas.fin);
 
     if (inicioIso > finIso) {
-      throw new InternalServerErrorException('El inicio del rango SICA es posterior al fin');
+      throw new InternalServerErrorException(
+        'El inicio del rango SICA es posterior al fin',
+      );
     }
 
     // Dos lecturas de la misma consulta, para mitigar resultados intermitentes.
@@ -66,8 +69,8 @@ export class SicaScraperService {
     if (!this.mismosIds(lecturas[0], lecturas[1])) {
       this.logger.warn(
         `[SICA] ${campaignName}: las lecturas de ${fechas.inicio} a ${fechas.fin} ` +
-        `difieren (${lecturas[0].size} y ${lecturas[1].size} IDs). ` +
-        'Se realizará una tercera consulta.',
+          `difieren (${lecturas[0].size} y ${lecturas[1].size} IDs). ` +
+          'Se realizará una tercera consulta.',
       );
       await this.pausa(1200);
       const html = await this.descargarListadoAjax(
@@ -94,8 +97,8 @@ export class SicaScraperService {
 
     this.logger.log(
       `[SICA] ${campaignName} ${fechas.inicio}-${fechas.fin}: ` +
-      `${lecturas.map((x) => x.size).join(' / ')} IDs por consulta; ` +
-      `${unificadas.size} IDs únicos consolidados.`,
+        `${lecturas.map((x) => x.size).join(' / ')} IDs por consulta; ` +
+        `${unificadas.size} IDs únicos consolidados.`,
     );
 
     return [...unificadas.values()];
@@ -157,7 +160,9 @@ export class SicaScraperService {
 
     const html = response.data;
     if (!html.trim()) {
-      throw new InternalServerErrorException(`[SICA] HTML vacío para ${campaignName}`);
+      throw new InternalServerErrorException(
+        `[SICA] HTML vacío para ${campaignName}`,
+      );
     }
 
     // SICA puede responder el formulario de acceso con HTTP 200.
@@ -166,8 +171,27 @@ export class SicaScraperService {
       (/<input\b[^>]*\btype\s*=\s*["']password["']/i.test(html) &&
         /<input\b[^>]*\bname\s*=\s*["']username["']/i.test(html));
     if (formularioLogin) {
-      throw new UnauthorizedException(`[SICA] Sesión expirada para ${campaignName}`);
+      throw new UnauthorizedException(
+        `[SICA] Sesión expirada para ${campaignName}`,
+      );
     }
+
+    const $ = cheerio.load(html);
+
+    const ids = $('tr[id^="item_"]')
+      .toArray()
+      .map((tr) => $(tr).attr('id')?.replace('item_', ''))
+      .filter(Boolean);
+
+    const columnas = $('table thead tr').first().find('th').length;
+
+    this.logger.log(
+      `[SICA DEBUG] ${campaignName} ` +
+        `${rango.inicio}-${rango.fin} | ` +
+        `columnas=${columnas} | ` +
+        `ventas=${ids.length} | ` +
+        `ids=${ids.join(',')}`,
+    );
 
     return html;
   }
@@ -180,10 +204,8 @@ export class SicaScraperService {
     // que contiene referencias a ventas.
     if (
       $('[id^="item_"]').length > 0 ||
-      $(
-        'a[href*="/Sales/Edit/"], ' +
-        'a[href*="/Sales/Sales/Edit/"]',
-      ).length > 0
+      $('a[href*="/Sales/Edit/"], ' + 'a[href*="/Sales/Sales/Edit/"]').length >
+        0
     ) {
       return false;
     }
@@ -199,18 +221,14 @@ export class SicaScraperService {
           .first()
           .find('th, td')
           .toArray()
-          .map((celda) =>
-            this.limpiarEspacios($(celda).text()),
-          );
+          .map((celda) => this.limpiarEspacios($(celda).text()));
 
         // Columnas base que SICA conserva
         // incluso cuando no hay ventas.
         const estructuraSica =
           cabeceras.includes('ID') &&
           cabeceras.includes('Fecha creación') &&
-          cabeceras.includes(
-            this.fechaEdicionHeader,
-          ) &&
+          cabeceras.includes(this.fechaEdicionHeader) &&
           cabeceras.includes('Agente');
 
         if (!estructuraSica) continue;
@@ -223,11 +241,8 @@ export class SicaScraperService {
 
         if (
           filas.length === 1 &&
-          $(filas[0])
-            .children('td[colspan]').length > 0 &&
-          this.contieneMensajeSinResultados(
-            $(filas[0]).text(),
-          )
+          $(filas[0]).children('td[colspan]').length > 0 &&
+          this.contieneMensajeSinResultados($(filas[0]).text())
         ) {
           return true;
         }
@@ -236,9 +251,7 @@ export class SicaScraperService {
       return false;
     }
 
-    const texto = this.limpiarEspacios(
-      $('body').text() || $.root().text(),
-    );
+    const texto = this.limpiarEspacios($('body').text() || $.root().text());
 
     // Respuesta con mensaje explícito de cero ventas.
     if (this.contieneMensajeSinResultados(texto)) {
@@ -251,16 +264,13 @@ export class SicaScraperService {
     const sinContenido =
       texto.length === 0 &&
       html.trim().length <= 2048 &&
-      $(
-        'form, input, script, iframe, ' +
-        'a, table, tr, td',
-      ).length === 0 &&
+      $('form, input, script, iframe, ' + 'a, table, tr, td').length === 0 &&
       $('div, section, span, p').length > 0;
 
     if (sinContenido) {
       this.logger.warn(
         '[SICA] Fragmento AJAX vacío reconocido. ' +
-        `bytesHTML=${Buffer.byteLength(html, 'utf8')}`,
+          `bytesHTML=${Buffer.byteLength(html, 'utf8')}`,
       );
 
       return true;
@@ -270,10 +280,7 @@ export class SicaScraperService {
     return false;
   }
 
-  
-  private contieneMensajeSinResultados(
-    texto: string,
-  ): boolean {
+  private contieneMensajeSinResultados(texto: string): boolean {
     const normalizado = this.limpiarEspacios(texto)
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -289,11 +296,8 @@ export class SicaScraperService {
       /no matching records/,
       /empty (?:result|list)/,
       /no se dispone de (?:datos|informacion)/,
-    ].some((patron) =>
-      patron.test(normalizado),
-    );
+    ].some((patron) => patron.test(normalizado));
   }
-
 
   private diagnosticarEstructuraHtml(
     $: ReturnType<typeof cheerio.load>,
@@ -301,24 +305,22 @@ export class SicaScraperService {
   ): string {
     const tablas = $('table');
     const detallesTablas: string[] = [];
-  
+
     tablas.each((indice, elemento) => {
       const tabla = $(elemento);
-    
+
       const cabeceras = tabla
         .find('thead tr')
         .first()
         .find('th, td')
         .toArray()
-        .map((celda) =>
-          this.limpiarEspacios($(celda).text()),
-        );
-      
+        .map((celda) => this.limpiarEspacios($(celda).text()));
+
       const filas = tabla.find('tbody > tr');
-      const filasConCeldas = filas.filter((_, tr) =>
-        $(tr).children('td').length > 0,
+      const filasConCeldas = filas.filter(
+        (_, tr) => $(tr).children('td').length > 0,
       );
-    
+
       detallesTablas.push(
         `tabla${indice + 1}={` +
           `cabeceras:[${cabeceras
@@ -327,27 +329,24 @@ export class SicaScraperService {
             .join(' | ')}], ` +
           `filas:${filas.length}, ` +
           `filasConCeldas:${filasConCeldas.length}` +
-        `}`,
+          `}`,
       );
     });
-  
+
     const referenciasVentas = $(
       '[id^="item_"], ' +
-      'a[href*="/Sales/Edit/"], ' +
-      'a[href*="/Sales/Sales/Edit/"]',
+        'a[href*="/Sales/Edit/"], ' +
+        'a[href*="/Sales/Sales/Edit/"]',
     ).length;
-  
-    const texto = this.limpiarEspacios(
-      $('body').text() || $.root().text(),
-    );
-  
+
+    const texto = this.limpiarEspacios($('body').text() || $.root().text());
+
     const posibleLogin =
       $('input[type="password"]').length > 0 ||
       $('form[action*="/Account/Login"]').length > 0;
-  
-    const tieneMensajeSinResultados =
-      this.contieneMensajeSinResultados(texto);
-  
+
+    const tieneMensajeSinResultados = this.contieneMensajeSinResultados(texto);
+
     return [
       `bytesHTML=${Buffer.byteLength(html, 'utf8')}`,
       `tablas=${tablas.length}`,
@@ -360,6 +359,15 @@ export class SicaScraperService {
     ].join(' | ');
   }
 
+  private normalizarCabezeraSica(texto: string): string {
+    return (texto ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
 
   private procesarHtml(
     html: string,
@@ -382,6 +390,10 @@ export class SicaScraperService {
     let tablaEncontrada: ReturnType<typeof $> | null = null;
     let headersEncontrados: string[] = [];
 
+    const requeridasNormalizadas = requeridas.map((nombre) =>
+      this.normalizarCabezeraSica(nombre),
+    );
+
     for (const elemento of $('table').toArray()) {
       const tabla = $(elemento);
 
@@ -390,68 +402,88 @@ export class SicaScraperService {
         .first()
         .find('th, td')
         .toArray()
-        .map((celda) =>
-          this.limpiarEspacios($(celda).text()),
-        );
+        .map((celda) => this.limpiarEspacios($(celda).text()));
 
-      if (
-        requeridas.every((nombre) =>
-          headers.includes(nombre),
-        )
-      ) {
+      const normalizados = headers.map((nombre) =>
+        this.normalizarCabezeraSica(nombre),
+      );
+
+      const faltantes = requeridasNormalizadas.filter(
+        (nombre) => !normalizados.includes(nombre),
+      );
+
+      if (faltantes.length === 0) {
+        tablaEncontrada = tabla;
+        headersEncontrados = headers;
+        break;
+      }
+
+      this.logger.warn(
+        `[SICA] ${campaignName}: ` +
+          `Columnas no identificadas: ${faltantes.join(', ')}. ` +
+          `Columnas totales: ${headers.length}`,
+      );
+
+      if (requeridas.every((nombre) => headers.includes(nombre))) {
         tablaEncontrada = tabla;
         headersEncontrados = headers;
         break;
       }
     }
 
-    // Puede existir una respuesta legítima SIN VENTAS
-    // cuya tabla no tenga todas las columnas opcionales.
+    // Respuesta legítima sin ventas
     if (!tablaEncontrada) {
       if (this.esRespuestaSinVentas($, html)) {
         this.logger.log(
-          `[SICA] ${campaignName} ` +
-          `${inicioIso}-${finIso}: SIN VENTAS`,
+          `[SICA] ${campaignName} ` + `${inicioIso}-${finIso}: SIN VENTAS`,
         );
 
         return [];
       }
 
-      const diagnostico =
-        this.diagnosticarEstructuraHtml($, html);
+      const diagnostico = this.diagnosticarEstructuraHtml($, html);
 
       throw new InternalServerErrorException(
         `[SICA] Tabla de ventas no reconocida ` +
-        `en ${campaignName} ${inicioIso}-${finIso}. ` +
-        diagnostico,
+          `en ${campaignName} ${inicioIso}-${finIso}. ` +
+          diagnostico,
       );
     }
 
     const filas = tablaEncontrada.find('tbody > tr');
 
-    // Tabla válida sin filas.
     if (filas.length === 0) {
       this.logger.log(
-        `[SICA] ${campaignName}: SIN VENTAS ` +
-        `(${inicioIso}-${finIso})`,
+        `[SICA] ${campaignName}: SIN VENTAS ` + `(${inicioIso}-${finIso})`,
       );
 
       return [];
     }
 
-    // Tabla con una fila informativa.
     if (
       filas.length === 1 &&
       $(filas[0]).children('td[colspan]').length > 0 &&
-      this.contieneMensajeSinResultados(
-        $(filas[0]).text(),
-      )
+      this.contieneMensajeSinResultados($(filas[0]).text())
     ) {
       return [];
     }
 
-    const indice = (nombre: string) =>
-      headersEncontrados.indexOf(nombre);
+    const indice = (nombre: string) => {
+      const buscado = this.normalizarCabezeraSica(nombre);
+
+      return headersEncontrados.findIndex(
+        (header) => this.normalizarCabezeraSica(header) === buscado,
+      );
+    };
+
+    // Validar que la columna Sede exista
+    const indiceSede = indice('Sede');
+
+    if (indiceSede === -1) {
+      throw new InternalServerErrorException(
+        `[SICA] No se encontró la columna Sede ` + `en ${campaignName}`,
+      );
+    }
 
     const resultados: FilaSica[] = [];
     const ids = new Set<string>();
@@ -463,22 +495,15 @@ export class SicaScraperService {
 
       const valores = celdas
         .toArray()
-        .map((td) =>
-          this.limpiarEspacios($(td).text()),
-        );
+        .map((td) => this.limpiarEspacios($(td).text()));
 
-      const fecha = this.extraerFecha(
-        valores[indice(this.fechaHeader)],
-      );
+      const fecha = this.extraerFecha(valores[indice(this.fechaHeader)]);
 
       if (!fecha) return;
 
       const fechaIso = this.fechaAFormatoIso(fecha);
 
-      if (
-        fechaIso < inicioIso ||
-        fechaIso > finIso
-      ) {
+      if (fechaIso < inicioIso || fechaIso > finIso) {
         return;
       }
 
@@ -494,37 +519,68 @@ export class SicaScraperService {
 
       if (!/^\d+$/.test(idExterno)) {
         throw new InternalServerErrorException(
-          `[SICA] ID inválido en ${campaignName}, ` +
-          `fila ${numeroFila + 1}`,
+          `[SICA] ID inválido en ${campaignName}, ` + `fila ${numeroFila + 1}`,
         );
       }
 
       if (ids.has(idExterno)) return;
 
+      // =========================================
+      // VALIDACIÓN DE SEDE
+      // =========================================
+
+      // La columna existe, pero también verificamos
+      // que la fila tenga físicamente esa celda.
+      if (celdas.eq(indiceSede).length === 0) {
+        throw new InternalServerErrorException(
+          `[SICA] Venta ${idExterno} de ${campaignName}: ` +
+            `falta la celda Sede en la fila ` +
+            `${numeroFila + 1}.`,
+        );
+      }
+
+      const sede = (valores[indiceSede] ?? '').trim();
+
+      // Una celda de sede vacía es válida.
+      // BACKOFFICE se asignará en el importador.
+      if (!sede) {
+        this.logger.warn(
+          `[SICA] Venta ${idExterno} ` +
+            `de ${campaignName} ` +
+            `con fecha ${fechaIso} SIN SEDE. ` +
+            `Se derivará a BACKOFFICE.`,
+        );
+      }
+
+      // =========================================
+      // REGISTRAR VENTA
+      // =========================================
+
       ids.add(idExterno);
 
       resultados.push({
         idExterno,
-        agenteOriginal:
-          valores[indice('Agente')] ?? '',
-        asesor:
-          valores[indice('ASESOR')] ?? '',
-        cerrador:
-          valores[indice('CERRADOR')] ?? '',
-        sede:
-          valores[indice('Sede')] ?? '',
+
+        agenteOriginal: valores[indice('Agente')] ?? '',
+
+        asesor: valores[indice('ASESOR')] ?? '',
+
+        cerrador: valores[indice('CERRADOR')] ?? '',
+
+        sede,
+
         campaign: campaignName,
+
         fechaTramitacion: fechaIso,
-        fechaEdicion:
-          this.fechaHoraAFormatoIso(
-            valores[indice(this.fechaEdicionHeader)],
-          ),
+
+        fechaEdicion: this.fechaHoraAFormatoIso(
+          valores[indice(this.fechaEdicionHeader)],
+        ),
       });
     });
 
     return resultados;
   }
-
 
   private obtenerRangoHoyYAyer(): RangoTramitacionSica {
     const hoy = DateTime.now().setZone('America/Lima');
@@ -535,14 +591,19 @@ export class SicaScraperService {
   }
 
   private validarFecha(fecha: string): string {
-    const valor = DateTime.fromFormat(fecha, 'dd/MM/yyyy', { zone: 'America/Lima' });
+    const valor = DateTime.fromFormat(fecha, 'dd/MM/yyyy', {
+      zone: 'America/Lima',
+    });
     if (!valor.isValid || valor.toFormat('dd/MM/yyyy') !== fecha) {
       throw new InternalServerErrorException(`Fecha SICA inválida: ${fecha}`);
     }
     return valor.toFormat('yyyy-MM-dd');
   }
 
-  private mismosIds(a: Map<string, FilaSica>, b: Map<string, FilaSica>): boolean {
+  private mismosIds(
+    a: Map<string, FilaSica>,
+    b: Map<string, FilaSica>,
+  ): boolean {
     return a.size === b.size && [...a.keys()].every((id) => b.has(id));
   }
 
@@ -569,7 +630,9 @@ export class SicaScraperService {
     const valor = this.limpiarEspacios(texto);
     if (!valor) return '';
 
-    const match = valor.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}:\d{2}(?::\d{2})?)\b/);
+    const match = valor.match(
+      /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}:\d{2}(?::\d{2})?)\b/,
+    );
     if (!match) return valor;
     return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')} ${match[4]}`;
   }
