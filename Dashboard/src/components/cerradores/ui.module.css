@@ -45,6 +45,53 @@
   font-size: 13px;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.createButton {
+  min-height: 46px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 16px;
+
+  border: 1px solid #dc2626;
+  border-radius: 9px;
+
+  background: #dc2626;
+  color: #fff;
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.createButton:hover {
+  border-color: #ef4444;
+  background: #b91c1c;
+}
+
+.createButton:focus-visible {
+  outline: 2px solid #f87171;
+  outline-offset: 3px;
+}
+
+.createButton > span {
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* ========================================
    TOGGLE
 ======================================== */
@@ -524,6 +571,15 @@
   .header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .headerActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .createButton {
+    width: 100%;
   }
 
   .toggle {

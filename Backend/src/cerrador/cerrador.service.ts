@@ -1,60 +1,88 @@
-import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCerradorDto } from './dto/create.dto';
 import { FilesService } from 'src/files/files.service';
 import { randomUUID } from 'crypto';
 import { UpdateCerradorDto } from './dto/update.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CerradorService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly fileService: FilesService
+    private readonly fileService: FilesService,
   ) {}
 
   async getCerradores(activos: boolean) {
     const cerradores = await this.prisma.cerrador.findMany({
       where: {
-        activo: activos
-      }
+        activo: activos,
+      },
     });
 
     return cerradores.map((cerrador) => ({
       ...cerrador,
-      avatar_url: cerrador.avatar_url ? this.normalizeUrl(`${process.env.BASE_URL}/${cerrador.avatar_url}`) : null
-    }))
-  } 
+      avatar_url: cerrador.avatar_url
+        ? this.normalizeUrl(`${process.env.BASE_URL}/${cerrador.avatar_url}`)
+        : null,
+    }));
+  }
 
   async getCerrador(id: number) {
     return await this.prisma.cerrador.findUnique({
-      where: { id }
+      where: { id },
     });
   }
 
   async create(dto: CreateCerradorDto) {
-
+    const nombreCompleto = dto.nombre.trim().replace(/\s+/g, ' ');
+    const nombreNormalizado = this.normalizarNombre(nombreCompleto);
     const cerradorKey = randomUUID();
 
     try {
       const cerrador = await this.prisma.cerrador.create({
         data: {
-          nombre: this.generarNombreCorto(dto.nombre),
-          nombre_normalizado: dto.nombre,
-          storage_key: cerradorKey
-        }
+          nombre: this.generarNombreCorto(nombreCompleto),
+          nombre_normalizado: nombreNormalizado,
+          storage_key: cerradorKey,
+        },
       });
 
       return cerrador;
     } catch (error) {
-      throw new InternalServerErrorException(`Ocurrio un error al crear un cerrador: ${error}`)
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'Ya existe un cerrador registrado con ese nombre.',
+        );
+      }
+
+      throw new InternalServerErrorException(
+        `Ocurrio un error al crear un cerrador: ${error}`,
+      );
     }
   }
 
-  private generarNombreCorto(nc: string): string {
-    const partes = nc
+  private normalizarNombre(nombre: string): string {
+    return nombre
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .trim()
-      .replace(/\s+/g, " ")
-      .split(" ");
+      .replace(/\s+/g, ' ')
+      .toUpperCase();
+  }
+
+  private generarNombreCorto(nc: string): string {
+    const partes = nc.trim().replace(/\s+/g, ' ').split(' ');
 
     if (partes.length >= 3) {
       const primerNombre = partes[0];
@@ -67,20 +95,22 @@ export class CerradorService {
       return `${partes[0]} ${partes[1]}`;
     }
 
-    return partes[0] ?? "";
+    return partes[0] ?? '';
   }
 
   private normalizeUrl(url: string) {
-    return url.replace(/\\/g, "/");
+    return url.replace(/\\/g, '/');
   }
 
   async updateCerrador(id: number, dto: UpdateCerradorDto) {
     const cerrador = await this.prisma.cerrador.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!cerrador) {
-      throw new NotFoundException("No se encuentra el cerrador para actualizar.");
+      throw new NotFoundException(
+        'No se encuentra el cerrador para actualizar.',
+      );
     }
 
     if (dto.activo === false) {
@@ -105,11 +135,10 @@ export class CerradorService {
       data: {
         nombre: dto.nombre,
         nombre_normalizado: dto.nombre_normalizado,
-        activo: dto.activo
-      }
+        activo: dto.activo,
+      },
     });
   }
-
 
   async updateAvatar(
     id: number,
@@ -125,14 +154,12 @@ export class CerradorService {
     try {
       if (!file) {
         throw new BadRequestException(
-          "El cerrador debe tener una imagen para actualizar su avatar.",
+          'El cerrador debe tener una imagen para actualizar su avatar.',
         );
       }
 
-      if (!file.mimetype.startsWith("image/")) {
-        throw new BadRequestException(
-          "El archivo debe ser una imagen válida.",
-        );
+      if (!file.mimetype.startsWith('image/')) {
+        throw new BadRequestException('El archivo debe ser una imagen válida.');
       }
 
       const cerrador = await this.prisma.cerrador.findUnique({
@@ -141,7 +168,7 @@ export class CerradorService {
 
       if (!cerrador) {
         throw new NotFoundException(
-          "No se encuentra el cerrador para actualizar.",
+          'No se encuentra el cerrador para actualizar.',
         );
       }
 
@@ -177,14 +204,9 @@ export class CerradorService {
       // Eliminar el avatar anterior solo cuando la BD ya se actualizó.
       if (oldPath && oldPath !== newFilePath) {
         try {
-          await this.fileService.deleteFiles([
-            { path: oldPath },
-          ]);
+          await this.fileService.deleteFiles([{ path: oldPath }]);
         } catch (error) {
-          console.error(
-            "No se pudo eliminar el avatar anterior:",
-            error,
-          );
+          console.error('No se pudo eliminar el avatar anterior:', error);
         }
       }
 
@@ -193,7 +215,7 @@ export class CerradorService {
       );
 
       return {
-        message: "Avatar del cerrador actualizado satisfactoriamente.",
+        message: 'Avatar del cerrador actualizado satisfactoriamente.',
         status: 200,
         data: {
           id: updated.id,
@@ -204,14 +226,9 @@ export class CerradorService {
       // Eliminar el archivo nuevo si falló la actualización.
       if (newFilePath) {
         try {
-          await this.fileService.deleteFiles([
-            { path: newFilePath },
-          ]);
+          await this.fileService.deleteFiles([{ path: newFilePath }]);
         } catch (cleanupError) {
-          console.error(
-            "Error al limpiar el archivo:",
-            cleanupError,
-          );
+          console.error('Error al limpiar el archivo:', cleanupError);
         }
       }
 
@@ -226,5 +243,4 @@ export class CerradorService {
       );
     }
   }
-
 }
