@@ -11,6 +11,8 @@ import styles from "./ui.module.css";
 import { actualizarCerrador, cambiarEstadoCerrador } from "@/services/cerrador/actualizarCerrador.service";
 import EditarCerrador from "../editarCerrador/ui";
 import { actualizarAvatarCerrador } from "@/services/cerrador/actualizarAvatar.service";
+import CrearCerrador from "../crearCerrador/ui";
+import { crearCerrador } from "@/services/cerrador/crearCerrador.service";
 
 interface CerradoresUIProps {
   cerradoresActivos: Cerrador[];
@@ -28,6 +30,8 @@ export default function CerradoresUI({
   const [estado, setEstado] = useState<Estado>("activos");
   const [seleccionado, setSeleccionado] =
     useState<Cerrador | null>(null);
+  const [mostrarCreacion, setMostrarCreacion] =
+    useState(false);
 
   const cerradores =
     estado === "activos"
@@ -75,6 +79,14 @@ export default function CerradoresUI({
     router.refresh();
   }
 
+  async function guardarNuevoCerrador(nombre: string) {
+    await crearCerrador({ nombre });
+
+    setMostrarCreacion(false);
+    setEstado("activos");
+    router.refresh();
+  }
+
   return (
     <>
       <main className={styles.container}>
@@ -85,34 +97,45 @@ export default function CerradoresUI({
             <p>Administración de cerradores</p>
           </div>
 
-          <div className={styles.toggle}>
+          <div className={styles.headerActions}>
             <button
               type="button"
-              className={`${styles.toggleButton} ${
-                estado === "activos"
-                  ? styles.toggleActive
-                  : ""
-              }`}
-              aria-pressed={estado === "activos"}
-              onClick={() => setEstado("activos")}
+              className={styles.createButton}
+              onClick={() => setMostrarCreacion(true)}
             >
-              Activos
-              <span>{cerradoresActivos.length}</span>
+              <span aria-hidden="true">＋</span>
+              Nuevo cerrador
             </button>
 
-            <button
-              type="button"
-              className={`${styles.toggleButton} ${
-                estado === "inactivos"
-                  ? styles.toggleActive
-                  : ""
-              }`}
-              aria-pressed={estado === "inactivos"}
-              onClick={() => setEstado("inactivos")}
-            >
-              Inactivos
-              <span>{cerradoresInactivos.length}</span>
-            </button>
+            <div className={styles.toggle}>
+              <button
+                type="button"
+                className={`${styles.toggleButton} ${
+                  estado === "activos"
+                    ? styles.toggleActive
+                    : ""
+                }`}
+                aria-pressed={estado === "activos"}
+                onClick={() => setEstado("activos")}
+              >
+                Activos
+                <span>{cerradoresActivos.length}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.toggleButton} ${
+                  estado === "inactivos"
+                    ? styles.toggleActive
+                    : ""
+                }`}
+                aria-pressed={estado === "inactivos"}
+                onClick={() => setEstado("inactivos")}
+              >
+                Inactivos
+                <span>{cerradoresInactivos.length}</span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -197,6 +220,13 @@ export default function CerradoresUI({
           onGuardarDatos={guardarCambios}
           onGuardarAvatar={ guardarAvatar }
           onCambiarEstado={guardarEstado}
+        />
+      )}
+
+      {mostrarCreacion && (
+        <CrearCerrador
+          onClose={() => setMostrarCreacion(false)}
+          onCrear={guardarNuevoCerrador}
         />
       )}
     </>

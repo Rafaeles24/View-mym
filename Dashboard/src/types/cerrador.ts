@@ -12,3 +12,7 @@ export type UpdateCerrador = {
   activo?: boolean;
 }
 
+export type CreateCerrador = {
+  nombre: string;
+}
+
