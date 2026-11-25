@@ -394,7 +394,7 @@ export class VisorResumenVentasService {
 
     const ventas = await this.prisma.venta.findMany({
       where: {
-        tipo_empleado: TipoEmpleado.AGENTE,
+        tipo_empleado: TipoEmpleado.CERRADOR,
 
         fecha_tramitacion: {
           gte: fechaLimaParaBD(inicioMes),

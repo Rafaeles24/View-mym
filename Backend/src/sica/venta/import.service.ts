@@ -1,84 +1,73 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
-import { DateTime } from 'luxon'; 
+import { DateTime } from 'luxon';
 
 import { VentaSica } from '../interfaces/venta-sica.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class VentaImportService {
+  private readonly logger = new Logger(VentaImportService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async importar(
-    ventas: VentaSica[],
-  ) {
-
+  async importar(ventas: VentaSica[]) {
     let ventasSicaProcesadas = 0;
     let registrosVentasProcesadas = 0;
     let omitidos = 0;
     let ventaCerradorNoRegistrado = 0;
 
     for (const venta of ventas) {
-
       try {
-
         if (!venta.idExterno) {
-
-          console.warn(
-            '[SICA] Venta sin ID. Se omite.',
-          );
+          console.warn('[SICA] Venta sin ID. Se omite.');
 
           omitidos++;
 
           continue;
         }
 
-        if (
-          !venta.cerrador ||
-          !venta.agente
-        ) {
-
-          console.warn(
-            `[SICA] Venta ${venta.idExterno} sin cerrador o agente`,
-          );
+        if (!venta.cerrador || !venta.agente) {
+          console.warn(`[SICA] Venta ${venta.idExterno} sin cerrador o agente`);
 
           omitidos++;
 
           continue;
         }
 
-        const campaign =
-          await this.prisma.campaign.findFirst({
-            where: {
-              nombre: venta.campaign,
-            },
-          });
+        const campaign = await this.prisma.campaign.findFirst({
+          where: {
+            nombre: venta.campaign,
+          },
+        });
 
         if (!campaign) {
-
           throw new NotFoundException(
             `[SICA] Campaign no encontrado: ${venta.campaign}`,
           );
         }
 
-        const sede =
-          await this.prisma.sede.findFirst({
-            where: {
-              nombre: venta.sede,
-            },
-          });
+        const sedeOriginal = venta.sede?.trim() ?? '';
+        const nombreSede = sedeOriginal || 'BACKOFFICE';
+
+        if (!sedeOriginal) {
+          this.logger.warn(
+            `[SICA] Venta ${venta.idExterno} sin sede. Se asigna BACKOFFICE.`,
+          );
+        }
+
+        const sede = await this.prisma.sede.findFirst({
+          where: { nombre: nombreSede },
+        });
 
         if (!sede) {
-
           throw new NotFoundException(
-            `[SICA] Sede no encontrado: ${venta.sede}`,
+            `[SICA] Sede no encontrado: ${nombreSede}`,
           );
         }
 
@@ -92,27 +81,20 @@ export class VentaImportService {
          * 2026-09-19T08:00:00-05:00
          */
 
-        const fechaMadrid =
-          this.convertirFechaLocal(
-            venta.fechaEdicionMadrid,
-          );
-        
-        const fechaLima =
-          this.convertirFechaLocal(
-            venta.fechaEdicionLima,
-          );
+        const fechaMadrid = this.convertirFechaLocal(venta.fechaEdicionMadrid);
 
-        const fechaTramitacion = 
-          this.convertirFechaTramitacion(
-            venta.fechaTramitacion
-          )
+        const fechaLima = this.convertirFechaLocal(venta.fechaEdicionLima);
+
+        const fechaTramitacion = this.convertirFechaTramitacion(
+          venta.fechaTramitacion,
+        );
 
         const cerradorNormalizado = this.normalizarNombre(venta.cerrador);
 
         const cerrador = await this.prisma.cerrador.findUnique({
           where: {
-            nombre_normalizado: cerradorNormalizado
-          }
+            nombre_normalizado: cerradorNormalizado,
+          },
         });
 
         if (!cerrador) {
@@ -120,161 +102,120 @@ export class VentaImportService {
           console.warn(`[SICA] Cerrador no registrado ${venta.cerrador}`);
         }
 
-        await this.prisma.$transaction(
-          async (tx) => {
+        await this.prisma.$transaction(async (tx) => {
+          // ================================================
+          // CERRADOR / SUPERVISOR
+          // ================================================
 
-            // ================================================
-            // CERRADOR / SUPERVISOR
-            // ================================================
+          await tx.venta.upsert({
+            where: {
+              venta_sica_participante: {
+                sica_id: venta.idExterno,
 
-            await tx.venta.upsert({
+                campaign_id: campaign.id,
 
-              where: {
-                venta_sica_participante: {
-                  sica_id:
-                    venta.idExterno,
-
-                  campaign_id:
-                    campaign.id,
-
-                  tipo_empleado:
-                    'CERRADOR',
-                },
+                tipo_empleado: 'CERRADOR',
               },
+            },
 
-              create: {
-                sica_id:
-                  venta.idExterno,
+            create: {
+              sica_id: venta.idExterno,
 
-                tipo_empleado:
-                  'CERRADOR',
+              tipo_empleado: 'CERRADOR',
 
-                nombre_empleado:
-                  venta.cerrador,
+              nombre_empleado: venta.cerrador,
 
-                variante_empleado:
-                  'SUP',
+              variante_empleado: 'SUP',
 
-                campaign_id:
-                  campaign.id,
+              campaign_id: campaign.id,
 
-                sede_id:
-                  sede.id,
+              sede_id: sede.id,
 
-                fecha:
-                  fechaMadrid,
+              fecha: fechaMadrid,
 
-                fecha_lima:
-                  fechaLima,
-                
-                cerrador_id: cerrador?.id ?? null,
+              fecha_lima: fechaLima,
 
-                fecha_tramitacion: fechaTramitacion
+              cerrador_id: cerrador?.id ?? null,
+
+              fecha_tramitacion: fechaTramitacion,
+            },
+
+            update: {
+              nombre_empleado: venta.cerrador,
+
+              variante_empleado: 'SUP',
+
+              sede_id: sede.id,
+
+              fecha: fechaMadrid,
+
+              fecha_lima: fechaLima,
+
+              cerrador_id: cerrador?.id ?? null,
+
+              fecha_tramitacion: fechaTramitacion,
+            },
+          });
+
+          // ================================================
+          // AGENTE
+          // ================================================
+
+          await tx.venta.upsert({
+            where: {
+              venta_sica_participante: {
+                sica_id: venta.idExterno,
+
+                campaign_id: campaign.id,
+
+                tipo_empleado: 'AGENTE',
               },
+            },
 
-              update: {
-                nombre_empleado:
-                  venta.cerrador,
+            create: {
+              sica_id: venta.idExterno,
 
-                variante_empleado:
-                  'SUP',
+              tipo_empleado: 'AGENTE',
 
-                sede_id:
-                  sede.id,
+              nombre_empleado: venta.agente,
 
-                fecha:
-                  fechaMadrid,
+              variante_empleado: venta.varianteAgente,
 
-                fecha_lima:
-                  fechaLima,
+              campaign_id: campaign.id,
 
-                cerrador_id: cerrador?.id ?? null,
+              sede_id: sede.id,
 
-                fecha_tramitacion: fechaTramitacion
-              },
-            });
+              fecha: fechaMadrid,
 
-            // ================================================
-            // AGENTE
-            // ================================================
+              fecha_lima: fechaLima,
 
-            await tx.venta.upsert({
+              cerrador_id: cerrador?.id ?? null,
 
-              where: {
-                venta_sica_participante: {
-                  sica_id:
-                    venta.idExterno,
+              fecha_tramitacion: fechaTramitacion,
+            },
 
-                  campaign_id:
-                    campaign.id,
+            update: {
+              nombre_empleado: venta.agente,
 
-                  tipo_empleado:
-                    'AGENTE',
-                },
-              },
+              variante_empleado: venta.varianteAgente,
 
-              create: {
-                sica_id:
-                  venta.idExterno,
+              sede_id: sede.id,
 
-                tipo_empleado:
-                  'AGENTE',
+              fecha: fechaMadrid,
 
-                nombre_empleado:
-                  venta.agente,
+              fecha_lima: fechaLima,
 
-                variante_empleado:
-                  venta.varianteAgente,
+              cerrador_id: cerrador?.id ?? null,
 
-                campaign_id:
-                  campaign.id,
-
-                sede_id:
-                  sede.id,
-
-                fecha:
-                  fechaMadrid,
-
-                fecha_lima:
-                  fechaLima,
-
-                cerrador_id: cerrador?.id ?? null,
-
-                fecha_tramitacion: fechaTramitacion,
-              },
-
-              update: {
-                nombre_empleado:
-                  venta.agente,
-
-                variante_empleado:
-                  venta.varianteAgente,
-
-                sede_id:
-                  sede.id,
-
-                fecha:
-                  fechaMadrid,
-
-                fecha_lima:
-                  fechaLima,
-                
-                cerrador_id: cerrador?.id ?? null,
-
-                fecha_tramitacion: fechaTramitacion
-              },
-            });
-          },
-        );
+              fecha_tramitacion: fechaTramitacion,
+            },
+          });
+        });
 
         ventasSicaProcesadas++;
         registrosVentasProcesadas += 2;
-
       } catch (error) {
-
-        if (
-          error instanceof NotFoundException
-        ) {
+        if (error instanceof NotFoundException) {
           throw error;
         }
 
@@ -301,60 +242,33 @@ export class VentaImportService {
       .toUpperCase();
   }
 
-  private convertirFechaLocal(
-    fecha: string,
-  ): Date {
-
-    let resultado =
-      DateTime.fromFormat(
-        fecha,
-        'yyyy-MM-dd HH:mm:ss',
-        {
-          zone: 'UTC',
-        },
-      );
+  private convertirFechaLocal(fecha: string): Date {
+    let resultado = DateTime.fromFormat(fecha, 'yyyy-MM-dd HH:mm:ss', {
+      zone: 'UTC',
+    });
 
     if (!resultado.isValid) {
-
-      resultado =
-        DateTime.fromFormat(
-          fecha,
-          'yyyy-MM-dd HH:mm',
-          {
-            zone: 'UTC',
-          },
-        );
+      resultado = DateTime.fromFormat(fecha, 'yyyy-MM-dd HH:mm', {
+        zone: 'UTC',
+      });
     }
 
     if (!resultado.isValid) {
-
-      throw new Error(
-        `Fecha local inválida: ${fecha}`,
-      );
+      throw new Error(`Fecha local inválida: ${fecha}`);
     }
 
     return resultado.toJSDate();
   }
 
-  private convertirFechaTramitacion(
-    fecha: string,
-  ): Date {
-
-    const resultado =
-      DateTime.fromFormat(
-        fecha,
-        'yyyy-MM-dd',
-        {
-          zone: 'America/Lima',
-        },
-      );
+  private convertirFechaTramitacion(fecha: string): Date {
+    const resultado = DateTime.fromFormat(fecha, 'yyyy-MM-dd', {
+      zone: 'America/Lima',
+    });
 
     if (!resultado.isValid) {
-      throw new Error(
-        `Fecha de tramitación inválida: ${fecha}`,
-      );
+      throw new Error(`Fecha de tramitación inválida: ${fecha}`);
     }
 
     return resultado.startOf('day').toJSDate();
-  }  
+  }
 }

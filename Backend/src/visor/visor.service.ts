@@ -64,7 +64,7 @@ export class VisorService {
       this.visorMedia.obtenerMediaPorSede(sedeId),
       this.visorResumenVentas.obtenerResumenDiario(sedeId),
       this.visorResumenVentas.obtenerResumenAyer(sedeId),
-      this.visorResumenVentas.obtenerResumenMensual('2026-10-01'),
+      this.visorResumenVentas.obtenerResumenMensual('2026-11-20'),
       this.visorVersus.obtenerVersusActivosGlobales(),
       this.visorSedeVersus.obtenerVersusSedes(),
       this.visorVersus.getRangoFechas(),
