@@ -11,6 +11,7 @@ import UsuarioBadge from "../badges/usuario/ui";
 import logo from "@/img/mymcorp.png";
 import StartIcon from "@/icons/star";
 import Image from "next/image";
+import SicaIcon from "@/icons/sica";
 
 export default function Sidebar({
   user,
@@ -59,6 +60,10 @@ export default function Sidebar({
             </Link>
           </div>
         )}
+        <Link href={"/dashboard/sica"} className={`${styles.navLinks} ${pathname.startsWith("/dashboard/sica") && styles.active}`}>
+          <SicaIcon />
+          <span>SICA</span>
+        </Link>
       </div>
 
       <div className={styles.user}>
