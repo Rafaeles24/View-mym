@@ -42,7 +42,7 @@ export class CerradorService {
   }
 
   async create(dto: CreateCerradorDto) {
-    const nombreCompleto = dto.nombre.trim().replace(/\s+/g, ' ');
+    const nombreCompleto = this.formatearNombre(dto.nombre);
     const nombreNormalizado = this.normalizarNombre(nombreCompleto);
     const cerradorKey = randomUUID();
 
@@ -72,12 +72,14 @@ export class CerradorService {
     }
   }
 
+  private formatearNombre(nombre: string): string {
+    return nombre.trim().replace(/\s+/g, ' ').toLocaleUpperCase('es');
+  }
+
   private normalizarNombre(nombre: string): string {
-    return nombre
+    return this.formatearNombre(nombre)
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .replace(/\s+/g, ' ')
       .toUpperCase();
   }
 
@@ -130,11 +132,17 @@ export class CerradorService {
       }
     }
 
+    const nombre = dto.nombre ? this.formatearNombre(dto.nombre) : undefined;
+    const fuenteNombreNormalizado = dto.nombre_normalizado ?? dto.nombre;
+    const nombreNormalizado = fuenteNombreNormalizado
+      ? this.normalizarNombre(fuenteNombreNormalizado)
+      : undefined;
+
     return await this.prisma.cerrador.update({
       where: { id },
       data: {
-        nombre: dto.nombre,
-        nombre_normalizado: dto.nombre_normalizado,
+        nombre,
+        nombre_normalizado: nombreNormalizado,
         activo: dto.activo,
       },
     });
